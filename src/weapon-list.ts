@@ -1,10 +1,6 @@
 import * as JSDOM from 'jsdom';
 import {fetchHtmlRaw} from './fetch';
 
-// function map<T, U>(array: ArrayLike<T>, callback: (value: T, index: number, array: T[]) => U, thisArg?: any): U[] {
-//   return Array.prototype.map.call(array, callback, thisArg) as U[];
-// }
-
 type WeaponInfo = any;
 
 export async function getWeaponList(): Promise<WeaponInfo> {
