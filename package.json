@@ -4,6 +4,7 @@
   "description": "Helper for extracting items information from Terraria official wiki",
   "main": "dist/index.js",
   "scripts": {
+    "scrap": "node --inspect=9230 dist/index.js",
     "build": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
