@@ -1,0 +1,26 @@
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "baseUrl": "./",
+    "declaration": false,
+    "downlevelIteration": true,
+    "forceConsistentCasingInFileNames": true,
+    "importHelpers": true,
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "noFallthroughCasesInSwitch": false,
+    "noImplicitAny": true,
+    "noImplicitOverride": true,
+    "noImplicitReturns": false,
+    "noPropertyAccessFromIndexSignature": true,
+    "sourceMap": true,
+    "outDir": "./dist",
+    "strict": true,
+    "target": "ES2022",
+    "useDefineForClassFields": false,
+    "lib": [
+      "ES2022",
+      "dom"
+    ]
+  }
+}
