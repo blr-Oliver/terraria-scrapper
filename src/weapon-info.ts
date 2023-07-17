@@ -1,11 +1,11 @@
-import * as JSDOM from 'jsdom';
+import {JSDOM} from 'jsdom';
 import {fetchHtmlRaw} from './fetch';
 
 type WeaponInfo = any;
 
 export async function getWeaponList(): Promise<WeaponInfo> {
   let rootText = await fetchHtmlRaw('https://terraria.wiki.gg/wiki/List_of_weapons');
-  let rootDoc: Document = (new JSDOM.JSDOM(rootText)).window.document;
+  let rootDoc: Document = new JSDOM(rootText).window.document;
   const table: HTMLTableElement = rootDoc.querySelector('table.terraria.list-of-all-weapons')! as HTMLTableElement;
   return [...table.tBodies[0].rows].slice(1).map(extractWeaponInfo);
 }

@@ -1,8 +1,8 @@
-import * as JSDOM from 'jsdom';
+import {JSDOM} from 'jsdom';
 import {fetchHtmlRaw} from './fetch';
 import {ALL_PLATFORMS, Platform, PlatformList, PlatformName, PlatformVarying, PlatformVaryingValue} from './platform-varying';
 
-const Node = (new JSDOM.JSDOM('')).window.Node;
+const Node = new JSDOM('').window.Node;
 
 export interface WeaponInfo {
   id: number;
@@ -38,7 +38,7 @@ export type ScrappedWeapon = PlatformVarying<WeaponInfo> & { platforms?: Platfor
 
 export async function getWeaponInfo(path: string): Promise<PlatformVaryingValue<string>> {
   const rootText = await fetchHtmlRaw('https://terraria.wiki.gg' + path);
-  const rootDoc: Document = (new JSDOM.JSDOM(rootText)).window.document;
+  const rootDoc: Document = new JSDOM(rootText).window.document;
 
   const contentRoot = rootDoc.querySelector('.mw-parser-output')!;
   return extractWeaponCard(contentRoot.querySelector('.infobox.item')!);
