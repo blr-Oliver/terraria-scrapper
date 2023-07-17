@@ -29,23 +29,26 @@ export interface ProjectileInfo {
   image: string;
 }
 
-function platformAware() {
-  let text = '';
-  [...text.matchAll(/(?:\s*\/\s*)?(\d+)(?:\s*\(([^()]+)\))?/g)].map(groups => [+groups[1], groups[2]]);
-}
-
 export type ScrappedWeapon = PlatformVarying<WeaponInfo> & { platforms?: PlatformList };
 
-export async function getWeaponInfo(path: string): Promise<PlatformVaryingValue<string>> {
+export async function getWeaponInfo(path: string): Promise<ScrappedWeapon> {
   const rootText = await fetchHtmlRaw('https://terraria.wiki.gg' + path);
   const rootDoc: Document = new JSDOM(rootText).window.document;
 
   const contentRoot = rootDoc.querySelector('.mw-parser-output')!;
-  return extractWeaponCard(contentRoot.querySelector('.infobox.item')!);
+  let weaponInfo = extractWeaponCard(contentRoot.querySelector('.infobox.item')!);
+
+  let messageBox = contentRoot.querySelector('.message-box');
+  if (messageBox)
+    (weaponInfo as ScrappedWeapon).platforms = extractPlatformsFromImages(messageBox);
+  return weaponInfo;
 }
 
-export function extractWeaponCard(card: Element): PlatformVaryingValue<string> {
-  return extractName(card.querySelector('.title')!);
+export function extractWeaponCard(card: Element): PlatformVarying<WeaponInfo> {
+  const name: PlatformVaryingValue<string> = extractName(card.querySelector('.title')!);
+  return {
+    name
+  } as PlatformVarying<WeaponInfo>;
 }
 
 const MESSAGE_BOX_KEYS: { [key: string]: PlatformName } = {
@@ -70,11 +73,18 @@ function extractPlatformsFromImages(messageBox: Element): PlatformList {
   let iconList = messageBox.querySelector('.icon');
   if (iconList) {
     let icons = iconList.querySelectorAll('a img[alt]');
-    [...icons]
+    let platformHash: PlatformVaryingValue<boolean> = {};
+    let foundPlatforms = [...icons]
         .map(icon => /([\w\-\s]+)\s+version/i.exec(icon.getAttribute('alt')!))
         .filter(match => !!match && !!match[1])
         .map(match => match![1]!.toLowerCase().trim())
-        .forEach(key => MESSAGE_BOX_KEYS[key] || (key as PlatformName));
+        .map(key => MESSAGE_BOX_KEYS[key] || (key as PlatformName));
+    for (let platform of foundPlatforms) {
+      if (!platformHash[platform]) {
+        result.push(platform);
+        platformHash[platform] = true;
+      }
+    }
   }
   return result;
 }
