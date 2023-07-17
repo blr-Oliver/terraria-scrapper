@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import {getWeaponCategories} from './weapon-categories';
-import {getWeaponList} from './weapon-list';
+import {getWeaponList} from './weapon-info';
 
 async function keypress(): Promise<void> {
   process.stdin.setRawMode(true);
@@ -19,9 +19,9 @@ async function executeProgram(): Promise<void> {
 }
 
 async function loadWeaponCategories() {
+  console.log('Loading weapon categories...');
   console.log('Press any key to continue');
   await keypress();
-  console.log('Loading weapon categories...');
   let weaponCategories = await getWeaponCategories();
   console.log('Saving...');
   fs.writeFileSync('out/weapon-categories.json', JSON.stringify(weaponCategories, null, 2), {encoding: 'utf8'});
@@ -29,9 +29,9 @@ async function loadWeaponCategories() {
 }
 
 async function loadWeaponList(): Promise<void> {
+  console.log('Loading weapon list...');
   console.log('Press any key to continue');
   await keypress();
-  console.log('Loading weapon list...');
   let weapons = await getWeaponList();
   console.log('Saving...');
   fs.writeFileSync('out/weapon-list.json', JSON.stringify(weapons, null, 2), {encoding: 'utf8'});
