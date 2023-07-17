@@ -23,3 +23,13 @@ export type PlatformVarying<T> =
         T extends Function ? PlatformVaryingValue<T> :
             T extends object ? PlatformVaryingObject<T> :
                 PlatformVaryingValue<T>;
+
+export function forAllPlatforms<T>(value: T): PlatformVaryingValue<T> {
+  return {
+    pc: value,
+    console: value,
+    oldGen: value,
+    mobile: value,
+    threeDS: value
+  }
+}

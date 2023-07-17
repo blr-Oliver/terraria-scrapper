@@ -1,4 +1,8 @@
+import * as JSDOM from 'jsdom';
+import {fetchHtmlRaw} from './fetch';
 import {ALL_PLATFORMS, Platform, PlatformList, PlatformName, PlatformVarying, PlatformVaryingValue} from './platform-varying';
+
+const Node = (new JSDOM.JSDOM('')).window.Node;
 
 export interface WeaponInfo {
   id: number;
@@ -29,7 +33,20 @@ function platformAware() {
   let text = '';
   [...text.matchAll(/(?:\s*\/\s*)?(\d+)(?:\s*\(([^()]+)\))?/g)].map(groups => [+groups[1], groups[2]]);
 }
+
 export type ScrappedWeapon = PlatformVarying<WeaponInfo> & { platforms?: PlatformList };
+
+export async function getWeaponInfo(path: string): Promise<PlatformVaryingValue<string>> {
+  const rootText = await fetchHtmlRaw('https://terraria.wiki.gg' + path);
+  const rootDoc: Document = (new JSDOM.JSDOM(rootText)).window.document;
+
+  const contentRoot = rootDoc.querySelector('.mw-parser-output')!;
+  return extractWeaponCard(contentRoot.querySelector('.infobox.item')!);
+}
+
+export function extractWeaponCard(card: Element): PlatformVaryingValue<string> {
+  return extractName(card.querySelector('.title')!);
+}
 
 const MESSAGE_BOX_KEYS: { [key: string]: PlatformName } = {
   'desktop': 'pc',
@@ -42,6 +59,10 @@ const MESSAGE_BOX_KEYS: { [key: string]: PlatformName } = {
   'old-gen console': 'oldGen',
   'old-gen': 'oldGen',
   'oldgen': 'oldGen'
+}
+
+function extractName(title: Element): PlatformVaryingValue<string> {
+  return extractVaryingString(title);
 }
 
 function extractPlatformsFromImages(messageBox: Element): PlatformList {
@@ -71,27 +92,42 @@ function flattenNodes(elem: Element, filter: (node: Node) => boolean): Node[] {
       childNodes.forEach(node => collectLeaves(node, filter, collect));
   }
 }
-
-function extractVaryingString(iconList: Element): PlatformVaryingValue<string> {
-  const valueNodeMatcher: (node: Node) => boolean = node => node.parentNode === iconList && node.nodeType === Node.TEXT_NODE;
-  const flagsNodeMatcher: (node: Node) => boolean = node => (node instanceof Element && node.matches('.eico'));
-  const valueNodeExtractor: (node: Node) => string = node => node.nodeValue!;
-  const flagsNodeExtractor: (node: Node) => PlatformList = node => extractPlatformsFromClasses(node as Element);
-  const valueMerger: (a: string | null, b: string) => string = (a, b) => (a || '') + b;
-
-  iconList.normalize();
-  let flatNodes = flattenNodes(iconList, node => valueNodeMatcher(node) || flagsNodeMatcher(node));
-  let result: PlatformVaryingValue<string> = {};
+/**
+ * @template I type of intermediate value from collapsing value nodes
+ * @template T value type
+ */
+function extractVaryingValue<I, T>(src: Element,
+                                   valueNodeMatcher: (node: Node) => boolean,
+                                   flagsNodeMatcher: (node: Node) => boolean,
+                                   valueNodeExtractor: (node: Node) => I,
+                                   flagsNodeExtractor: (node: Node) => PlatformList,
+                                   valueMerger: (a: (I | null), x: I) => I,
+                                   valueFinalizer: (x: I) => T): PlatformVaryingValue<T> {
+  src.normalize();
+  let flatNodes = flattenNodes(src, node => valueNodeMatcher(node) || flagsNodeMatcher(node));
+  let result: PlatformVaryingValue<T> = {};
   let i = 0;
   while (i < flatNodes.length) {
-    let value: string | null = null;
+    let accum: I | null = null;
     while (i < flatNodes.length && valueNodeMatcher(flatNodes[i]))
-      value = valueMerger(value, valueNodeExtractor(flatNodes[i++]));
-    let flags: PlatformList = i < flatNodes.length ? flagsNodeExtractor(flatNodes[i++]) : ALL_PLATFORMS;
+      accum = valueMerger(accum, valueNodeExtractor(flatNodes[i++]));
+    const value: T = valueFinalizer(accum!);
+    let flags: PlatformList = i < flatNodes.length ? flagsNodeExtractor(flatNodes[i++]) : ALL_PLATFORMS as PlatformList;
     for (let flag of flags)
-      result[flag] = value!;
+      result[flag] = value;
   }
   return result;
+}
+
+function extractVaryingString(src: Element): PlatformVaryingValue<string> {
+  return extractVaryingValue<string, string>(src,
+      node => node.parentNode === src && node.nodeType === Node.TEXT_NODE,
+      node => (node.nodeType === Node.ELEMENT_NODE && (node as Element).matches('.eico')),
+      node => node.nodeValue!,
+      node => extractPlatformsFromClasses(node as Element),
+      (a, b) => (a || '') + b,
+      stripLeadingOrTrailingSlash
+  );
 }
 
 function extractPlatformsFromClasses(iconList: Element): PlatformList {
@@ -105,4 +141,9 @@ function extractPlatformsFromClasses(iconList: Element): PlatformList {
     }
   });
   return result;
+}
+
+function stripLeadingOrTrailingSlash(value: string): string {
+  let match = value.match(/\/?\s*(.*\S*)\s*\/?/);
+  return match ? match[1] : value;
 }

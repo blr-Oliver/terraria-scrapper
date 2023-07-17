@@ -1,4 +1,5 @@
 import * as fs from 'fs';
+import {getWeaponInfo} from './weapon-card';
 import {getWeaponCategories} from './weapon-categories';
 import {getWeaponList} from './weapon-info';
 
@@ -14,8 +15,9 @@ async function keypress(): Promise<void> {
 }
 
 async function executeProgram(): Promise<void> {
-  await loadWeaponList();
-  await loadWeaponCategories();
+//  await loadWeaponList();
+//  await loadWeaponCategories();
+  await loadSingleWeapon('/wiki/Ruler');
 }
 
 async function loadWeaponCategories() {
@@ -35,6 +37,16 @@ async function loadWeaponList(): Promise<void> {
   let weapons = await getWeaponList();
   console.log('Saving...');
   fs.writeFileSync('out/weapon-list.json', JSON.stringify(weapons, null, 2), {encoding: 'utf8'});
+  console.log('Done');
+}
+
+async function loadSingleWeapon(path: string): Promise<void> {
+  console.log(`Loading weapon from '${path}' ...`);
+  console.log('Press any key to continue');
+  await keypress();
+  let weaponInfo = await getWeaponInfo(path);
+  console.log('Saving...');
+  fs.writeFileSync('out/weapon-single.json', JSON.stringify(weaponInfo, null, 2), {encoding: 'utf8'});
   console.log('Done');
 }
 
