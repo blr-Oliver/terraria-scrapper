@@ -11,16 +11,18 @@ export interface WeaponInfo {
   damage: number;
   damageType: string;
   knockback: number;
-  criticalChance: number;
+  critChance: number;
   useTime: number;
   rarity: number;
   autoSwing: boolean;
-  hardMode: boolean;
-  coinValue: number;
+  buyValue: number;
+  sellValue: number;
+  manaCost?: number;
   velocity?: number;
   projectiles?: ProjectileInfo[];
   reach?: number;
   spinDuration?: number;
+  tooltip?: string;
 }
 
 export interface ProjectileInfo {
@@ -138,6 +140,80 @@ function processIdsSection(section: Element, weapon: ScrappedWeapon) {
   }
 }
 function processStatisticsSection(section: Element, weapon: ScrappedWeapon) {
+  let lines = (section.querySelector('table.stat')! as HTMLTableElement).rows;
+  [...lines].forEach(row => processProperty(row.cells[0].textContent!, row.cells[1], weapon));
+}
+
+const PROPERTIES_BY_NAME: { [key: string]: string } = {
+  'damage': 'damage',
+  'knockback': 'knockback',
+  'mana': 'manaCost',
+  'use time': 'useTime',
+  'velocity': 'velocity',
+  'rarity': 'rarity',
+  'buy': 'buyValue',
+  'sell': 'sellValue',
+  'critical chance': 'critChance',
+  'tooltip': 'tooltip'
+};
+function processProperty(name: string, td: Element, weapon: ScrappedWeapon) {
+  name = name.toLowerCase();
+  const key = PROPERTIES_BY_NAME[name];
+  switch (key) {
+    case 'damage':
+      weapon.damage = extractVaryingNumber(td);
+      let typeMarker = td.querySelector('.small-bold:last-child');
+      if (typeMarker)
+        weapon.damageType = forAllPlatforms(typeMarker.textContent!.trim().slice(1, -1).trim().toLowerCase());
+      break;
+    case 'knockback':
+      weapon.knockback = extractVaryingNumber(td);
+      break;
+    case 'critChance':
+      weapon.critChance = extractVaryingPercent(td);
+      break;
+    case 'manaCost':
+      weapon.manaCost = extractVaryingNumber(td);
+      break;
+    case 'useTime':
+      weapon.useTime = extractVaryingNumber(td);
+      break;
+    case 'velocity':
+      weapon.velocity = extractVaryingNumber(td);
+      break;
+    case 'tooltip':
+      let gameTextContainer = td.querySelector('.gameText');
+      if (gameTextContainer) {
+        let chunks: string[] = [];
+        for (let child of [...gameTextContainer.childNodes]) {
+          if (child.nodeType === Node.TEXT_NODE)
+            chunks.push(child.nodeValue!);
+          else if (child.nodeType === Node.ELEMENT_NODE && (child as Element).tagName.toLowerCase() === 'br')
+            chunks.push('\n');
+        }
+        weapon.tooltip = forAllPlatforms(chunks.join('').trim());
+      } else
+        weapon.tooltip = forAllPlatforms(td.textContent!.trim());
+      break;
+    case 'rarity':
+      let wrapper = td.querySelector('.rarity')!;
+      let sortKey = wrapper.querySelector('s.sortkey');
+      if (sortKey) {
+        weapon.rarity = forAllPlatforms(parseInt(sortKey.textContent!.trim()));
+      } else {
+        let image = wrapper.querySelector('a img[alt]')!;
+        let altString = image.getAttribute('alt')!.trim();
+        let match = altString.match('/Rarity level:\s?(\d+)/i');
+        weapon.rarity = forAllPlatforms(+match![1]);
+      }
+      break;
+    case 'buyValue':
+      weapon.buyValue = extractVaryingCoinValue(td);
+      break;
+    case 'sellValue':
+      weapon.sellValue = extractVaryingCoinValue(td);
+      break;
+  }
 }
 
 const MESSAGE_BOX_KEYS: { [key: string]: PlatformName } = {
@@ -207,21 +283,51 @@ function extractVaryingValue<I, T>(src: Element,
     while (i < flatNodes.length && valueNodeMatcher(flatNodes[i]))
       accum = valueMerger(accum, valueNodeExtractor(flatNodes[i++]));
     const value: T = valueFinalizer(accum!);
-    let flags: PlatformList = i < flatNodes.length ? flagsNodeExtractor(flatNodes[i++]) : ALL_PLATFORMS as PlatformList;
+    let flags: PlatformList;
+    if (i < flatNodes.length) {
+      flags = flagsNodeExtractor(flatNodes[i++]);
+    } else {
+      if (Object.keys(result).length === 0 || !!value)
+        flags = ALL_PLATFORMS as PlatformList;
+      else
+        flags = [];
+    }
     for (let flag of flags)
       result[flag] = value;
   }
   return result;
 }
 
-function extractVaryingString(src: Element): PlatformVaryingValue<string> {
-  return extractVaryingValue<string, string>(src,
+function extractAsStringWithFinalizer<T>(src: Element, valueFinalizer: (value: string) => T): PlatformVaryingValue<T> {
+  return extractVaryingValue<string, T>(src,
       node => node.parentNode === src && node.nodeType === Node.TEXT_NODE,
       selectorMatcher('.eico'),
       node => node.nodeValue!,
       node => extractPlatformsFromClasses(node as Element),
       (a, b) => (a || '') + b,
-      stripLeadingOrTrailingSlash
+      valueFinalizer
+  );
+}
+function extractVaryingString(src: Element): PlatformVaryingValue<string> {
+  return extractAsStringWithFinalizer(src, stripLeadingOrTrailingSlash);
+}
+
+function extractVaryingNumber(src: Element): PlatformVaryingValue<number> {
+  return extractAsStringWithFinalizer(src, s => +stripLeadingOrTrailingSlash(s));
+}
+
+function extractVaryingPercent(src: Element): PlatformVaryingValue<number> {
+  return extractAsStringWithFinalizer(src, s => +stripLeadingOrTrailingSlash(s).slice(0, -1));
+}
+
+function extractVaryingCoinValue(src: Element): PlatformVaryingValue<number> {
+  return extractVaryingValue<number, number>(src,
+      selectorMatcher('.coin[data-sort-value]'),
+      selectorMatcher('.eico'),
+      node => +(node as Element).getAttribute('data-sort-value')!,
+      node => extractPlatformsFromClasses(node as Element),
+      (a, b) => a || b,
+      x => x
   );
 }
 
@@ -239,7 +345,7 @@ function extractPlatformsFromClasses(iconList: Element): PlatformList {
 }
 
 function stripLeadingOrTrailingSlash(value: string): string {
-  let match = value.match(/\/?\s*(.*\S*)\s*\/?/);
+  let match = value.match(/\s*\/?\s*(.*\S*)\s*\/?\s*/);
   return match ? match[1] : value;
 }
 
