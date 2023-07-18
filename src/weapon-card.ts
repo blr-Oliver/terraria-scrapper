@@ -1,6 +1,6 @@
 import {JSDOM} from 'jsdom';
 import {fetchHtmlRaw} from './fetch';
-import {ALL_PLATFORMS, Platform, PlatformList, PlatformName, PlatformVarying, PlatformVaryingValue} from './platform-varying';
+import {ALL_PLATFORMS, forAllPlatforms, Platform, PlatformList, PlatformName, PlatformVarying, PlatformVaryingValue} from './platform-varying';
 
 const Node = new JSDOM('').window.Node;
 
@@ -45,10 +45,33 @@ export async function getWeaponInfo(path: string): Promise<ScrappedWeapon> {
 }
 
 export function extractWeaponCard(card: Element): PlatformVarying<WeaponInfo> {
-  const name: PlatformVaryingValue<string> = extractName(card.querySelector('.title')!);
-  return {
-    name
-  } as PlatformVarying<WeaponInfo>;
+  const result: ScrappedWeapon = {} as ScrappedWeapon;
+  result.name = extractVaryingString(card.querySelector('.title')!);
+
+  card.querySelectorAll('.section')
+      .forEach(section => processSection(section, result));
+
+  return result;
+}
+
+function processSection(section: Element, weapon: ScrappedWeapon) {
+  if (section.matches('.images')) processImagesSection(section, weapon);
+  else if (section.matches('.projectile')) processProjectileSection(section, weapon);
+  else if (section.matches('.ids')) processIdsSection(section, weapon);
+  else if (section.matches('.statistics')) processStatisticsSection(section, weapon);
+}
+
+function processImagesSection(section: Element, weapon: ScrappedWeapon) {
+  let imageList = section.querySelector('ul.infobox-inline')!;
+  weapon.image = forAllPlatforms(imageList.querySelector('img[src]')!.getAttribute('src')!);
+  weapon.autoSwing = forAllPlatforms(!!section.querySelector('.auto'));
+}
+
+function processProjectileSection(section: Element, weapon: ScrappedWeapon) {
+}
+function processIdsSection(section: Element, weapon: ScrappedWeapon) {
+}
+function processStatisticsSection(section: Element, weapon: ScrappedWeapon) {
 }
 
 const MESSAGE_BOX_KEYS: { [key: string]: PlatformName } = {
@@ -62,10 +85,6 @@ const MESSAGE_BOX_KEYS: { [key: string]: PlatformName } = {
   'old-gen console': 'oldGen',
   'old-gen': 'oldGen',
   'oldgen': 'oldGen'
-}
-
-function extractName(title: Element): PlatformVaryingValue<string> {
-  return extractVaryingString(title);
 }
 
 function extractPlatformsFromImages(messageBox: Element): PlatformList {
