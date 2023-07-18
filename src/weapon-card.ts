@@ -1,6 +1,6 @@
 import {JSDOM} from 'jsdom';
 import {fetchHtmlRaw} from './fetch';
-import {ALL_PLATFORMS, forAllPlatforms, Platform, PlatformList, PlatformName, PlatformVarying, PlatformVaryingValue} from './platform-varying';
+import {ALL_PLATFORMS, forAllPlatforms, Platform, PlatformList, PlatformName, PlatformVarying, PlatformVaryingValue, transform} from './platform-varying';
 
 const Node = new JSDOM('').window.Node;
 
@@ -74,12 +74,68 @@ function processProjectileSection(section: Element, weapon: ScrappedWeapon) {
     const name = li.querySelector('.name')!.textContent!.trim();
     const image = li.querySelector('.image img[src]')!.getAttribute('src')!;
     weapon.projectiles!.push({
+      id: {},
       name: forAllPlatforms(name),
       image: forAllPlatforms(image)
     } as PlatformVarying<ProjectileInfo>);
   });
 }
+type IdInfo = {
+  category: string,
+  values: PlatformVaryingValue<number[]>
+}
+
+function parseIds(section: Element) {
+  let ids: IdInfo[] = [];
+  section.querySelectorAll('ul>li').forEach(idBlock => {
+    const category = idBlock.querySelector('a')!.textContent!;
+    const contentMerger: (a: string | null, b: string) => string =
+        (a, b) => a ? [a, b].join(',') : b;
+    const contentFinalizer: (x: string) => number[] =
+        x => x.split(',').map(id => +id.trim());
+    let contentExtractor = (node: Node) =>
+        [...node.childNodes]
+            .filter(node => node.nodeType === Node.TEXT_NODE)
+            .map(node => node.nodeValue!)
+            .join('');
+    const extractedIds = extractVaryingValue<string, number[]>(
+        idBlock,
+        selectorMatcher('b', idBlock),
+        selectorMatcher('.eico'),
+        contentExtractor,
+        node => extractPlatformsFromClasses(node as Element),
+        contentMerger,
+        contentFinalizer
+    );
+    ids.push({
+      category,
+      values: extractedIds
+    });
+  });
+  return ids;
+}
+
 function processIdsSection(section: Element, weapon: ScrappedWeapon) {
+  let ids = parseIds(section);
+  for (let info of ids) {
+    switch (info.category.toLowerCase()) {
+      case 'item id':
+        weapon.id = transform(info.values, list => list[0])
+        break;
+      case 'projectile id':
+        const knownProjectiles = weapon.projectiles!;
+        const projectileIds = info.values;
+        for (let key in projectileIds) {
+          const platform = key as PlatformName;
+          let ids: number[] = projectileIds[platform]!;
+          for (let i = 0; i < ids.length && i < knownProjectiles.length; ++i) {
+            knownProjectiles[i].id[platform] = ids[i];
+          }
+        }
+        break;
+        // TODO maybe add buff ids
+    }
+  }
 }
 function processStatisticsSection(section: Element, weapon: ScrappedWeapon) {
 }
@@ -161,7 +217,7 @@ function extractVaryingValue<I, T>(src: Element,
 function extractVaryingString(src: Element): PlatformVaryingValue<string> {
   return extractVaryingValue<string, string>(src,
       node => node.parentNode === src && node.nodeType === Node.TEXT_NODE,
-      node => (node.nodeType === Node.ELEMENT_NODE && (node as Element).matches('.eico')),
+      selectorMatcher('.eico'),
       node => node.nodeValue!,
       node => extractPlatformsFromClasses(node as Element),
       (a, b) => (a || '') + b,
@@ -185,4 +241,8 @@ function extractPlatformsFromClasses(iconList: Element): PlatformList {
 function stripLeadingOrTrailingSlash(value: string): string {
   let match = value.match(/\/?\s*(.*\S*)\s*\/?/);
   return match ? match[1] : value;
+}
+
+function selectorMatcher(selector: string, parent?: Element): (node: Node) => boolean {
+  return (node: Node) => node.nodeType === Node.ELEMENT_NODE && (!parent || parent === node.parentNode) && (node as Element).matches(selector);
 }

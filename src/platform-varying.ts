@@ -58,3 +58,12 @@ export function forAllPlatforms<T>(value: T): PlatformVaryingValue<T> {
     threeDS: value
   }
 }
+
+export function transform<In, Out>(input: PlatformVaryingValue<In>, operation: (value: In) => Out): PlatformVaryingValue<Out> {
+  let result: PlatformVaryingValue<Out> = {};
+  for (let key of ALL_PLATFORMS) {
+    if (key in input)
+      result[key] = operation(input[key]!);
+  }
+  return result;
+}
