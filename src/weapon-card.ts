@@ -68,6 +68,16 @@ function processImagesSection(section: Element, weapon: ScrappedWeapon) {
 }
 
 function processProjectileSection(section: Element, weapon: ScrappedWeapon) {
+  let projectileList = section.querySelector('ul.infobox-inline')!;
+  weapon.projectiles = weapon.projectiles || [];
+  projectileList.querySelectorAll('li').forEach(li => {
+    const name = li.querySelector('.name')!.textContent!.trim();
+    const image = li.querySelector('.image img[src]')!.getAttribute('src')!;
+    weapon.projectiles!.push({
+      name: forAllPlatforms(name),
+      image: forAllPlatforms(image)
+    } as PlatformVarying<ProjectileInfo>);
+  });
 }
 function processIdsSection(section: Element, weapon: ScrappedWeapon) {
 }
