@@ -21,10 +21,10 @@ export type OptionalFields<T> = keyof {
   [K in keyof T as T[K] extends Required<T>[K] ? never : K]: T[K]
 }
 export type ObjectFields<T> = keyof {
-  [K in keyof T as T[K] extends object ? K : never]: T[K]
+  [K in keyof T as Exclude<T[K], undefined> extends object ? K : never]: T[K]
 }
 export type PrimitiveFields<T> = keyof {
-  [K in keyof T as T[K] extends object ? never : K]: T[K]
+  [K in keyof T as Exclude<T[K], undefined> extends object ? never : K]: T[K]
 }
 
 type RequiredObjectFields<T> = RequiredFields<T> & ObjectFields<T>;
@@ -36,9 +36,9 @@ type OptionalPrimitiveFields<T> = OptionalFields<T> & PrimitiveFields<T>;
 export type PlatformVaryingObject<T extends object> = {
   [K in RequiredObjectFields<T>]: PlatformVarying<T[K]>;
 } & {
-  [K in RequiredPrimitiveFields<T>]: PlatformVaryingValue<Exclude<T[K], undefined>>;
+  [K in RequiredPrimitiveFields<T>]: PlatformVaryingValue<T[K]>;
 } & {
-  [K in OptionalObjectFields<T>]?: PlatformVarying<T[K]>;
+  [K in OptionalObjectFields<T>]?: PlatformVarying<Exclude<T[K], undefined>>;
 } & {
   [K in OptionalPrimitiveFields<T>]?: PlatformVaryingValue<Exclude<T[K], undefined>>;
 }
