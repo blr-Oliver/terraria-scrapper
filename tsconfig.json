@@ -20,6 +20,7 @@
     "useDefineForClassFields": false,
     "lib": [
       "ES2022",
+      "ESNext",
       "dom"
     ]
   }
