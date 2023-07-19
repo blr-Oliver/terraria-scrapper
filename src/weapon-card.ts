@@ -1,6 +1,6 @@
 import {JSDOM} from 'jsdom';
 import {fetchHtmlRaw} from './fetch';
-import {ALL_PLATFORMS, forAllPlatforms, Platform, PlatformList, PlatformName, PlatformVarying, PlatformVaryingValue, transform} from './platform-varying';
+import {ALL_PLATFORMS, makeVarying, Platform, PlatformList, PlatformName, PlatformVarying, PlatformVaryingValue, transform} from './platform-varying';
 
 const Node = new JSDOM('').window.Node;
 
@@ -38,38 +38,37 @@ export async function getWeaponInfo(path: string): Promise<ScrappedWeapon> {
   const rootDoc: Document = new JSDOM(rootText).window.document;
 
   const contentRoot = rootDoc.querySelector('.mw-parser-output')!;
-  let weaponInfo = extractWeaponCard(contentRoot.querySelector('.infobox.item')!);
-
   let messageBox = contentRoot.querySelector('.message-box');
-  if (messageBox)
-    (weaponInfo as ScrappedWeapon).platforms = extractPlatformsFromImages(messageBox);
+  let platforms: PlatformName[] = messageBox ? extractPlatformsFromImages(messageBox) : ALL_PLATFORMS as PlatformName[];
+  let weaponInfo = extractWeaponCard(contentRoot.querySelector('.infobox.item')!, platforms);
+  (weaponInfo as ScrappedWeapon).platforms = platforms;
   return weaponInfo;
 }
 
-export function extractWeaponCard(card: Element): PlatformVarying<WeaponInfo> {
+export function extractWeaponCard(card: Element, platforms: PlatformName[]): PlatformVarying<WeaponInfo> {
   const result: ScrappedWeapon = {} as ScrappedWeapon;
-  result.name = extractVaryingString(card.querySelector('.title')!);
+  result.name = extractVaryingString(card.querySelector('.title')!, platforms);
 
   card.querySelectorAll('.section')
-      .forEach(section => processSection(section, result));
+      .forEach(section => processSection(section, result, platforms));
 
   return result;
 }
 
-function processSection(section: Element, weapon: ScrappedWeapon) {
-  if (section.matches('.images')) processImagesSection(section, weapon);
-  else if (section.matches('.projectile')) processProjectileSection(section, weapon);
-  else if (section.matches('.ids')) processIdsSection(section, weapon);
-  else if (section.matches('.statistics')) processStatisticsSection(section, weapon);
+function processSection(section: Element, weapon: ScrappedWeapon, platforms: PlatformName[]) {
+  if (section.matches('.images')) processImagesSection(section, weapon, platforms);
+  else if (section.matches('.projectile')) processProjectileSection(section, weapon, platforms);
+  else if (section.matches('.ids')) processIdsSection(section, weapon, platforms);
+  else if (section.matches('.statistics')) processStatisticsSection(section, weapon, platforms);
 }
 
-function processImagesSection(section: Element, weapon: ScrappedWeapon) {
+function processImagesSection(section: Element, weapon: ScrappedWeapon, platforms: PlatformName[]) {
   let imageList = section.querySelector('ul.infobox-inline')!;
-  weapon.image = forAllPlatforms(imageList.querySelector('img[src]')!.getAttribute('src')!);
-  weapon.autoSwing = forAllPlatforms(!!section.querySelector('.auto'));
+  weapon.image = makeVarying(imageList.querySelector('img[src]')!.getAttribute('src')!, platforms);
+  weapon.autoSwing = makeVarying(!!section.querySelector('.auto'), platforms);
 }
 
-function processProjectileSection(section: Element, weapon: ScrappedWeapon) {
+function processProjectileSection(section: Element, weapon: ScrappedWeapon, platforms: PlatformName[]) {
   let projectileList = section.querySelector('ul.infobox-inline')!;
   weapon.projectiles = weapon.projectiles || [];
   projectileList.querySelectorAll('li').forEach(li => {
@@ -77,8 +76,8 @@ function processProjectileSection(section: Element, weapon: ScrappedWeapon) {
     const image = li.querySelector('.image img[src]')!.getAttribute('src')!;
     weapon.projectiles!.push({
       id: {},
-      name: forAllPlatforms(name),
-      image: forAllPlatforms(image)
+      name: makeVarying(name, platforms),
+      image: makeVarying(image, platforms)
     } as PlatformVarying<ProjectileInfo>);
   });
 }
@@ -87,7 +86,7 @@ type IdInfo = {
   values: PlatformVaryingValue<number[]>
 }
 
-function parseIds(section: Element) {
+function parseIds(section: Element, platforms: PlatformName[]) {
   let ids: IdInfo[] = [];
   section.querySelectorAll('ul>li').forEach(idBlock => {
     const category = idBlock.querySelector('a')!.textContent!;
@@ -107,7 +106,8 @@ function parseIds(section: Element) {
         contentExtractor,
         node => extractPlatformsFromClasses(node as Element),
         contentMerger,
-        contentFinalizer
+        contentFinalizer,
+        platforms
     );
     ids.push({
       category,
@@ -117,8 +117,8 @@ function parseIds(section: Element) {
   return ids;
 }
 
-function processIdsSection(section: Element, weapon: ScrappedWeapon) {
-  let ids = parseIds(section);
+function processIdsSection(section: Element, weapon: ScrappedWeapon, platforms: PlatformName[]) {
+  let ids = parseIds(section, platforms);
   for (let info of ids) {
     switch (info.category.toLowerCase()) {
       case 'item id':
@@ -139,9 +139,9 @@ function processIdsSection(section: Element, weapon: ScrappedWeapon) {
     }
   }
 }
-function processStatisticsSection(section: Element, weapon: ScrappedWeapon) {
+function processStatisticsSection(section: Element, weapon: ScrappedWeapon, platforms: PlatformName[]) {
   let lines = (section.querySelector('table.stat')! as HTMLTableElement).rows;
-  [...lines].forEach(row => processProperty(row.cells[0].textContent!, row.cells[1], weapon));
+  [...lines].forEach(row => processProperty(row.cells[0].textContent!, row.cells[1], weapon, platforms));
 }
 
 const PROPERTIES_BY_NAME: { [key: string]: string } = {
@@ -156,30 +156,30 @@ const PROPERTIES_BY_NAME: { [key: string]: string } = {
   'critical chance': 'critChance',
   'tooltip': 'tooltip'
 };
-function processProperty(name: string, td: Element, weapon: ScrappedWeapon) {
+function processProperty(name: string, td: Element, weapon: ScrappedWeapon, platforms: PlatformName[]) {
   name = name.toLowerCase();
   const key = PROPERTIES_BY_NAME[name];
   switch (key) {
     case 'damage':
-      weapon.damage = extractVaryingNumber(td);
+      weapon.damage = extractVaryingNumber(td, platforms);
       let typeMarker = td.querySelector('.small-bold:last-child');
       if (typeMarker)
-        weapon.damageType = forAllPlatforms(typeMarker.textContent!.trim().slice(1, -1).trim().toLowerCase());
+        weapon.damageType = makeVarying(typeMarker.textContent!.trim().slice(1, -1).trim().toLowerCase(), platforms);
       break;
     case 'knockback':
-      weapon.knockback = extractVaryingNumber(td);
+      weapon.knockback = extractVaryingNumber(td, platforms);
       break;
     case 'critChance':
-      weapon.critChance = extractVaryingPercent(td);
+      weapon.critChance = extractVaryingPercent(td, platforms);
       break;
     case 'manaCost':
-      weapon.manaCost = extractVaryingNumber(td);
+      weapon.manaCost = extractVaryingNumber(td, platforms);
       break;
     case 'useTime':
-      weapon.useTime = extractVaryingNumber(td);
+      weapon.useTime = extractVaryingNumber(td, platforms);
       break;
     case 'velocity':
-      weapon.velocity = extractVaryingNumber(td);
+      weapon.velocity = extractVaryingNumber(td, platforms);
       break;
     case 'tooltip':
       let gameTextContainer = td.querySelector('.gameText');
@@ -191,27 +191,27 @@ function processProperty(name: string, td: Element, weapon: ScrappedWeapon) {
           else if (child.nodeType === Node.ELEMENT_NODE && (child as Element).tagName.toLowerCase() === 'br')
             chunks.push('\n');
         }
-        weapon.tooltip = forAllPlatforms(chunks.join('').trim());
+        weapon.tooltip = makeVarying(chunks.join('').trim(), platforms);
       } else
-        weapon.tooltip = forAllPlatforms(td.textContent!.trim());
+        weapon.tooltip = makeVarying(td.textContent!.trim(), platforms);
       break;
     case 'rarity':
       let wrapper = td.querySelector('.rarity')!;
       let sortKey = wrapper.querySelector('s.sortkey');
       if (sortKey) {
-        weapon.rarity = forAllPlatforms(parseInt(sortKey.textContent!.trim()));
+        weapon.rarity = makeVarying(parseInt(sortKey.textContent!.trim()), platforms);
       } else {
         let image = wrapper.querySelector('a img[alt]')!;
         let altString = image.getAttribute('alt')!.trim();
         let match = altString.match('/Rarity level:\s?(\d+)/i');
-        weapon.rarity = forAllPlatforms(+match![1]);
+        weapon.rarity = makeVarying(+match![1], platforms);
       }
       break;
     case 'buyValue':
-      weapon.buyValue = extractVaryingCoinValue(td);
+      weapon.buyValue = extractVaryingCoinValue(td, platforms);
       break;
     case 'sellValue':
-      weapon.sellValue = extractVaryingCoinValue(td);
+      weapon.sellValue = extractVaryingCoinValue(td, platforms);
       break;
   }
 }
@@ -273,7 +273,8 @@ function extractVaryingValue<I, T>(src: Element,
                                    valueNodeExtractor: (node: Node) => I,
                                    flagsNodeExtractor: (node: Node) => PlatformList,
                                    valueMerger: (a: (I | null), x: I) => I,
-                                   valueFinalizer: (x: I) => T): PlatformVaryingValue<T> {
+                                   valueFinalizer: (x: I) => T,
+                                   defaultPlatforms: PlatformName[]): PlatformVaryingValue<T> {
   src.normalize();
   let flatNodes = flattenNodes(src, node => valueNodeMatcher(node) || flagsNodeMatcher(node));
   let result: PlatformVaryingValue<T> = {};
@@ -288,7 +289,7 @@ function extractVaryingValue<I, T>(src: Element,
       flags = flagsNodeExtractor(flatNodes[i++]);
     } else {
       if (Object.keys(result).length === 0 || !!value)
-        flags = ALL_PLATFORMS as PlatformList;
+        flags = defaultPlatforms;
       else
         flags = [];
     }
@@ -298,36 +299,38 @@ function extractVaryingValue<I, T>(src: Element,
   return result;
 }
 
-function extractAsStringWithFinalizer<T>(src: Element, valueFinalizer: (value: string) => T): PlatformVaryingValue<T> {
+function extractAsStringWithFinalizer<T>(src: Element, valueFinalizer: (value: string) => T, platforms: PlatformName[]): PlatformVaryingValue<T> {
   return extractVaryingValue<string, T>(src,
       node => node.parentNode === src && node.nodeType === Node.TEXT_NODE,
       selectorMatcher('.eico'),
       node => node.nodeValue!,
       node => extractPlatformsFromClasses(node as Element),
       (a, b) => (a || '') + b,
-      valueFinalizer
+      valueFinalizer,
+      platforms
   );
 }
-function extractVaryingString(src: Element): PlatformVaryingValue<string> {
-  return extractAsStringWithFinalizer(src, stripLeadingOrTrailingSlash);
+function extractVaryingString(src: Element, platforms: PlatformName[]): PlatformVaryingValue<string> {
+  return extractAsStringWithFinalizer(src, stripLeadingOrTrailingSlash, platforms);
 }
 
-function extractVaryingNumber(src: Element): PlatformVaryingValue<number> {
-  return extractAsStringWithFinalizer(src, s => +stripLeadingOrTrailingSlash(s));
+function extractVaryingNumber(src: Element, platforms: PlatformName[]): PlatformVaryingValue<number> {
+  return extractAsStringWithFinalizer(src, s => +stripLeadingOrTrailingSlash(s), platforms);
 }
 
-function extractVaryingPercent(src: Element): PlatformVaryingValue<number> {
-  return extractAsStringWithFinalizer(src, s => +stripLeadingOrTrailingSlash(s).slice(0, -1));
+function extractVaryingPercent(src: Element, platforms: PlatformName[]): PlatformVaryingValue<number> {
+  return extractAsStringWithFinalizer(src, s => +stripLeadingOrTrailingSlash(s).slice(0, -1), platforms);
 }
 
-function extractVaryingCoinValue(src: Element): PlatformVaryingValue<number> {
+function extractVaryingCoinValue(src: Element, platforms: PlatformName[]): PlatformVaryingValue<number> {
   return extractVaryingValue<number, number>(src,
       selectorMatcher('.coin[data-sort-value]'),
       selectorMatcher('.eico'),
       node => +(node as Element).getAttribute('data-sort-value')!,
       node => extractPlatformsFromClasses(node as Element),
       (a, b) => a || b,
-      x => x
+      x => x,
+      platforms
   );
 }
 

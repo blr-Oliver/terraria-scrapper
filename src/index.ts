@@ -1,5 +1,6 @@
 import * as fs from 'fs';
-import {getWeaponInfo} from './weapon-card';
+import {pullToTop} from './platform-varying';
+import {getWeaponInfo, WeaponInfo} from './weapon-card';
 import {getWeaponCategories} from './weapon-categories';
 import {getWeaponList} from './weapon-info';
 
@@ -17,7 +18,7 @@ async function keypress(): Promise<void> {
 async function executeProgram(): Promise<void> {
 //  await loadWeaponList();
 //  await loadWeaponCategories();
-  await loadSingleWeapon('/wiki/Ruler');
+  await loadSingleWeapon('/wiki/Katana');
 }
 
 async function loadWeaponCategories() {
@@ -45,8 +46,12 @@ async function loadSingleWeapon(path: string): Promise<void> {
   console.log('Press any key to continue');
   await keypress();
   let weaponInfo = await getWeaponInfo(path);
+  console.log('Collapsing...');
+  const platforms = weaponInfo.platforms;
+  delete weaponInfo.platforms;
+  let collapsed = pullToTop<WeaponInfo>(weaponInfo, platforms);
   console.log('Saving...');
-  fs.writeFileSync('out/weapon-single.json', JSON.stringify(weaponInfo, null, 2), {encoding: 'utf8'});
+  fs.writeFileSync('out/weapon-single.json', JSON.stringify(collapsed, null, 2), {encoding: 'utf8'});
   console.log('Done');
 }
 
