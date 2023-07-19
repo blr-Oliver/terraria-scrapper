@@ -16,7 +16,7 @@
     "sourceMap": true,
     "outDir": "./dist",
     "strict": true,
-    "target": "ES2022",
+    "target": "ESNext",
     "useDefineForClassFields": false,
     "lib": [
       "ES2022",

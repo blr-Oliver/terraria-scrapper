@@ -19,6 +19,7 @@ export interface WeaponInfo {
   sellValue: number;
   manaCost?: number;
   velocity?: number;
+  ammo?: string;
   projectiles?: ProjectileInfo[];
   reach?: number;
   spinDuration?: number;
@@ -38,7 +39,7 @@ export async function getWeaponInfo(path: string): Promise<ScrappedWeapon> {
   const rootDoc: Document = new JSDOM(rootText).window.document;
 
   const contentRoot = rootDoc.querySelector('.mw-parser-output')!;
-  let messageBox = contentRoot.querySelector('.message-box');
+  let messageBox = contentRoot.querySelector('.message-box.msgbox-color-blue');
   let platforms: PlatformName[] = messageBox ? extractPlatformsFromImages(messageBox) : ALL_PLATFORMS as PlatformName[];
   let weaponInfo = extractWeaponCard(contentRoot.querySelector('.infobox.item')!, platforms);
   (weaponInfo as ScrappedWeapon).platforms = platforms;
@@ -63,7 +64,7 @@ function processSection(section: Element, weapon: ScrappedWeapon, platforms: Pla
 }
 
 function processImagesSection(section: Element, weapon: ScrappedWeapon, platforms: PlatformName[]) {
-  let imageList = section.querySelector('ul.infobox-inline')!;
+  let imageList = section.querySelector('ul.infobox-inline, ul.infobox-block')!;
   weapon.image = makeVarying(imageList.querySelector('img[src]')!.getAttribute('src')!, platforms);
   weapon.autoSwing = makeVarying(!!section.querySelector('.auto'), platforms);
 }
@@ -140,8 +141,13 @@ function processIdsSection(section: Element, weapon: ScrappedWeapon, platforms: 
   }
 }
 function processStatisticsSection(section: Element, weapon: ScrappedWeapon, platforms: PlatformName[]) {
-  let lines = (section.querySelector('table.stat')! as HTMLTableElement).rows;
-  [...lines].forEach(row => processProperty(row.cells[0].textContent!, row.cells[1], weapon, platforms));
+  let table = section.querySelector('table.stat');
+  if (table) {
+    let lines = (table as HTMLTableElement).rows;
+    [...lines].forEach(row => processProperty(row.cells[0].textContent!, row.cells[1], weapon, platforms));
+  } else {
+    // TODO this is probably tool power stats
+  }
 }
 
 const PROPERTIES_BY_NAME: { [key: string]: string } = {
@@ -154,12 +160,17 @@ const PROPERTIES_BY_NAME: { [key: string]: string } = {
   'buy': 'buyValue',
   'sell': 'sellValue',
   'critical chance': 'critChance',
-  'tooltip': 'tooltip'
+  'tooltip': 'tooltip',
+  'ammo': 'ammo',
+  'uses ammo': 'ammo'
 };
 function processProperty(name: string, td: Element, weapon: ScrappedWeapon, platforms: PlatformName[]) {
   name = name.toLowerCase();
   const key = PROPERTIES_BY_NAME[name];
   switch (key) {
+    case 'ammo':
+      weapon.ammo = makeVarying(td.textContent!, platforms);
+      break;
     case 'damage':
       weapon.damage = extractVaryingNumber(td, platforms);
       let typeMarker = td.querySelector('.small-bold:last-child');
