@@ -56,9 +56,12 @@ async function loadSingleWeapon(card: CardLocator, waitUser: boolean = true, sil
   let weaponInfo = await getWeaponInfo(card.href);
   if (!silent)
     console.log('Collapsing...');
-  const platforms = weaponInfo.platforms;
-  delete weaponInfo.platforms;
-  let collapsed = pullToTop<WeaponInfo>(weaponInfo, platforms);
+  const meta = weaponInfo.meta!;
+  delete weaponInfo.meta;
+  let collapsed = pullToTop<WeaponInfo>(weaponInfo, meta?.platforms);
+  if (meta.parsingExceptions.length) {
+    (collapsed as any).parsingExceptions = meta.parsingExceptions;
+  }
   if (!silent)
     console.log('Saving...');
   fs.writeFileSync(getFileName(card), JSON.stringify(collapsed, null, 2), {encoding: 'utf8'});
