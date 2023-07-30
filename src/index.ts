@@ -1,4 +1,5 @@
 import * as fs from 'fs';
+import {mergeExceptions} from './analyze-exceptions';
 import {parallelLimit} from './FloodGate';
 import {pullToTop} from './platform-varying';
 import {getWeaponInfo, WeaponInfo} from './weapon-card';
@@ -20,6 +21,18 @@ async function executeProgram(): Promise<void> {
 //  await loadWeaponList();
 //  await loadWeaponCategories();
   await loadCardsFromWeaponList();
+  await processExceptions();
+//  await loadSingleWeapon({name: 'Bone Pickaxe', href: '/wiki/Bone_Pickaxe'});
+}
+
+async function processExceptions(): Promise<void> {
+  console.log('Merging parsing exceptions...');
+  console.log('Press any key to continue');
+  await keypress();
+  let data = mergeExceptions();
+  console.log('Saving...');
+  fs.writeFileSync('out/parsing-exceptions.json', JSON.stringify(data, null, 2), {encoding: 'utf8'});
+  console.log('Done');
 }
 
 async function loadWeaponCategories() {
