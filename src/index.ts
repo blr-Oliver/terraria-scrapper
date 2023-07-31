@@ -1,7 +1,8 @@
 import * as fs from 'fs';
+import {findInAllCards} from './analyze-data';
 import {mergeExceptions} from './analyze-exceptions';
 import {parallelLimit} from './FloodGate';
-import {pullToTop} from './platform-varying';
+import {ALL_PLATFORMS, PlatformVaryingValue, pullToTop} from './platform-varying';
 import {getWeaponInfo, WeaponInfo} from './weapon-card';
 import {getWeaponCategories} from './weapon-categories';
 import {getWeaponList} from './weapon-info';
@@ -20,9 +21,10 @@ async function keypress(): Promise<void> {
 async function executeProgram(): Promise<void> {
 //  await loadWeaponList();
 //  await loadWeaponCategories();
-  await loadCardsFromWeaponList();
-  await processExceptions();
+//  await loadCardsFromWeaponList();
+//  await processExceptions();
 //  await loadSingleWeapon({name: 'Bone Pickaxe', href: '/wiki/Bone_Pickaxe'});
+  await findMultiCards();
 }
 
 async function processExceptions(): Promise<void> {
@@ -32,6 +34,23 @@ async function processExceptions(): Promise<void> {
   let data = mergeExceptions();
   console.log('Saving...');
   fs.writeFileSync('out/parsing-exceptions.json', JSON.stringify(data, null, 2), {encoding: 'utf8'});
+  console.log('Done');
+}
+
+function forAnyPlatform<T>(test: (value: T) => boolean): (value: PlatformVaryingValue<T>) => boolean {
+  return (value: PlatformVaryingValue<T>) => {
+    for (let platform of ALL_PLATFORMS)
+      if ((platform in value) && test(value[platform]!)) return true;
+    return false;
+  };
+}
+async function findMultiCards(): Promise<void> {
+  console.log('Searching for multi-cards...');
+  console.log('Press any key to continue');
+  await keypress();
+  let multiCards = findInAllCards(forAnyPlatform(item => (item.id instanceof Array)));
+  console.log('Saving...');
+  fs.writeFileSync('out/multi-cards.json', JSON.stringify(multiCards, null, 2), {encoding: 'utf8'});
   console.log('Done');
 }
 
