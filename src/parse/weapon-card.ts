@@ -1,6 +1,6 @@
 import {JSDOM} from 'jsdom';
-import {fetchHtmlRaw} from './fetch';
-import {ALL_PLATFORMS, makeVarying, Platform, PlatformList, PlatformName, PlatformVarying, PlatformVaryingValue, transform} from './platform-varying';
+import {fetchHtmlRaw} from '../fetch/fetch';
+import {ALL_PLATFORMS, makeVarying, Platform, PlatformList, PlatformName, PlatformVarying, PlatformVaryingValue, transform} from '../platform-varying';
 
 const Node = new JSDOM('').window.Node;
 

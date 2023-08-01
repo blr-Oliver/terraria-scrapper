@@ -1,11 +1,11 @@
 import * as fs from 'fs';
-import {findInAllCards} from './analyze-data';
-import {mergeExceptions} from './analyze-exceptions';
-import {parallelLimit} from './FloodGate';
+import {findInAllCards} from './analyze/analyze-data';
+import {mergeExceptions} from './analyze/analyze-exceptions';
+import {parallelLimit} from './fetch/FloodGate';
 import {ALL_PLATFORMS, PlatformVaryingValue, pullToTop} from './platform-varying';
-import {getWeaponInfo, WeaponInfo} from './weapon-card';
-import {getWeaponCategories} from './weapon-categories';
-import {getWeaponList} from './weapon-info';
+import {getWeaponInfo, WeaponInfo} from './parse/weapon-card';
+import {getWeaponCategories} from './parse/weapon-categories';
+import {getWeaponList} from './parse/weapon-info';
 
 async function keypress(): Promise<void> {
   process.stdin.setRawMode(true);

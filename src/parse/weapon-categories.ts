@@ -1,5 +1,5 @@
 import {JSDOM} from 'jsdom';
-import {fetchHtmlRaw} from './fetch';
+import {fetchHtmlRaw} from '../fetch/fetch';
 
 export interface ItemInCategory {
   name: string;
