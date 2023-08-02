@@ -1,0 +1,31 @@
+{
+  "srcRoot": "https://terraria.wiki.gg/wiki/",
+  "destRoot": "out/raw",
+  "categories": "Weapons",
+  "globalList": "List_of_weapons",
+  "lists": [
+    "Swords",
+    "Yoyos",
+    "Spears",
+    "Boomerangs",
+    "Flails",
+    "Bows",
+    "Repeaters",
+    "Guns",
+    "Launchers",
+    "Wands",
+    "Magic_Guns",
+    "Spell_Books",
+    "Minion_Summon_Items",
+    "Sentry_Summon_Items",
+    "Whips",
+    "Explosives_(class)",
+    "Axes",
+    "Hammers",
+    "Pickaxes",
+    "List_of_melee_weapons",
+    "List_of_ranged_weapons",
+    "List_of_magic_weapons",
+    "List_of_summon_weapons"
+  ]
+}

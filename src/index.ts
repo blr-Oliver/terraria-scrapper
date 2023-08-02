@@ -1,11 +1,12 @@
 import * as fs from 'fs';
 import {findInAllCards} from './analyze/analyze-data';
 import {mergeExceptions} from './analyze/analyze-exceptions';
+import {fetchLists} from './fetch/fetch-lists';
 import {parallelLimit} from './fetch/FloodGate';
-import {ALL_PLATFORMS, PlatformVaryingValue, pullToTop} from './platform-varying';
 import {getWeaponInfo, WeaponInfo} from './parse/weapon-card';
 import {getWeaponCategories} from './parse/weapon-categories';
 import {getWeaponList} from './parse/weapon-info';
+import {ALL_PLATFORMS, PlatformVaryingValue, pullToTop} from './platform-varying';
 
 async function keypress(): Promise<void> {
   process.stdin.setRawMode(true);
@@ -24,7 +25,8 @@ async function executeProgram(): Promise<void> {
 //  await loadCardsFromWeaponList();
 //  await processExceptions();
 //  await loadSingleWeapon({name: 'Bone Pickaxe', href: '/wiki/Bone_Pickaxe'});
-  await findMultiCards();
+//  await findMultiCards();
+  await fetchListsFromEntryPoint();
 }
 
 async function processExceptions(): Promise<void> {
@@ -44,6 +46,12 @@ function forAnyPlatform<T>(test: (value: T) => boolean): (value: PlatformVarying
     return false;
   };
 }
+
+async function fetchListsFromEntryPoint(): Promise<void> {
+  let content = await fs.promises.readFile('src/entry.json', {encoding: 'utf8'});
+  return fetchLists(JSON.parse(content));
+}
+
 async function findMultiCards(): Promise<void> {
   console.log('Searching for multi-cards...');
   console.log('Press any key to continue');
