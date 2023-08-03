@@ -1,8 +1,9 @@
 import * as fs from 'fs';
 import {findInAllCards} from './analyze/analyze-data';
 import {mergeExceptions} from './analyze/analyze-exceptions';
-import {fetchLists} from './fetch/fetch-lists';
+import {EntryInfo} from './fetch/fetch-lists';
 import {parallelLimit} from './fetch/FloodGate';
+import {collectAllTableCaptions} from './parse/collect-captions';
 import {getWeaponInfo, WeaponInfo} from './parse/weapon-card';
 import {getWeaponCategories} from './parse/weapon-categories';
 import {getWeaponList} from './parse/weapon-info';
@@ -20,13 +21,15 @@ async function keypress(): Promise<void> {
 }
 
 async function executeProgram(): Promise<void> {
+  const entry = await loadEntry();
 //  await loadWeaponList();
 //  await loadWeaponCategories();
 //  await loadCardsFromWeaponList();
 //  await processExceptions();
 //  await loadSingleWeapon({name: 'Bone Pickaxe', href: '/wiki/Bone_Pickaxe'});
 //  await findMultiCards();
-  await fetchListsFromEntryPoint();
+//  await fetchLists(entry);
+  await extractAllCaptions(entry);
 }
 
 async function processExceptions(): Promise<void> {
@@ -47,9 +50,16 @@ function forAnyPlatform<T>(test: (value: T) => boolean): (value: PlatformVarying
   };
 }
 
-async function fetchListsFromEntryPoint(): Promise<void> {
+async function loadEntry() {
   let content = await fs.promises.readFile('src/entry.json', {encoding: 'utf8'});
-  return fetchLists(JSON.parse(content));
+  return JSON.parse(content);
+}
+
+async function extractAllCaptions(entry: EntryInfo) {
+  console.log('Press any key to continue');
+  await keypress();
+  const captions = await collectAllTableCaptions(entry);
+  await fs.promises.writeFile('out/captions.json', JSON.stringify(captions, null, 2), {encoding: 'utf8'});
 }
 
 async function findMultiCards(): Promise<void> {
