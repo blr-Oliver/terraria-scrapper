@@ -24,6 +24,8 @@ async function collectTableCaptions(file: string, allCaptions: { [key: string]: 
 function extractCaptions(table: HTMLTableElement, allCaptions: { [key: string]: true }): void {
   const headerRow = !!table.tHead ? table.tHead.rows[0] : table.tBodies[0].rows[0];
   const cellNum = headerRow.cells.length;
-  for (let i = 0; i < cellNum; ++i)
-    allCaptions[headerRow.cells[i].textContent!.trim()] = true;
+  for (let i = 0; i < cellNum; ++i) {
+    let caption = headerRow.cells[i].textContent!.trim();
+    allCaptions[caption] = true;
+  }
 }

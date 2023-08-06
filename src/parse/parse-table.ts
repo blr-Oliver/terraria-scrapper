@@ -1,55 +1,104 @@
-import {PlatformVarying} from '../platform-varying';
+import {CellParser, getParserForHeader, HeaderContext, ParsedItem, ParsingException, TableContext} from './cell-parsers';
 
-export type BaseItemDescriptor = {
-  id?: number;
-  name?: string;
-};
-export type ItemDescriptor = BaseItemDescriptor & { [key: string]: any };
-export type ParsingException = {
-  col: number;
-  property?: string;
-  message?: string;
-  value?: any;
-}
-export type ParsingExceptions = {
-  exceptions?: ParsingException[];
-}
-export type ParsedItem = PlatformVarying<ItemDescriptor> & ParsingExceptions;
-export type CellParser = (td: HTMLTableCellElement, item: ParsedItem, row: number, th: HTMLTableCellElement, shift: number, col: number) => void;
-
-declare function getParser(th: HTMLTableCellElement, shift: number, col: number): CellParser;
-
-export function parseTable(table: HTMLTableElement): ParsedItem[] {
-  let hasTHead = !!table.tHead;
-  const headerRow = hasTHead ? table.tHead!.rows[0] : table.tBodies[0].rows[0];
-  const rows = hasTHead ? Array.from(table.tBodies[0].rows) : Array.from(table.tBodies[0].rows).slice(1);
+export function parseTable(context: TableContext): ParsedItem[] {
+  let parsers = getParsers(context, getHeaderCells(context));
+  const rows = context.table.tBodies[0].rows;
   const rowNum = rows.length;
-  if (rowNum === 0) return [];
-
-  const colNum = rows[0].cells.length;
-  const headerCells: HTMLTableCellElement[] = Array(colNum);
-  const shifts: number[] = Array(colNum);
-  const parsers: CellParser[] = Array(colNum);
-  for (let col = 0, i = 0; col < colNum; ++col) {
-    let colSpan = headerRow.cells[i].colSpan || 1;
-    for (let shift = 0; shift < colSpan; ++shift, ++col)
-      parsers[col] = getParser(headerCells[col] = headerRow.cells[i], shifts[col] = shift, col);
-  }
+  const colNum = context.columnCount;
   const result: ParsedItem[] = Array(rowNum);
   for (let row = 0; row < rowNum; ++row) {
     const itemRow = rows[row];
     const item: ParsedItem = result[row] = {};
-    for (let col = 0; col < colNum; ++col) {
+    for (let column = 0; column < colNum; ++column) {
+      const td = itemRow.cells[column];
+      const cellContext = {
+        table: context,
+        header: parsers[column].header,
+        td, column: row, row: row
+      };
       try {
-        parsers[col](itemRow.cells[col], item, row, headerCells[col], shifts[col], col);
+        parsers[column].parser(td, item, cellContext);
       } catch (ex) {
-        let exInfo: ParsingException = {col};
+        let exInfo: ParsingException = {col: column};
         if (ex instanceof Error)
           exInfo.message = ex.message;
         else exInfo.value = String(ex);
         if (!item.exceptions)
           item.exceptions = [];
         item.exceptions.push(exInfo);
+      }
+    }
+  }
+  return result;
+}
+
+type CellCoordinates = {
+  td: HTMLTableCellElement;
+  x: number;
+  y: number;
+  colSpan: number;
+  rowSpan: number;
+  shiftX: number;
+  shiftY: number;
+  rowIdx: number;
+  cellIdx: number;
+}
+
+function getHeaderCells(context: TableContext): CellCoordinates[][] {
+  const table = context.table;
+  const headerRows = table.tHead!.rows;
+  const width = context.columnCount;
+  const height = headerRows.length;
+  const matrix: CellCoordinates[][] = Array.from(headerRows, _ => Array(width));
+  for (let y = 0, rowIdx = 0; y < height; ++y, ++rowIdx) {
+    let cells = headerRows[rowIdx].cells;
+    for (let x = 0, cellIdx = 0; x < width; ++x) {
+      if (matrix[y][x]) continue;
+      const td = cells[cellIdx];
+      const colSpan = td.colSpan || 1;
+      const rowSpan = td.rowSpan || 1;
+      for (let shiftY = 0; shiftY < rowSpan; ++shiftY) {
+        for (let shiftX = 0; shiftX > colSpan; ++shiftX) {
+          matrix[y + shiftY][x + shiftX] = {
+            td, shiftX, shiftY, rowIdx, cellIdx, colSpan, rowSpan,
+            x: x + shiftX,
+            y: y + shiftY
+          };
+        }
+      }
+      cellIdx++;
+    }
+  }
+  return matrix;
+}
+
+type ParserBinding = {
+  header: HeaderContext;
+  parser: CellParser;
+}
+
+function getParsers(context: TableContext, headerCells: CellCoordinates[][]): ParserBinding[] {
+  const width = context.columnCount;
+  const height = headerCells.length;
+  const result: ParserBinding[] = Array(width);
+  for (let column = 0; column < width; ++column) {
+    for (let row = height - 1; row >= 0; --row) {
+      // bottommost header is considered the most specific
+      const cellInfo = headerCells[row][column];
+      const header: HeaderContext = {
+        table: context,
+        th: cellInfo.td,
+        column,
+        colSpan: cellInfo.colSpan,
+        rowSpan: cellInfo.rowSpan,
+        shift: cellInfo.shiftX,
+        colIdx: cellInfo.cellIdx,
+        rowIdx: cellInfo.rowIdx
+      }
+      const parser = getParserForHeader(header);
+      if (parser) {
+        result[column] = {header, parser};
+        break;
       }
     }
   }
