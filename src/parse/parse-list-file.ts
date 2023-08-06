@@ -14,7 +14,7 @@ export class ItemListDocumentParser {
       let tableContext: TableContext = {
         file: fileKey,
         section: sectionName.toLowerCase(),
-        columnCount: table.tBodies[0].rows[0].cells.length,
+        columnCount: -1,
         table
       }
       result[sectionName] = this.tableParser.parse(tableContext);

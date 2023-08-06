@@ -1,5 +1,4 @@
 import {PlatformVarying} from '../platform-varying';
-import {ParserProvider} from './parse-table';
 
 export type BaseItemDescriptor = {
   id?: number;

@@ -26,13 +26,13 @@ export class ItemTableParser {
   }
 
   parse(context: TableContext): ParsedItem[] {
-    let parsers = this.getParsers(context, this.getHeaderCells(context));
-    const rows = context.table.tHead ? context.table.tBodies[0].rows : [...context.table.tBodies[0].rows].slice(1);
-    const rowNum = rows.length;
-    const colNum = context.columnCount;
+    const [headerRows, bodyRows] = this.separateHeaderRows(context.table);
+    const rowNum = bodyRows.length;
+    const colNum = context.columnCount = bodyRows[0].cells.length;
+    const parsers = this.getParsers(context, this.getHeaderCells(headerRows, colNum));
     const result: ParsedItem[] = Array(rowNum);
     for (let row = 0; row < rowNum; ++row) {
-      const itemRow = rows[row];
+      const itemRow = bodyRows[row];
       const item: ParsedItem = result[row] = {};
       for (let column = 0; column < colNum; ++column) {
         const td = itemRow.cells[column];
@@ -57,10 +57,21 @@ export class ItemTableParser {
     return result;
   }
 
-  private getHeaderCells(context: TableContext): CellCoordinates[][] {
-    const table = context.table;
-    const headerRows = table.tHead ? table.tHead!.rows : [table.tBodies[0].rows[0]];
-    const width = context.columnCount;
+  private separateHeaderRows(table: HTMLTableElement): [ArrayLike<HTMLTableRowElement>, ArrayLike<HTMLTableRowElement>] {
+    if (table.tHead) return [table.tHead!.rows, table.tBodies[0].rows];
+    let allRows = table.tBodies[0].rows;
+    let headerRows: HTMLTableRowElement[] = [];
+    for (let row of allRows) {
+      let headerCellCount = row.querySelectorAll('th').length;
+      if (headerCellCount > 0 && row.cells.length - headerCellCount <= 1)
+        headerRows.push(row);
+      else
+        break;
+    }
+    return [headerRows, [...allRows].slice(headerRows.length)];
+  }
+
+  private getHeaderCells(headerRows: ArrayLike<HTMLTableRowElement>, width: number): CellCoordinates[][] {
     const height = headerRows.length;
     const matrix: CellCoordinates[][] = Array.from(headerRows, _ => Array(width));
     for (let y = 0, rowIdx = 0; y < height; ++y, ++rowIdx) {
