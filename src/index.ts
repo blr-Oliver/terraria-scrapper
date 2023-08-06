@@ -3,7 +3,7 @@ import {findInAllCards} from './analyze/analyze-data';
 import {mergeExceptions} from './analyze/analyze-exceptions';
 import {EntryInfo} from './fetch/fetch-lists';
 import {parallelLimit} from './fetch/FloodGate';
-import {collectAllTableCaptions} from './parse/collect-captions';
+import {collectCaptions} from './parse/collect-captions';
 import {getWeaponInfo, WeaponInfo} from './parse/weapon-card';
 import {getWeaponCategories} from './parse/weapon-categories';
 import {getWeaponList} from './parse/weapon-info';
@@ -58,7 +58,7 @@ async function loadEntry() {
 async function extractAllCaptions(entry: EntryInfo) {
   console.log('Press any key to continue');
   await keypress();
-  const captions = await collectAllTableCaptions(entry);
+  const captions = await collectCaptions(entry);
   await fs.promises.writeFile('out/captions.json', JSON.stringify(captions, null, 2), {encoding: 'utf8'});
 }
 

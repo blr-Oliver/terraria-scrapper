@@ -27,7 +27,7 @@ export class ItemTableParser {
 
   parse(context: TableContext): ParsedItem[] {
     let parsers = this.getParsers(context, this.getHeaderCells(context));
-    const rows = context.table.tBodies[0].rows;
+    const rows = context.table.tHead ? context.table.tBodies[0].rows : [...context.table.tBodies[0].rows].slice(1);
     const rowNum = rows.length;
     const colNum = context.columnCount;
     const result: ParsedItem[] = Array(rowNum);
@@ -59,7 +59,7 @@ export class ItemTableParser {
 
   private getHeaderCells(context: TableContext): CellCoordinates[][] {
     const table = context.table;
-    const headerRows = table.tHead!.rows;
+    const headerRows = table.tHead ? table.tHead!.rows : [table.tBodies[0].rows[0]];
     const width = context.columnCount;
     const height = headerRows.length;
     const matrix: CellCoordinates[][] = Array.from(headerRows, _ => Array(width));
@@ -71,7 +71,7 @@ export class ItemTableParser {
         const colSpan = td.colSpan || 1;
         const rowSpan = td.rowSpan || 1;
         for (let shiftY = 0; shiftY < rowSpan; ++shiftY) {
-          for (let shiftX = 0; shiftX > colSpan; ++shiftX) {
+          for (let shiftX = 0; shiftX < colSpan; ++shiftX) {
             matrix[y + shiftY][x + shiftX] = {
               td, shiftX, shiftY, rowIdx, cellIdx, colSpan, rowSpan,
               x: x + shiftX,
