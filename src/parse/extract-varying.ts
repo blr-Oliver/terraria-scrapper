@@ -69,8 +69,23 @@ export function extractVaryingString(src: Element, platforms: PlatformName[]): P
   return extractAsStringWithFinalizer(src, stripLeadingOrTrailingSlash, platforms);
 }
 
-export function extractVaryingNumber(src: Element, platforms: PlatformName[]): PlatformVaryingValue<number> {
-  return extractAsStringWithFinalizer(src, s => +stripLeadingOrTrailingSlash(s), platforms);
+export function extractVaryingNumber(src: Element, valueFinalizer: (value: string) => number, platforms: PlatformName[]): PlatformVaryingValue<number> {
+  return extractAsStringWithFinalizer(src, s => valueFinalizer(stripLeadingOrTrailingSlash(s)), platforms);
+}
+
+/**
+ * @deprecated prefer extract integer / decimal
+ */
+export function extractVaryingExplicitNumber(src: Element, platforms: PlatformName[]): PlatformVaryingValue<number> {
+  return extractVaryingNumber(src, s => +s, platforms);
+}
+
+export function extractVaryingInteger(src: Element, platforms: PlatformName[]): PlatformVaryingValue<number> {
+  return extractVaryingNumber(src, s => parseInt(s), platforms);
+}
+
+export function extractVaryingDecimal(src: Element, platforms: PlatformName[]): PlatformVaryingValue<number> {
+  return extractVaryingNumber(src, s => parseFloat(s), platforms);
 }
 
 export function extractVaryingPercent(src: Element, platforms: PlatformName[]): PlatformVaryingValue<number> {

@@ -4,7 +4,8 @@ import {ALL_PLATFORMS, makeVarying, PlatformList, PlatformName, PlatformVarying,
 import {
   extractPlatformsFromClasses,
   extractVaryingCoinValue,
-  extractVaryingNumber,
+  extractVaryingDecimal,
+  extractVaryingInteger,
   extractVaryingPercent,
   extractVaryingString,
   extractVaryingValue,
@@ -38,7 +39,7 @@ export interface WeaponInfo {
   pickaxePower?: number;
   hammerPower?: number;
   axePower?: number;
-  bonus?: string;
+  bonus?: number;
 }
 
 export interface ProjectileInfo {
@@ -284,16 +285,16 @@ function processProperty(name: string, td: Element, weapon: ScrappedWeapon, meta
       weapon.ammo = makeVarying(td.textContent!, meta.platforms);
       break;
     case 'damage':
-      weapon.damage = extractVaryingNumber(td, meta.platforms);
+      weapon.damage = extractVaryingInteger(td, meta.platforms);
       let typeMarker = td.querySelector('.small-bold:last-child');
       if (typeMarker)
         weapon.damageType = makeVarying(typeMarker.textContent!.trim().slice(1, -1).trim().toLowerCase(), meta.platforms);
       break;
     case 'knockback':
-      weapon.knockback = extractVaryingNumber(td, meta.platforms);
+      weapon.knockback = extractVaryingDecimal(td, meta.platforms);
       break;
     case 'bonus':
-      weapon.bonus = extractVaryingString(td, meta.platforms);
+      weapon.bonus = extractVaryingInteger(td, meta.platforms);
       break;
     case 'consumable':
       weapon.consumable = makeVarying(!!td.querySelector('.t-yes'), meta.platforms);
@@ -302,16 +303,16 @@ function processProperty(name: string, td: Element, weapon: ScrappedWeapon, meta
       weapon.critChance = extractVaryingPercent(td, meta.platforms);
       break;
     case 'manaCost':
-      weapon.manaCost = extractVaryingNumber(td, meta.platforms);
+      weapon.manaCost = extractVaryingInteger(td, meta.platforms);
       break;
     case 'useTime':
-      weapon.useTime = extractVaryingNumber(td, meta.platforms);
+      weapon.useTime = extractVaryingInteger(td, meta.platforms);
       break;
     case 'toolSpeed':
-      weapon.toolSpeed = extractVaryingNumber(td, meta.platforms);
+      weapon.toolSpeed = extractVaryingInteger(td, meta.platforms);
       break;
     case 'velocity':
-      weapon.velocity = extractVaryingNumber(td, meta.platforms);
+      weapon.velocity = extractVaryingDecimal(td, meta.platforms);
       break;
     case 'tooltip':
       let gameTextContainer = td.querySelector('.gameText');
@@ -328,7 +329,7 @@ function processProperty(name: string, td: Element, weapon: ScrappedWeapon, meta
         weapon.tooltip = makeVarying(td.textContent!.trim(), meta.platforms);
       break;
     case 'maxStack':
-      weapon.maxStack = extractVaryingNumber(td, meta.platforms);
+      weapon.maxStack = extractVaryingInteger(td, meta.platforms);
       break;
     case 'rarity':
       let wrapper = td.querySelector('.rarity')!;

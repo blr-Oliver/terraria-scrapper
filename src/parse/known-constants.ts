@@ -6,13 +6,16 @@ export const IGNORED_HEADERS: StringSet = {
   'maxblock': true,
   'max block': true,
   'notes': true,
-  'source': true
+  'source': true,
+  'withammo': true,
+  'with ammo': true
 }
 export const COMMON_PROPERTY_HEADERS: StringMapping = {
   'ammotype': 'ammoType',
   'ammo type': 'ammoType',
   'axepower': 'axePower',
   'axe power': 'axePower',
+  'base': 'damage',
   'bonus': 'rangeBonus',
   'crit': 'critChance',
   'criticalchance': 'critChance',

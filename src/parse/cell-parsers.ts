@@ -45,16 +45,3 @@ export type CellContext = {
 export type ParsedItem = PlatformVarying<ItemDescriptor> & ParsingExceptions;
 
 export type CellParser = (td: HTMLTableCellElement, item: ParsedItem, context: CellContext) => void;
-
-function determineProperty(th: HTMLTableCellElement, shift: number, col: number): string | null {
-  let textContent = th.textContent;
-  if (textContent) {
-    let result = determinePropertyByText(textContent);
-    if (result) return result;
-  }
-  return null;
-}
-
-function determinePropertyByText(textContent: string): string | null {
-  return null;
-}
