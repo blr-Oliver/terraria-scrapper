@@ -1,4 +1,5 @@
 import {PlatformVarying} from '../platform-varying';
+import {ParserProvider} from './parse-table';
 
 export type BaseItemDescriptor = {
   id?: number;
@@ -45,8 +46,6 @@ export type CellContext = {
 export type ParsedItem = PlatformVarying<ItemDescriptor> & ParsingExceptions;
 
 export type CellParser = (td: HTMLTableCellElement, item: ParsedItem, context: CellContext) => void;
-
-export declare function getParserForHeader(header: HeaderContext): CellParser | undefined;
 
 function determineProperty(th: HTMLTableCellElement, shift: number, col: number): string | null {
   let textContent = th.textContent;

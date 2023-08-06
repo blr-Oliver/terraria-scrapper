@@ -21,7 +21,7 @@ type ParserBinding = {
   parser: CellParser;
 }
 
-export class TableParser {
+export class ItemTableParser {
   constructor(private parserProvider: ParserProvider) {
   }
 

@@ -1,6 +1,46 @@
 import * as fs from 'fs';
 import {JSDOM} from 'jsdom';
 import {EntryInfo} from '../fetch/fetch-lists';
+import {CellParser, HeaderContext} from './cell-parsers';
+import {ParserProvider} from './parse-table';
+
+export type HeaderOccurrence = {
+  file: string;
+  section: string;
+}
+
+type Hash<T> = {
+  [key: string]: T;
+}
+
+export class CollectingParserProvider implements ParserProvider {
+  private preStats: Hash<Hash<Hash<boolean>>> = {};
+  private stats?: Hash<HeaderOccurrence[]>;
+
+  getParser(header: HeaderContext): CellParser | undefined {
+    this.collectHeaderInfo(header);
+    return () => this.finalizeStats();
+  }
+
+  collectHeaderInfo(header: HeaderContext) {
+  }
+
+  finalizeStats() {
+    if (this.stats) return;
+    this.stats = {};
+    for (let header in this.preStats) {
+      let occurrences: HeaderOccurrence[] = this.stats[header] = [];
+      for (let file in this.preStats[header]) {
+        for (let section in this.preStats[header][file])
+          occurrences.push({file, section});
+      }
+    }
+  }
+
+  getStats(): { [header: string]: HeaderOccurrence[] } {
+    return this.stats!;
+  }
+}
 
 export async function collectAllTableCaptions(entry: EntryInfo): Promise<string[]> {
   let files: string[] = Array(entry.lists.length + 1);
