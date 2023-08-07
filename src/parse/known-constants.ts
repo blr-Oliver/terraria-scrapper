@@ -60,7 +60,7 @@ export const COMMON_PROPERTY_TYPES: StringMapping = {
   'critChance': 'percent',
   'damage': 'integer',
   'damageType': 'string',
-  'spinDuration': 'number',
+  'spinDuration': 'number', // infinity reflected as -1
   'hardMode': 'flag',
   'hammerPower': 'percent',
   'knockback': 'decimal',

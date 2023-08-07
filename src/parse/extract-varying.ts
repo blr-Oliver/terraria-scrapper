@@ -39,6 +39,18 @@ export function extractVaryingValue<I, T>(src: Element,
   return result;
 }
 
+export function unwrapSingleChildElement(el: Element): Element {
+  if (el.childElementCount === 1) {
+    let immediateText = [...el.childNodes]
+        .filter(node => node.nodeType === Node.TEXT_NODE)
+        .map(text => text.nodeValue!)
+        .join('');
+    if (immediateText.trim() === '')
+      return unwrapSingleChildElement(el.children[0]);
+  }
+  return el;
+}
+
 function flattenNodes(elem: Element, filter: (node: Node) => boolean): Node[] {
   let result: Node[] = [];
   collectLeaves(elem, filter, result);

@@ -1,6 +1,6 @@
 import {ALL_PLATFORMS, makeVarying, PlatformList, PlatformVaryingValue} from '../platform-varying';
 import {CellContext, CellParser, HeaderContext, ParsedItem} from './cell-parsers';
-import {extractVaryingDecimal, extractVaryingInteger, extractVaryingPercent, extractVaryingString} from './extract-varying';
+import {extractVaryingDecimal, extractVaryingInteger, extractVaryingPercent, extractVaryingString, unwrapSingleChildElement} from './extract-varying';
 import {ParserProvider} from './parse-table';
 
 export type ValueParser<T> = (td: HTMLTableCellElement, item: ParsedItem, context: CellContext,
@@ -8,22 +8,22 @@ export type ValueParser<T> = (td: HTMLTableCellElement, item: ParsedItem, contex
 
 export const parseString: ValueParser<string> = (td: HTMLTableCellElement, item: ParsedItem, context: CellContext,
                                                  platforms: PlatformList = ALL_PLATFORMS as PlatformList) => {
-  return extractVaryingString(td, platforms);
+  return extractVaryingString(unwrapSingleChildElement(td), platforms);
 }
 
 export const parseInteger: ValueParser<number> = (td: HTMLTableCellElement, item: ParsedItem, context: CellContext,
                                                   platforms: PlatformList = ALL_PLATFORMS as PlatformList) => {
-  return extractVaryingInteger(td, platforms);
+  return extractVaryingInteger(unwrapSingleChildElement(td), platforms);
 }
 
 export const parseDecimal: ValueParser<number> = (td: HTMLTableCellElement, item: ParsedItem, context: CellContext,
                                                   platforms: PlatformList = ALL_PLATFORMS as PlatformList) => {
-  return extractVaryingDecimal(td, platforms);
+  return extractVaryingDecimal(unwrapSingleChildElement(td), platforms);
 }
 
 export const parsePercent: ValueParser<number> = (td: HTMLTableCellElement, item: ParsedItem, context: CellContext,
                                                   platforms: PlatformList = ALL_PLATFORMS as PlatformList) => {
-  return extractVaryingPercent(td, platforms);
+  return extractVaryingPercent(unwrapSingleChildElement(td), platforms);
 }
 
 export const parseFlag: ValueParser<boolean> = (td: HTMLTableCellElement, item: ParsedItem, context: CellContext,
@@ -33,7 +33,7 @@ export const parseFlag: ValueParser<boolean> = (td: HTMLTableCellElement, item: 
 
 export const parseNumberOrInfinity: ValueParser<number> = (td: HTMLTableCellElement, item: ParsedItem, context: CellContext,
                                                            platforms: PlatformList = ALL_PLATFORMS as PlatformList) => {
-  return isInfinity(td) ? makeVarying(Infinity, platforms) : parseDecimal(td, item, context, platforms);
+  return isInfinity(td) ? makeVarying(-1, platforms) : parseDecimal(td, item, context, platforms);
 
   function isInfinity(td: HTMLTableCellElement) {
     const textContent = td.textContent!.trim().toLowerCase();
