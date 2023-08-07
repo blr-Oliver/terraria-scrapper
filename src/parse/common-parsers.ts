@@ -1,5 +1,14 @@
 import {ALL_PLATFORMS, makeVarying, PlatformList, PlatformVaryingValue} from '../platform-varying';
-import {extractVaryingDecimal, extractVaryingInteger, extractVaryingPercent, extractVaryingString, unwrapSingleChildElement} from './extract-varying';
+import {
+  extractPlatformsFromClasses,
+  extractVaryingDecimal,
+  extractVaryingInteger,
+  extractVaryingPercent,
+  extractVaryingString,
+  extractVaryingValue,
+  selectorMatcher,
+  unwrapSingleChildElement
+} from './extract-varying';
 
 export type ValueParser<T> = (el: Element, platforms?: PlatformList) => PlatformVaryingValue<T>;
 
@@ -37,11 +46,42 @@ export const parseNumberOrInfinity: ValueParser<number> = (el: Element, platform
   }
 }
 
+export const parseSortableNumber: ValueParser<number> = (el: Element, platforms: PlatformList = ALL_PLATFORMS as PlatformList) => {
+  let hasSortKey = !!el.querySelector('s.sortkey');
+  return hasSortKey ? parseSortKey(el, platforms) : parseSortValue(el, platforms);
+}
+
+function parseSortValue(el: Element, platforms: PlatformList): PlatformVaryingValue<number> {
+  return extractVaryingValue<number, number>(el,
+      selectorMatcher('[data-sort-value]'),
+      selectorMatcher('.eico'),
+      node => +(node as Element).getAttribute('data-sort-value')!,
+      node => extractPlatformsFromClasses(node as Element),
+      (a, b) => a || b,
+      x => x,
+      platforms
+  );
+}
+
+function parseSortKey(el: Element, platforms: PlatformList) {
+  return extractVaryingValue<number, number>(el,
+      selectorMatcher('s.sortkey'),
+      selectorMatcher('.eico'),
+      node => parseInt((node as Element).textContent!.trim()),
+      node => extractPlatformsFromClasses(node as Element),
+      (a, b) => a || b,
+      x => x,
+      platforms
+  );
+
+}
+
 export const COMMON_PARSERS: { [type: string]: ValueParser<unknown> } = {
   'string': parseString,
   'integer': parseInteger,
   'decimal': parseDecimal,
   'percent': parsePercent,
   'number': parseNumberOrInfinity,
+  'sortable': parseSortableNumber,
   'flag': parseFlag
 }

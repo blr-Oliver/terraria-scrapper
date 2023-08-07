@@ -44,12 +44,17 @@ export const COMMON_PROPERTY_HEADERS: StringMapping = {
   'range': 'range',
   'range(tiles)': 'range',
   'range (tiles)': 'range',
+  'rarity': 'rarity',
   'reach': 'reach',
   'reach(tiles)': 'reach',
   'reach (tiles)': 'reach',
+  'sell': 'sellValue',
+  'sellvalue': 'sellValue',
+  'sell value': 'sellValue',
   'type': 'summonType',
   'usetime': 'useTime',
   'use time': 'useTime',
+  'value': 'sellValue',
   'velocity': 'velocity'
 };
 
@@ -70,19 +75,16 @@ export const COMMON_PROPERTY_TYPES: StringMapping = {
   'isOneDropLogo': 'flag',
   'pickaxePower': 'percent',
   'range': 'integer',
+  'rarity': 'sortable',
   'reach': 'decimal',
+  'sellValue': 'sortable',
   'summonType': 'string',
   'useTime': 'integer',
   'velocity': 'decimal'
 }
 
 export const SPECIAL_PROPERTY_HEADERS: StringMapping = {
-  'image': 'image',
-  'rarity': 'rarity',
-  'sell': 'sellValue',
-  'sellvalue': 'sellValue',
-  'sell value': 'sellValue',
-  'value': 'sellValue'
+  'image': 'image'
 }
 
 export const MULTI_PROPERTY_HEADERS: StringMapping = {

@@ -85,13 +85,6 @@ export function extractVaryingNumber(src: Element, valueFinalizer: (value: strin
   return extractAsStringWithFinalizer(src, s => valueFinalizer(stripLeadingOrTrailingSlash(s)), platforms);
 }
 
-/**
- * @deprecated prefer extract integer / decimal
- */
-export function extractVaryingExplicitNumber(src: Element, platforms: PlatformName[]): PlatformVaryingValue<number> {
-  return extractVaryingNumber(src, s => +s, platforms);
-}
-
 export function extractVaryingInteger(src: Element, platforms: PlatformName[]): PlatformVaryingValue<number> {
   return extractVaryingNumber(src, s => parseInt(s), platforms);
 }
