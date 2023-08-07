@@ -17,5 +17,5 @@ export class CommonParserProvider implements ParserProvider {
 }
 
 function constructPropertyParser(property: string, parser: ValueParser<unknown>): CellParser {
-  return (td, item, cellContext) => item[property] = parser(td, item, cellContext);
+  return (td, item) => item[property] = parser(td);
 }
