@@ -1,5 +1,5 @@
-import {CellParser, HeaderContext} from './cell-parsers';
-import {COMMON_PARSERS, NOOP_PARSER, ValueParser} from './common-parsers';
+import {CellParser, HeaderContext, NOOP_PARSER} from './cell-parsers';
+import {COMMON_PARSERS, ValueParser} from '../common-parsers';
 import {COMMON_PROPERTY_HEADERS, COMMON_PROPERTY_TYPES, IGNORED_HEADERS} from './known-constants';
 import {ParserProvider} from './parse-table';
 

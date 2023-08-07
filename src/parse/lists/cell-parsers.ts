@@ -1,4 +1,4 @@
-import {PlatformVarying} from '../platform-varying';
+import {PlatformVarying} from '../../platform-varying';
 
 export type BaseItemDescriptor = {
   id?: number;
@@ -45,3 +45,6 @@ export type CellContext = {
 export type ParsedItem = PlatformVarying<ItemDescriptor> & ParsingExceptions;
 
 export type CellParser = (td: HTMLTableCellElement, item: ParsedItem, context: CellContext) => void;
+
+export const NOOP_PARSER: CellParser = () => {
+};

@@ -1,11 +1,10 @@
-import {EntryInfo} from '../fetch/fetch-lists';
+import {EntryInfo} from '../../fetch/fetch-lists';
 import {ParsedItem} from './cell-parsers';
-import {NOOP_PARSER_PROVIDER} from './common-parsers';
 import {CommonParserProvider} from './CommonParserProvider';
 import {CompositeParserProvider} from './CompositeParserProvider';
 import {ContentHandler, ListProcessor} from './list-processor';
 import {ItemListDocumentParser} from './parse-list-file';
-import {ItemTableParser} from './parse-table';
+import {ItemTableParser, NOOP_PARSER_PROVIDER} from './parse-table';
 
 class ParsedListsCollector implements ContentHandler {
   data: { [file: string]: { [p: string]: ParsedItem[] }[] } = {};

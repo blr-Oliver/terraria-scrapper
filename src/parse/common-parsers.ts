@@ -1,7 +1,5 @@
 import {ALL_PLATFORMS, makeVarying, PlatformList, PlatformVaryingValue} from '../platform-varying';
-import {CellParser, HeaderContext} from './cell-parsers';
 import {extractVaryingDecimal, extractVaryingInteger, extractVaryingPercent, extractVaryingString, unwrapSingleChildElement} from './extract-varying';
-import {ParserProvider} from './parse-table';
 
 export type ValueParser<T> = (el: Element, platforms?: PlatformList) => PlatformVaryingValue<T>;
 
@@ -46,13 +44,4 @@ export const COMMON_PARSERS: { [type: string]: ValueParser<unknown> } = {
   'percent': parsePercent,
   'number': parseNumberOrInfinity,
   'flag': parseFlag
-}
-
-export const NOOP_PARSER: CellParser = () => {
-};
-
-export const NOOP_PARSER_PROVIDER: ParserProvider = {
-  getParser(header: HeaderContext): CellParser | undefined {
-    return NOOP_PARSER;
-  }
 }

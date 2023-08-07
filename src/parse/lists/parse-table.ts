@@ -1,4 +1,4 @@
-import {CellParser, HeaderContext, ParsedItem, ParsingException, TableContext} from './cell-parsers';
+import {CellParser, HeaderContext, NOOP_PARSER, ParsedItem, ParsingException, TableContext} from './cell-parsers';
 
 export interface ParserProvider {
   getParser(header: HeaderContext): CellParser | undefined;
@@ -122,5 +122,11 @@ export class ItemTableParser {
       }
     }
     return result;
+  }
+}
+
+export const NOOP_PARSER_PROVIDER: ParserProvider = {
+  getParser(header: HeaderContext): CellParser | undefined {
+    return NOOP_PARSER;
   }
 }

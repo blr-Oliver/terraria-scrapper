@@ -1,4 +1,4 @@
-import {EntryInfo} from '../fetch/fetch-lists';
+import {EntryInfo} from '../../fetch/fetch-lists';
 import {CellParser, HeaderContext, ParsedItem} from './cell-parsers';
 import {ContentHandler, ListProcessor} from './list-processor';
 import {ItemListDocumentParser} from './parse-list-file';
