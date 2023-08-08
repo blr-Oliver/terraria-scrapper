@@ -73,7 +73,6 @@ function parseSortKey(el: Element, platforms: PlatformList) {
       x => x,
       platforms
   );
-
 }
 
 export const COMMON_PARSERS: { [type: string]: ValueParser<unknown> } = {

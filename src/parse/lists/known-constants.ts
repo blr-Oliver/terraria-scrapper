@@ -41,6 +41,7 @@ export const COMMON_PROPERTY_HEADERS: StringMapping = {
   'one drop': 'isOneDropLogo',
   'pickaxepower': 'pickaxePower',
   'pickaxe power': 'pickaxePower',
+  'radius': 'radius',
   'range': 'range',
   'range(tiles)': 'range',
   'range (tiles)': 'range',
@@ -60,6 +61,7 @@ export const COMMON_PROPERTY_HEADERS: StringMapping = {
 
 export const COMMON_PROPERTY_TYPES: StringMapping = {
   'ammoType': 'string',
+  'autoSwing': 'flag',
   'axePower': 'percent',
   'rangeBonus': 'integer',
   'critChance': 'percent',
@@ -74,6 +76,7 @@ export const COMMON_PROPERTY_TYPES: StringMapping = {
   'multiHitPenalty': 'percent',
   'isOneDropLogo': 'flag',
   'pickaxePower': 'percent',
+  'radius': 'decimal',
   'range': 'integer',
   'rarity': 'sortable',
   'reach': 'decimal',

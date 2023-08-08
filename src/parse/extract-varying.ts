@@ -94,7 +94,7 @@ export function extractVaryingDecimal(src: Element, platforms: PlatformName[]): 
 }
 
 export function extractVaryingPercent(src: Element, platforms: PlatformName[]): PlatformVaryingValue<number> {
-  return extractAsStringWithFinalizer(src, s => +stripLeadingOrTrailingSlash(s).trim().slice(0, -1), platforms);
+  return extractAsStringWithFinalizer(src, s => parseFloat(stripLeadingOrTrailingSlash(s).trim().slice(0, -1)), platforms);
 }
 
 export function extractVaryingCoinValue(src: Element, platforms: PlatformName[]): PlatformVaryingValue<number> {
