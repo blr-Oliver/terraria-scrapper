@@ -6,6 +6,7 @@ import {ContentHandler, ListProcessor} from './list-processor';
 import {NameBlockParserProvider} from './NameBlockParserProvider';
 import {ItemListDocumentParser} from './parse-list-file';
 import {ItemTableParser, NOOP_PARSER_PROVIDER} from './parse-table';
+import {WhipEffectParserProvider} from './WhipEffectParserProvider';
 
 class ParsedListsCollector implements ContentHandler {
   data: { [file: string]: { [p: string]: ParsedItem[] }[] } = {};
@@ -22,7 +23,11 @@ class ParsedListsCollector implements ContentHandler {
 
 export async function parseAll(entry: EntryInfo): Promise<unknown> {
   const collector = new ParsedListsCollector();
-  const parseProvider = new CompositeParserProvider(new CommonParserProvider(), new NameBlockParserProvider(), NOOP_PARSER_PROVIDER);
+  const parseProvider = new CompositeParserProvider(
+      new CommonParserProvider(),
+      new NameBlockParserProvider(),
+      new WhipEffectParserProvider(),
+      NOOP_PARSER_PROVIDER);
   const tableParser = new ItemTableParser(parseProvider);
   const fileParser = new ItemListDocumentParser(tableParser);
   const processor = new ListProcessor(fileParser, collector);
