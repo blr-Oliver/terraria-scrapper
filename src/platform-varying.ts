@@ -84,14 +84,14 @@ function pullInto(root: PlatformVaryingValue<unknown>, context: object, path: (s
   }
 }
 
-function setProperty(target: object, path: (string | number)[], value: any) {
+export function setProperty(target: object, path: PropertyKey[], value: any) {
   let context: any = target;
   for (let i = 0; i < path.length - 1; ++i) {
     let pathKey = path[i];
     let nextContext = context[pathKey];
     if (nextContext == undefined) {
       let nextKey = path[i + 1];
-      let newContext = isNaN(+nextKey) ? {} : [];
+      let newContext = typeof nextKey === 'symbol' || isNaN(+nextKey) ? {} : [];
       context = context[pathKey] = newContext;
     } else {
       context = nextContext;
