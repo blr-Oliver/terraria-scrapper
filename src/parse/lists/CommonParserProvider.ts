@@ -16,14 +16,14 @@ export class CommonParserProvider implements ParserProvider {
   }
 }
 
+export function constructPropertyParser(property: string, parser: ValueParser<unknown>): CellParser {
+  return (td, item) => item[property] = parser(td);
+}
+
 function getPropertyForHeader(headerText: string, th: HTMLTableCellElement): string | undefined {
   let directMatch = COMMON_PROPERTY_HEADERS[headerText];
   if (directMatch) return directMatch;
   if (!headerText) {
     if (!!th.querySelector('img[alt="Autoswing"], img.auto-icon')) return 'autoSwing';
   }
-}
-
-function constructPropertyParser(property: string, parser: ValueParser<unknown>): CellParser {
-  return (td, item) => item[property] = parser(td);
 }

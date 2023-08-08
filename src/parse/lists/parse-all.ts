@@ -3,6 +3,7 @@ import {ParsedItem} from './cell-parsers';
 import {CommonParserProvider} from './CommonParserProvider';
 import {CompositeParserProvider} from './CompositeParserProvider';
 import {ContentHandler, ListProcessor} from './list-processor';
+import {NameBlockParserProvider} from './NameBlockParserProvider';
 import {ItemListDocumentParser} from './parse-list-file';
 import {ItemTableParser, NOOP_PARSER_PROVIDER} from './parse-table';
 
@@ -21,7 +22,7 @@ class ParsedListsCollector implements ContentHandler {
 
 export async function parseAll(entry: EntryInfo): Promise<unknown> {
   const collector = new ParsedListsCollector();
-  const parseProvider = new CompositeParserProvider(new CommonParserProvider(), NOOP_PARSER_PROVIDER);
+  const parseProvider = new CompositeParserProvider(new CommonParserProvider(), new NameBlockParserProvider(), NOOP_PARSER_PROVIDER);
   const tableParser = new ItemTableParser(parseProvider);
   const fileParser = new ItemListDocumentParser(tableParser);
   const processor = new ListProcessor(fileParser, collector);

@@ -51,6 +51,10 @@ export const parseSortableNumber: ValueParser<number> = (el: Element, platforms:
   return hasSortKey ? parseSortKey(el, platforms) : parseSortValue(el, platforms);
 }
 
+export const parseImage: ValueParser<string> = (el: Element, platforms: PlatformList = ALL_PLATFORMS as PlatformList) => {
+  return makeVarying(el.querySelector<HTMLImageElement>('img[src]')!.src, platforms);
+}
+
 function parseSortValue(el: Element, platforms: PlatformList): PlatformVaryingValue<number> {
   return extractVaryingValue<number, number>(el,
       selectorMatcher('[data-sort-value]'),
@@ -82,5 +86,6 @@ export const COMMON_PARSERS: { [type: string]: ValueParser<unknown> } = {
   'percent': parsePercent,
   'number': parseNumberOrInfinity,
   'sortable': parseSortableNumber,
-  'flag': parseFlag
+  'flag': parseFlag,
+  'image': parseImage
 }

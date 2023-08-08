@@ -10,6 +10,7 @@ export const IGNORED_HEADERS: StringSet = {
   'withammo': true,
   'with ammo': true
 }
+
 export const COMMON_PROPERTY_HEADERS: StringMapping = {
   'ammotype': 'ammoType',
   'ammo type': 'ammoType',
@@ -31,6 +32,7 @@ export const COMMON_PROPERTY_HEADERS: StringMapping = {
   'hm only': 'hardMode',
   'hammerpower': 'hammerPower',
   'hammer power': 'hammerPower',
+  'image': 'image',
   'knockback': 'knockback',
   'mana': 'manaCost',
   'miningspeed': 'toolSpeed',
@@ -70,6 +72,7 @@ export const COMMON_PROPERTY_TYPES: StringMapping = {
   'spinDuration': 'number', // infinity reflected as -1
   'hardMode': 'flag',
   'hammerPower': 'percent',
+  'image': 'image',
   'knockback': 'decimal',
   'manaCost': 'integer',
   'toolSpeed': 'integer',
@@ -84,13 +87,4 @@ export const COMMON_PROPERTY_TYPES: StringMapping = {
   'summonType': 'string',
   'useTime': 'integer',
   'velocity': 'decimal'
-}
-
-export const SPECIAL_PROPERTY_HEADERS: StringMapping = {
-  'image': 'image'
-}
-
-export const MULTI_PROPERTY_HEADERS: StringMapping = {
-  'name': 'nameBlock',
-  'item': 'nameBlock'
 }
