@@ -27,9 +27,9 @@ export function pack<T, K extends keyof any>(src: VaryingValue<T, K>, allVariant
   return target;
 }
 
-type ValueType = 'array' | 'object' | 'primitive';
+export type ValueType = 'array' | 'object' | 'primitive';
 
-function getType(value: any): ValueType {
+export function getType(value: any): ValueType {
   if (Array.isArray(value)) return 'array';
   if (value == null) return 'primitive';
   if (typeof value === 'object') return 'object';

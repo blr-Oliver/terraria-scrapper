@@ -13,7 +13,7 @@ export function extractVaryingValue<I, T>(src: Element,
                                           valueNodeExtractor: (node: Node) => I,
                                           flagsNodeExtractor: (node: Node) => PlatformList,
                                           valueMerger: (a: (I | null), x: I) => I,
-                                          valueFinalizer: (x: I) => T,
+                                          valueFinalizer: (x: I) => T | undefined,
                                           defaultPlatforms: PlatformName[]): PlatformVaryingValue<T> {
   src.normalize();
   let flatNodes = flattenNodes(src, node => valueNodeMatcher(node) || flagsNodeMatcher(node));
@@ -23,7 +23,7 @@ export function extractVaryingValue<I, T>(src: Element,
     let accum: I | null = null;
     while (i < flatNodes.length && valueNodeMatcher(flatNodes[i]))
       accum = valueMerger(accum, valueNodeExtractor(flatNodes[i++]));
-    const value: T = valueFinalizer(accum!);
+    const value: T | undefined = valueFinalizer(accum!);
     let flags: PlatformList;
     if (i < flatNodes.length) {
       flags = flagsNodeExtractor(flatNodes[i++]);
@@ -65,7 +65,7 @@ function flattenNodes(elem: Element, filter: (node: Node) => boolean): Node[] {
   }
 }
 
-function extractAsStringWithFinalizer<T>(src: Element, valueFinalizer: (value: string) => T, platforms: PlatformName[]): PlatformVaryingValue<T> {
+function extractAsStringWithFinalizer<T>(src: Element, valueFinalizer: (value: string) => T | undefined, platforms: PlatformName[]): PlatformVaryingValue<T> {
   return extractVaryingValue<string, T>(src,
       node => node.parentNode === src && node.nodeType === Node.TEXT_NODE,
       selectorMatcher('.eico'),
@@ -82,7 +82,10 @@ export function extractVaryingString(src: Element, platforms: PlatformName[]): P
 }
 
 export function extractVaryingNumber(src: Element, valueFinalizer: (value: string) => number, platforms: PlatformName[]): PlatformVaryingValue<number> {
-  return extractAsStringWithFinalizer(src, s => valueFinalizer(stripLeadingOrTrailingSlash(s)), platforms);
+  return extractAsStringWithFinalizer(src, s => {
+    let value = valueFinalizer(stripLeadingOrTrailingSlash(s).trim());
+    if (!isNaN(value)) return value;
+  }, platforms);
 }
 
 export function extractVaryingInteger(src: Element, platforms: PlatformName[]): PlatformVaryingValue<number> {
@@ -94,7 +97,7 @@ export function extractVaryingDecimal(src: Element, platforms: PlatformName[]): 
 }
 
 export function extractVaryingPercent(src: Element, platforms: PlatformName[]): PlatformVaryingValue<number> {
-  return extractAsStringWithFinalizer(src, s => parseFloat(stripLeadingOrTrailingSlash(s).trim().slice(0, -1)), platforms);
+  return extractVaryingNumber(src, s => parseFloat(s.slice(0, -1)), platforms);
 }
 
 export function extractVaryingCoinValue(src: Element, platforms: PlatformName[]): PlatformVaryingValue<number> {
