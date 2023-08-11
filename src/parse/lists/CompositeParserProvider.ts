@@ -1,4 +1,4 @@
-import {CellParser, HeaderContext} from './cell-parsers';
+import {HeaderContext, ICellParser} from './cell-parsers';
 import {ParserProvider} from './parse-table';
 
 export class CompositeParserProvider implements ParserProvider {
@@ -8,7 +8,7 @@ export class CompositeParserProvider implements ParserProvider {
     this.providers = providers;
   }
 
-  getParser(header: HeaderContext): CellParser | undefined {
+  getParser(header: HeaderContext): ICellParser | undefined {
     for (let provider of this.providers) {
       let parser = provider.getParser(header);
       if (parser) return parser;

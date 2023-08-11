@@ -1,15 +1,20 @@
 import {ALL_PLATFORMS, makeVarying, PlatformList} from '../../platform-varying';
 import {parseImage} from '../common-parsers';
 import {extractPlatformsFromClasses, extractVaryingValue, Node, selectorMatcher, unwrapSingleChildElement} from '../extract-varying';
-import {CellContext, CellParser, HeaderContext, ParsedItem} from './cell-parsers';
+import {CellContext, HeaderContext, ICellParser, ParsedItem} from './cell-parsers';
 import {constructPropertyParser} from './CommonParserProvider';
 import {ParserProvider} from './parse-table';
 
 export class NameBlockParserProvider implements ParserProvider {
   private readonly imageCellParser = constructPropertyParser('image', parseImage);
-  private readonly nameCellParser: CellParser = (td, item, context) => this.parseNameCell(td, item, context);
+  private readonly nameCellParser: ICellParser = {
+    parse: (td, item, context) => {
+      this.parseNameCell(td, item, context);
+    },
+    isPlatformSource: true
+  };
 
-  getParser(header: HeaderContext): CellParser | undefined {
+  getParser(header: HeaderContext): ICellParser | undefined {
     let caption = header.th.textContent!.trim().toLowerCase();
     if (caption === 'name' || caption == 'item') {
       if (header.colSpan === 1 || header.colSpan === 2 && header.shift === 1)

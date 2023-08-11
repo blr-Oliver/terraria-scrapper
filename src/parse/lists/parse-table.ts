@@ -1,7 +1,7 @@
-import {CellParser, HeaderContext, NOOP_PARSER, ParsedItem, ParsingException, TableContext} from './cell-parsers';
+import {HeaderContext, ICellParser, NOOP_PARSER, ParsedItem, ParsingException, TableContext} from './cell-parsers';
 
 export interface ParserProvider {
-  getParser(header: HeaderContext): CellParser | undefined;
+  getParser(header: HeaderContext): ICellParser | undefined;
 }
 
 type CellCoordinates = {
@@ -18,7 +18,7 @@ type CellCoordinates = {
 
 type ParserBinding = {
   header: HeaderContext;
-  parser: CellParser;
+  parser: ICellParser;
 }
 
 export class ItemTableParser {
@@ -42,7 +42,7 @@ export class ItemTableParser {
           td, column: row, row: row
         };
         try {
-          parsers[column].parser(td, item, cellContext);
+          parsers[column].parser.parse(td, item, cellContext);
         } catch (ex) {
           let exInfo: ParsingException = {col: column};
           if (ex instanceof Error)
@@ -126,7 +126,7 @@ export class ItemTableParser {
 }
 
 export const NOOP_PARSER_PROVIDER: ParserProvider = {
-  getParser(header: HeaderContext): CellParser | undefined {
+  getParser() {
     return NOOP_PARSER;
   }
 }

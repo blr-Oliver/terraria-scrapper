@@ -44,7 +44,11 @@ export type CellContext = {
 
 export type ParsedItem = PlatformVarying<ItemDescriptor> & ParsingExceptions;
 
-export type CellParser = (td: HTMLTableCellElement, item: ParsedItem, context: CellContext) => void;
+export interface ICellParser {
+  parse: (td: HTMLTableCellElement, item: ParsedItem, context: CellContext) => void;
+  isPlatformSource?: boolean;
+}
 
-export const NOOP_PARSER: CellParser = () => {
+export const NOOP_PARSER: ICellParser = {
+  parse: () => void 0
 };

@@ -1,5 +1,5 @@
 import {EntryInfo} from '../../fetch/fetch-lists';
-import {CellParser, HeaderContext, ParsedItem} from './cell-parsers';
+import {HeaderContext, ICellParser, ParsedItem} from './cell-parsers';
 import {ContentHandler, ListProcessor} from './list-processor';
 import {ItemListDocumentParser} from './parse-list-file';
 import {ItemTableParser, ParserProvider} from './parse-table';
@@ -17,9 +17,11 @@ export class CaptionCollector implements ParserProvider, ContentHandler {
   private preStats: Hash<Hash<Hash<boolean>>> = {};
   private stats?: Hash<HeaderOccurrence[]>;
 
-  getParser(header: HeaderContext): CellParser | undefined {
+  getParser(header: HeaderContext): ICellParser | undefined {
     this.collectHeaderInfo(header);
-    return () => this.finalizeStats();
+    return {
+      parse: () => this.finalizeStats()
+    };
   }
 
   collectHeaderInfo(header: HeaderContext) {

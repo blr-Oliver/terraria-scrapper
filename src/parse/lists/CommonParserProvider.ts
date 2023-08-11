@@ -1,10 +1,10 @@
 import {COMMON_PARSERS, ValueParser} from '../common-parsers';
-import {CellParser, HeaderContext, NOOP_PARSER} from './cell-parsers';
+import {HeaderContext, ICellParser, NOOP_PARSER} from './cell-parsers';
 import {COMMON_PROPERTY_HEADERS, COMMON_PROPERTY_TYPES, IGNORED_HEADERS} from './known-constants';
 import {ParserProvider} from './parse-table';
 
 export class CommonParserProvider implements ParserProvider {
-  getParser(header: HeaderContext): CellParser | undefined {
+  getParser(header: HeaderContext): ICellParser | undefined {
     const headerText = header.th.textContent!.trim().toLowerCase();
     if (headerText in IGNORED_HEADERS) return NOOP_PARSER;
     const property = getPropertyForHeader(headerText, header.th);
@@ -16,8 +16,12 @@ export class CommonParserProvider implements ParserProvider {
   }
 }
 
-export function constructPropertyParser(property: string, parser: ValueParser<unknown>): CellParser {
-  return (td, item) => item[property] = parser(td);
+export function constructPropertyParser(property: string, parser: ValueParser<unknown>): ICellParser {
+  return {
+    parse(td, item) {
+      item[property] = parser(td);
+    }
+  };
 }
 
 function getPropertyForHeader(headerText: string, th: HTMLTableCellElement): string | undefined {

@@ -1,15 +1,17 @@
 import {ALL_PLATFORMS, makeVarying, PlatformList} from '../../platform-varying';
-import {CellContext, CellParser, HeaderContext, ParsedItem} from './cell-parsers';
+import {CellContext, HeaderContext, ICellParser, ParsedItem} from './cell-parsers';
 import {ParserProvider} from './parse-table';
 
 export class WhipEffectParserProvider implements ParserProvider {
-  //8 summon tag damage
-  //and 12% critical chance
   private static readonly TAG_PATTERN = /(?:(\d+)\s+summon\s+tag\s+damage)/;
   private static readonly CRIT_PATTERN = /(?:(\d+)%\s+critical\s+chance)/;
-  private readonly parser: CellParser = (td, item, context) => this.parseWhipEffectCell(td, item, context);
+  private readonly parser: ICellParser = {
+    parse: (td, item, context) => {
+      this.parseWhipEffectCell(td, item, context);
+    }
+  };
 
-  getParser(header: HeaderContext): CellParser | undefined {
+  getParser(header: HeaderContext): ICellParser | undefined {
     let caption = header.th.textContent!.trim().toLowerCase();
     if (caption.startsWith('on-hit')) {
       if (header.table.file.toLowerCase().indexOf('whips') !== -1)
