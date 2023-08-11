@@ -18,8 +18,8 @@ export class CommonParserProvider implements ParserProvider {
 
 export function constructPropertyParser(property: string, parser: ValueParser<unknown>): ICellParser {
   return {
-    parse(td, item) {
-      item[property] = parser(td);
+    parse(td, item, context) {
+      item[property] = parser(td, context.platforms);
     }
   };
 }

@@ -1,3 +1,4 @@
+import {PlatformList} from '../../platform-varying';
 import {HeaderContext, ICellParser, NOOP_PARSER, ParsedItem, ParsingException, TableContext} from './cell-parsers';
 
 export interface ParserProvider {
@@ -31,15 +32,28 @@ export class ItemTableParser {
     const colNum = context.columnCount = bodyRows[0].cells.length;
     const parsers = this.getParsers(context, this.getHeaderCells(headerRows, colNum));
     const result: ParsedItem[] = Array(rowNum);
+    const platformSources = parsers.filter(parser => parser.parser.getPlatforms);
     for (let row = 0; row < rowNum; ++row) {
       const itemRow = bodyRows[row];
       const item: ParsedItem = result[row] = {};
+      let platforms: PlatformList = context.platforms;
+      platformSources.forEach(parser => {
+        const td = itemRow.cells[parser.header.column];
+        const cellContext = {
+          table: context,
+          header: parser.header,
+          td, column: row, row: row,
+          platforms
+        };
+        platforms = parser.parser.getPlatforms!(td, item, cellContext);
+      })
       for (let column = 0; column < colNum; ++column) {
         const td = itemRow.cells[column];
         const cellContext = {
           table: context,
           header: parsers[column].header,
-          td, column: row, row: row
+          td, column: row, row: row,
+          platforms
         };
         try {
           parsers[column].parser.parse(td, item, cellContext);

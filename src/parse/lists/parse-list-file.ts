@@ -1,3 +1,5 @@
+import {ALL_PLATFORMS, PlatformList} from '../../platform-varying';
+import {extractPlatformsFromImages} from '../extract-varying';
 import {ParsedItem, TableContext} from './cell-parsers';
 import {ItemTableParser} from './parse-table';
 
@@ -8,6 +10,7 @@ export class ItemListDocumentParser {
   parseTablesPerSection(root: Document, fileKey: string): { [section: string]: ParsedItem[] } {
     let tables = root.querySelectorAll<HTMLTableElement>('table.terraria.sortable');
     let result: { [section: string]: ParsedItem[] } = {};
+    let platforms = this.getPlatforms(root);
     for (let table of tables) {
       let sectionHeader = this.getClosestSectionHeader(table);
       let sectionName = sectionHeader ? sectionHeader.textContent!.trim().toLowerCase() : '';
@@ -15,11 +18,18 @@ export class ItemListDocumentParser {
         file: fileKey,
         section: sectionName.toLowerCase(),
         columnCount: -1,
-        table
+        table,
+        platforms
       }
       result[sectionName] = this.tableParser.parse(tableContext);
     }
     return result;
+  }
+
+  private getPlatforms(root: Document): PlatformList {
+    const contentRoot = root.querySelector('.mw-parser-output')!;
+    let messageBox = contentRoot.querySelector('.message-box.msgbox-color-blue');
+    return messageBox ? extractPlatformsFromImages(messageBox) : ALL_PLATFORMS.slice();
   }
 
   private getClosestSectionHeader(table: Element): Element | null {

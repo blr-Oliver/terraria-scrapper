@@ -1,4 +1,4 @@
-import {ALL_PLATFORMS, makeVarying, PlatformList, PlatformVaryingValue} from '../platform-varying';
+import {makeVarying, PlatformList, PlatformVaryingValue} from '../platform-varying';
 import {
   extractPlatformsFromClasses,
   extractVaryingDecimal,
@@ -10,29 +10,29 @@ import {
   unwrapSingleChildElement
 } from './extract-varying';
 
-export type ValueParser<T> = (el: Element, platforms?: PlatformList) => PlatformVaryingValue<T>;
+export type ValueParser<T> = (el: Element, platforms: PlatformList) => PlatformVaryingValue<T>;
 
-export const parseString: ValueParser<string> = (el: Element, platforms: PlatformList = ALL_PLATFORMS as PlatformList) => {
+export const parseString: ValueParser<string> = (el: Element, platforms: PlatformList) => {
   return extractVaryingString(unwrapSingleChildElement(el), platforms);
 }
 
-export const parseInteger: ValueParser<number> = (el: Element, platforms: PlatformList = ALL_PLATFORMS as PlatformList) => {
+export const parseInteger: ValueParser<number> = (el: Element, platforms: PlatformList) => {
   return extractVaryingInteger(unwrapSingleChildElement(el), platforms);
 }
 
-export const parseDecimal: ValueParser<number> = (el: Element, platforms: PlatformList = ALL_PLATFORMS as PlatformList) => {
+export const parseDecimal: ValueParser<number> = (el: Element, platforms: PlatformList) => {
   return extractVaryingDecimal(unwrapSingleChildElement(el), platforms);
 }
 
-export const parsePercent: ValueParser<number> = (el: Element, platforms: PlatformList = ALL_PLATFORMS as PlatformList) => {
+export const parsePercent: ValueParser<number> = (el: Element, platforms: PlatformList) => {
   return extractVaryingPercent(unwrapSingleChildElement(el), platforms);
 }
 
-export const parseFlag: ValueParser<boolean> = (el: Element, platforms: PlatformList = ALL_PLATFORMS as PlatformList) => {
+export const parseFlag: ValueParser<boolean> = (el: Element, platforms: PlatformList) => {
   return makeVarying(!!el.querySelector('.t-yes'), platforms);
 }
 
-export const parseNumberOrInfinity: ValueParser<number> = (el: Element, platforms: PlatformList = ALL_PLATFORMS as PlatformList) => {
+export const parseNumberOrInfinity: ValueParser<number> = (el: Element, platforms: PlatformList) => {
   return isInfinity(el) ? makeVarying(-1, platforms) : parseDecimal(el, platforms);
 
   function isInfinity(el: Element) {
@@ -46,12 +46,12 @@ export const parseNumberOrInfinity: ValueParser<number> = (el: Element, platform
   }
 }
 
-export const parseSortableNumber: ValueParser<number> = (el: Element, platforms: PlatformList = ALL_PLATFORMS as PlatformList) => {
+export const parseSortableNumber: ValueParser<number> = (el: Element, platforms: PlatformList) => {
   let hasSortKey = !!el.querySelector('s.sortkey');
   return hasSortKey ? parseSortKey(el, platforms) : parseSortValue(el, platforms);
 }
 
-export const parseImage: ValueParser<string> = (el: Element, platforms: PlatformList = ALL_PLATFORMS as PlatformList) => {
+export const parseImage: ValueParser<string> = (el: Element, platforms: PlatformList) => {
   return makeVarying(el.querySelector<HTMLImageElement>('img[src]')!.src, platforms);
 }
 

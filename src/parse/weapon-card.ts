@@ -3,6 +3,7 @@ import {fetchHtmlRaw} from '../fetch/fetch';
 import {ALL_PLATFORMS, makeVarying, PlatformList, PlatformName, PlatformVarying, PlatformVaryingValue, transform} from '../platform-varying';
 import {
   extractPlatformsFromClasses,
+  extractPlatformsFromImages,
   extractVaryingCoinValue,
   extractVaryingDecimal,
   extractVaryingInteger,
@@ -360,36 +361,3 @@ function processProperty(name: string, td: Element, weapon: ScrappedWeapon, meta
   }
 }
 
-const MESSAGE_BOX_KEYS: { [key: string]: PlatformName } = {
-  'desktop': 'pc',
-  'pc': 'pc',
-  'console': 'console',
-  'mobile': 'mobile',
-  'nintendo 3ds': 'threeDS',
-  'nintendo': 'threeDS',
-  '3ds': 'threeDS',
-  'old-gen console': 'oldGen',
-  'old-gen': 'oldGen',
-  'oldgen': 'oldGen'
-}
-
-function extractPlatformsFromImages(messageBox: Element): PlatformList {
-  let result: PlatformList = [];
-  let iconList = messageBox.querySelector('.icon');
-  if (iconList) {
-    let icons = iconList.querySelectorAll('a img[alt]');
-    let platformHash: PlatformVaryingValue<boolean> = {};
-    let foundPlatforms = [...icons]
-        .map(icon => /([\w\-\s]+)\s+version/i.exec(icon.getAttribute('alt')!))
-        .filter(match => !!match && !!match[1])
-        .map(match => match![1]!.toLowerCase().trim())
-        .map(key => MESSAGE_BOX_KEYS[key] || (key as PlatformName));
-    for (let platform of foundPlatforms) {
-      if (!platformHash[platform]) {
-        result.push(platform);
-        platformHash[platform] = true;
-      }
-    }
-  }
-  return result;
-}

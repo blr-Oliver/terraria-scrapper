@@ -1,4 +1,4 @@
-import {ALL_PLATFORMS, makeVarying, PlatformList} from '../../platform-varying';
+import {makeVarying, PlatformList} from '../../platform-varying';
 import {parseImage} from '../common-parsers';
 import {extractPlatformsFromClasses, extractVaryingValue, Node, selectorMatcher, unwrapSingleChildElement} from '../extract-varying';
 import {CellContext, HeaderContext, ICellParser, ParsedItem} from './cell-parsers';
@@ -11,7 +11,10 @@ export class NameBlockParserProvider implements ParserProvider {
     parse: (td, item, context) => {
       this.parseNameCell(td, item, context);
     },
-    isPlatformSource: true
+    getPlatforms: (td, item, context) => {
+      this.parseNameCell(td, item, context);
+      return Object.keys(item.name!) as PlatformList;
+    }
   };
 
   getParser(header: HeaderContext): ICellParser | undefined {
@@ -30,7 +33,7 @@ export class NameBlockParserProvider implements ParserProvider {
   parseNameCell(td: HTMLTableCellElement, item: ParsedItem, context: CellContext) {
     let src = unwrapSingleChildElement(td);
     let idBlock = src.querySelector('.id');
-    let platforms = ALL_PLATFORMS as PlatformList; // TODO it could be narrowed from outside
+    let platforms = context.platforms || context.table.platforms;
     let nameValueNodeMatcher = (node: Node) => node.nodeType === Node.ELEMENT_NODE && (node as Element).matches('a[href][title]');
 
     if (idBlock) {

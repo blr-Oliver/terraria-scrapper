@@ -1,4 +1,4 @@
-import {ALL_PLATFORMS, makeVarying, PlatformList} from '../../platform-varying';
+import {makeVarying} from '../../platform-varying';
 import {CellContext, HeaderContext, ICellParser, ParsedItem} from './cell-parsers';
 import {ParserProvider} from './parse-table';
 
@@ -20,7 +20,7 @@ export class WhipEffectParserProvider implements ParserProvider {
   }
 
   parseWhipEffectCell(td: HTMLTableCellElement, item: ParsedItem, context: CellContext) {
-    let platforms = ALL_PLATFORMS as PlatformList;
+    let platforms = context.platforms;
     let text = td.textContent!.trim().toLowerCase();
     let tagMatch = text.match(WhipEffectParserProvider.TAG_PATTERN);
     let critMatch = text.match(WhipEffectParserProvider.CRIT_PATTERN);
