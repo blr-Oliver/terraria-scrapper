@@ -1,11 +1,12 @@
-import {makeVarying, PlatformList, PlatformVaryingValue} from '../platform-varying';
+import {makeVarying, PlatformList, PlatformVaryingValue, transform} from '../platform-varying';
 import {
+  extractMatchedSelectors,
   extractPlatformsFromClasses,
   extractVaryingDecimal,
   extractVaryingInteger,
   extractVaryingPercent,
   extractVaryingString,
-  extractVaryingValue,
+  extractVaryingValue, flagsNodeMatcher,
   selectorMatcher,
   unwrapSingleChildElement
 } from './extract-varying';
@@ -29,7 +30,9 @@ export const parsePercent: ValueParser<number> = (el: Element, platforms: Platfo
 }
 
 export const parseFlag: ValueParser<boolean> = (el: Element, platforms: PlatformList) => {
-  return makeVarying(!!el.querySelector('.t-yes'), platforms);
+  return transform(
+      extractMatchedSelectors(el, platforms, '.t-yes', '.t-no'),
+      selectors => selectors.some(s => s === '.t-yes'));
 }
 
 export const parseNumberOrInfinity: ValueParser<number> = (el: Element, platforms: PlatformList) => {
@@ -58,7 +61,7 @@ export const parseImage: ValueParser<string> = (el: Element, platforms: Platform
 function parseSortValue(el: Element, platforms: PlatformList): PlatformVaryingValue<number> {
   return extractVaryingValue<number, number>(el,
       selectorMatcher('[data-sort-value]'),
-      selectorMatcher('.eico'),
+      flagsNodeMatcher,
       node => +(node as Element).getAttribute('data-sort-value')!,
       node => extractPlatformsFromClasses(node as Element),
       (a, b) => a || b,
@@ -70,7 +73,7 @@ function parseSortValue(el: Element, platforms: PlatformList): PlatformVaryingVa
 function parseSortKey(el: Element, platforms: PlatformList) {
   return extractVaryingValue<number, number>(el,
       selectorMatcher('s.sortkey'),
-      selectorMatcher('.eico'),
+      flagsNodeMatcher,
       node => parseInt((node as Element).textContent!.trim()),
       node => extractPlatformsFromClasses(node as Element),
       (a, b) => a || b,

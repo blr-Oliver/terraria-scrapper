@@ -2,6 +2,7 @@ import {JSDOM} from 'jsdom';
 import {Platform, PlatformList, PlatformName, PlatformVaryingValue} from '../platform-varying';
 
 export const Node = new JSDOM('').window.Node;
+export const flagsNodeMatcher = selectorMatcher('.eico');
 
 /**
  * @template I type of intermediate value from collapsing value nodes
@@ -68,7 +69,7 @@ function flattenNodes(elem: Element, filter: (node: Node) => boolean): Node[] {
 function extractAsStringWithFinalizer<T>(src: Element, valueFinalizer: (value: string) => T | undefined, platforms: PlatformName[]): PlatformVaryingValue<T> {
   return extractVaryingValue<string, T>(src,
       node => node.parentNode === src && node.nodeType === Node.TEXT_NODE,
-      selectorMatcher('.eico'),
+      flagsNodeMatcher,
       node => node.nodeValue!,
       node => extractPlatformsFromClasses(node as Element),
       (a, b) => (a || '') + b,
@@ -103,13 +104,27 @@ export function extractVaryingPercent(src: Element, platforms: PlatformName[]): 
 export function extractVaryingCoinValue(src: Element, platforms: PlatformName[]): PlatformVaryingValue<number> {
   return extractVaryingValue<number, number>(src,
       selectorMatcher('.coin[data-sort-value]'),
-      selectorMatcher('.eico'),
+      flagsNodeMatcher,
       node => +(node as Element).getAttribute('data-sort-value')!,
       node => extractPlatformsFromClasses(node as Element),
       (a, b) => a || b,
       x => x,
       platforms
   );
+}
+
+export function extractMatchedSelectors(src: Element, platforms: PlatformName[], ...selectors: string[]): PlatformVaryingValue<string[]> {
+  const combinedSelectorMatcher = (node: Node) => (node.nodeType === Node.ELEMENT_NODE && selectors.some(s => (node as Element).matches(s)));
+  return extractVaryingValue(
+      src,
+      combinedSelectorMatcher,
+      flagsNodeMatcher,
+      node => new Set<string>(selectors.filter(s => (node as Element).matches(s))),
+      node => extractPlatformsFromClasses(node as Element),
+      (a, b) => a ? new Set([...a, ...b]) : b,
+      set => [...set.values()],
+      platforms
+  )
 }
 
 export function extractPlatformsFromClasses(iconList: Element): PlatformList {
