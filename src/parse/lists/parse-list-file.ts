@@ -16,7 +16,7 @@ export class ItemListDocumentParser {
       let sectionName = sectionHeader ? sectionHeader.textContent!.trim().toLowerCase() : '';
       let tableContext: TableContext = {
         file: fileKey,
-        section: sectionName.toLowerCase(),
+        section: sectionName,
         columnCount: -1,
         table,
         platforms
