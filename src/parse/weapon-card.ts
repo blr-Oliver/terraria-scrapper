@@ -1,6 +1,7 @@
 import {JSDOM} from 'jsdom';
 import {fetchHtmlRaw} from '../fetch/fetch';
 import {ALL_PLATFORMS, makeVarying, PlatformList, PlatformName, PlatformVarying, PlatformVaryingValue, transform} from '../platform-varying';
+import {parseFlag} from './common-parsers';
 import {
   extractPlatformsFromClasses,
   extractPlatformsFromImages,
@@ -9,7 +10,7 @@ import {
   extractVaryingInteger,
   extractVaryingPercent,
   extractVaryingString,
-  extractVaryingValue,
+  extractVaryingValue, flagsNodeMatcher,
   Node,
   selectorMatcher
 } from './extract-varying';
@@ -148,7 +149,7 @@ function parseIds(section: Element, meta: MetaInfo) {
     const extractedIds = extractVaryingValue<string, number[]>(
         idBlock,
         selectorMatcher('b', idBlock),
-        selectorMatcher('.eico'),
+        flagsNodeMatcher,
         contentExtractor,
         node => extractPlatformsFromClasses(node as Element),
         contentMerger,
@@ -298,7 +299,7 @@ function processProperty(name: string, td: Element, weapon: ScrappedWeapon, meta
       weapon.bonus = extractVaryingInteger(td, meta.platforms);
       break;
     case 'consumable':
-      weapon.consumable = makeVarying(!!td.querySelector('.t-yes'), meta.platforms);
+      weapon.consumable = parseFlag(td, meta.platforms);
       break;
     case 'critChance':
       weapon.critChance = extractVaryingPercent(td, meta.platforms);

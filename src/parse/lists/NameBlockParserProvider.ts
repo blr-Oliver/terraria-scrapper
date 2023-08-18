@@ -1,6 +1,6 @@
 import {makeVarying, PlatformList} from '../../platform-varying';
 import {parseImage} from '../common-parsers';
-import {extractPlatformsFromClasses, extractVaryingValue, Node, selectorMatcher, unwrapSingleChildElement} from '../extract-varying';
+import {extractPlatformsFromClasses, extractVaryingValue, flagsNodeMatcher, Node, unwrapSingleChildElement} from '../extract-varying';
 import {CellContext, HeaderContext, ICellParser, ParsedItem} from './cell-parsers';
 import {constructPropertyParser} from './CommonParserProvider';
 import {ParserProvider} from './parse-table';
@@ -16,6 +16,8 @@ export class NameBlockParserProvider implements ParserProvider {
       return Object.keys(item.name!) as PlatformList;
     }
   };
+  private readonly basicNameNodeMatcher: (node: Node) => boolean =
+      (node: Node) => node.nodeType === Node.ELEMENT_NODE && (node as Element).matches('a[href][title]');
 
   getParser(header: HeaderContext): ICellParser | undefined {
     let caption = header.th.textContent!.trim().toLowerCase();
@@ -34,16 +36,15 @@ export class NameBlockParserProvider implements ParserProvider {
     let src = unwrapSingleChildElement(td);
     let idBlock = src.querySelector('.id');
     let platforms = context.platforms || context.table.platforms;
-    let nameValueNodeMatcher = (node: Node) => node.nodeType === Node.ELEMENT_NODE && (node as Element).matches('a[href][title]');
+    let nameValueNodeMatcher = this.basicNameNodeMatcher;
 
     if (idBlock) {
-      const plainMatcher = nameValueNodeMatcher;
-      nameValueNodeMatcher = (node: Node) => plainMatcher(node) && !idBlock!.contains(node);
+      nameValueNodeMatcher = (node: Node) => this.basicNameNodeMatcher(node) && !idBlock!.contains(node);
     }
 
     item.name = extractVaryingValue<string, string>(src,
         nameValueNodeMatcher,
-        selectorMatcher('.eico'),
+        flagsNodeMatcher,
         node => node.textContent!.trim(),
         node => extractPlatformsFromClasses(node as Element),
         (a, b) => (a || '') + b,
@@ -55,7 +56,7 @@ export class NameBlockParserProvider implements ParserProvider {
 
     item['page'] = extractVaryingValue<string, string>(src,
         nameValueNodeMatcher,
-        selectorMatcher('.eico'),
+        flagsNodeMatcher,
         node => (node as HTMLAnchorElement).href,
         node => extractPlatformsFromClasses(node as Element),
         (a, b) => (a || '') + b,
