@@ -3,11 +3,12 @@ import {findInAllCards} from './analyze/analyze-data';
 import {mergeExceptions} from './analyze/analyze-exceptions';
 import {EntryInfo} from './fetch/fetch-lists';
 import {parallelLimit} from './fetch/FloodGate';
+import {ItemDescriptor} from './parse/lists/cell-parsers';
 import {collectCaptions} from './parse/lists/collect-captions';
 import {parseAll} from './parse/lists/parse-all';
 import {getWeaponInfo, WeaponInfo} from './parse/weapon-card';
 import {getWeaponCategories} from './parse/weapon-categories';
-import {ALL_PLATFORMS, PlatformVaryingValue, pullToTop} from './platform-varying';
+import {ALL_PLATFORMS, PlatformName, PlatformVaryingValue, pullToTop} from './platform-varying';
 
 async function keypress(): Promise<void> {
   process.stdin.setRawMode(true);
@@ -21,7 +22,7 @@ async function keypress(): Promise<void> {
 }
 
 async function executeProgram(): Promise<void> {
-  const entry = await loadEntry();
+  const entry = await executeRoutine(loadEntry, 'Loading entry point...', false);
 //  await loadWeaponList();
 //  await loadWeaponCategories();
 //  await loadCardsFromWeaponList();
@@ -30,7 +31,12 @@ async function executeProgram(): Promise<void> {
 //  await findMultiCards();
 //  await fetchLists(entry);
 //  await extractAllCaptions(entry);
-  await parseAllData(entry);
+  let data = await executeRoutine(parseAll, 'Parsing lists...', false, entry);
+  let pivoted = await executeRoutine(() => pullToTop<{ [name: string]: ItemDescriptor }>(data),
+      'Separating platform variants...', false);
+  for (let platform in pivoted) {
+    await saveWithPrompt(`out/platforms/${platform}.json`, pivoted[platform as PlatformName], `Saving ${platform} data`);
+  }
 }
 
 async function processExceptions(): Promise<void> {
@@ -141,3 +147,24 @@ async function loadCards(cards: CardLocator[]): Promise<void> {
 }
 
 executeProgram().then(() => process.exit(0));
+
+async function executeRoutine<T extends (...args: any) => any>(
+    routine: T, prompt: string | undefined, awaitKeyPress: boolean,
+    ...params: Parameters<T>[]): Promise<Awaited<ReturnType<T>>> {
+  if (prompt)
+    console.log(prompt);
+  if (awaitKeyPress) {
+    console.log('Press any key to continue');
+    await keypress();
+  }
+  let result = await Promise.resolve(routine(...params));
+  if (prompt || awaitKeyPress)
+    console.log('Done');
+  return result;
+}
+
+async function saveWithPrompt(path: string, data: any, prompt: string = 'Saving...'): Promise<void> {
+  console.log(prompt);
+  await fs.promises.writeFile(path, JSON.stringify(data, null, 2), {encoding: 'utf8'});
+  console.log('Done');
+}

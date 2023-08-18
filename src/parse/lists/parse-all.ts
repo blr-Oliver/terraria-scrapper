@@ -12,7 +12,7 @@ import {CompositeParserProvider} from './providers/CompositeParserProvider';
 import {NameBlockParserProvider} from './providers/NameBlockParserProvider';
 import {WhipEffectParserProvider} from './providers/WhipEffectParserProvider';
 
-type NormalizedItem = PlatformVaryingValue<ItemDescriptor>;
+export type NormalizedItem = PlatformVaryingValue<ItemDescriptor>;
 
 function combine(a: any, b: any): any {
   if (a == null) return b;
@@ -119,7 +119,7 @@ class ParsedListsCollector implements ContentHandler {
   }
 }
 
-export async function parseAll(entry: EntryInfo): Promise<unknown> {
+export async function parseAll(entry: EntryInfo): Promise<{ [name: string]: NormalizedItem }> {
   const collector = new ParsedListsCollector();
   const parseProvider = new CompositeParserProvider(
       new CommonParserProvider(),
