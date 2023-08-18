@@ -2,6 +2,7 @@ import {EntryInfo} from '../../fetch/fetch-lists';
 import {getType} from '../../packed-varying';
 import {ALL_PLATFORMS, PlatformList, PlatformName, PlatformVaryingValue, pullToTop} from '../../platform-varying';
 import {ItemDescriptor, ParsedItem} from './cell-parsers';
+import {BlastRadiusProvider} from './providers/BlastRadiusProvider';
 import {CommonParserProvider} from './providers/CommonParserProvider';
 import {CompositeParserProvider} from './providers/CompositeParserProvider';
 import {ContentHandler, ListProcessor} from './list-processor';
@@ -123,6 +124,7 @@ export async function parseAll(entry: EntryInfo): Promise<unknown> {
       new CommonParserProvider(),
       new NameBlockParserProvider(),
       new WhipEffectParserProvider(),
+      new BlastRadiusProvider(),
       NOOP_PARSER_PROVIDER);
   const tableParser = new ItemTableParser(parseProvider);
   const fileParser = new ItemListDocumentParser(tableParser);
