@@ -7,7 +7,6 @@ import {collectCaptions} from './parse/lists/collect-captions';
 import {parseAll} from './parse/lists/parse-all';
 import {getWeaponInfo, WeaponInfo} from './parse/weapon-card';
 import {getWeaponCategories} from './parse/weapon-categories';
-import {getWeaponList} from './parse/weapon-info';
 import {ALL_PLATFORMS, PlatformVaryingValue, pullToTop} from './platform-varying';
 
 async function keypress(): Promise<void> {
@@ -91,15 +90,6 @@ async function loadWeaponCategories() {
   console.log('Done');
 }
 
-async function loadWeaponList(): Promise<void> {
-  console.log('Loading weapon list...');
-  console.log('Press any key to continue');
-  await keypress();
-  let weapons = await getWeaponList();
-  console.log('Saving...');
-  fs.writeFileSync('out/weapon-list.json', JSON.stringify(weapons, null, 2), {encoding: 'utf8'});
-  console.log('Done');
-}
 type CardLocator = {
   name: string,
   href: string
