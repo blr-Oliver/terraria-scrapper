@@ -2,13 +2,13 @@ import {EntryInfo} from '../../fetch/fetch-lists';
 import {getType} from '../../packed-varying';
 import {ALL_PLATFORMS, PlatformList, PlatformName, PlatformVaryingValue, pullToTop} from '../../platform-varying';
 import {ItemDescriptor, ParsedItem} from './cell-parsers';
-import {CommonParserProvider} from './CommonParserProvider';
-import {CompositeParserProvider} from './CompositeParserProvider';
+import {CommonParserProvider} from './providers/CommonParserProvider';
+import {CompositeParserProvider} from './providers/CompositeParserProvider';
 import {ContentHandler, ListProcessor} from './list-processor';
-import {NameBlockParserProvider} from './NameBlockParserProvider';
+import {NameBlockParserProvider} from './providers/NameBlockParserProvider';
 import {ItemListDocumentParser} from './parse-list-file';
 import {ItemTableParser, NOOP_PARSER_PROVIDER} from './parse-table';
-import {WhipEffectParserProvider} from './WhipEffectParserProvider';
+import {WhipEffectParserProvider} from './providers/WhipEffectParserProvider';
 
 type NormalizedItem = PlatformVaryingValue<ItemDescriptor>;
 

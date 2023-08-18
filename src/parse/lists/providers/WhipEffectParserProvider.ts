@@ -1,6 +1,6 @@
-import {makeVarying} from '../../platform-varying';
-import {CellContext, HeaderContext, ICellParser, ParsedItem} from './cell-parsers';
-import {ParserProvider} from './parse-table';
+import {makeVarying} from '../../../platform-varying';
+import {CellContext, HeaderContext, ICellParser, ParsedItem} from '../cell-parsers';
+import {ParserProvider} from '../parse-table';
 
 export class WhipEffectParserProvider implements ParserProvider {
   private static readonly TAG_PATTERN = /(?:(\d+)\s+summon\s+tag\s+damage)/;

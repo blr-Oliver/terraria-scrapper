@@ -1,9 +1,9 @@
-import {makeVarying, PlatformList} from '../../platform-varying';
-import {parseImage} from '../common-parsers';
-import {extractPlatformsFromClasses, extractVaryingValue, flagsNodeMatcher, Node, unwrapSingleChildElement} from '../extract-varying';
-import {CellContext, HeaderContext, ICellParser, ParsedItem} from './cell-parsers';
+import {makeVarying, PlatformList} from '../../../platform-varying';
+import {parseImage} from '../../common-parsers';
+import {extractPlatformsFromClasses, extractVaryingValue, flagsNodeMatcher, Node, unwrapSingleChildElement} from '../../extract-varying';
+import {CellContext, HeaderContext, ICellParser, ParsedItem} from '../cell-parsers';
 import {constructPropertyParser} from './CommonParserProvider';
-import {ParserProvider} from './parse-table';
+import {ParserProvider} from '../parse-table';
 
 export class NameBlockParserProvider implements ParserProvider {
   private readonly imageCellParser = constructPropertyParser('image', parseImage);

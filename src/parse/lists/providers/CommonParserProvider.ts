@@ -1,7 +1,7 @@
-import {COMMON_PARSERS, ValueParser} from '../common-parsers';
-import {HeaderContext, ICellParser, NOOP_PARSER} from './cell-parsers';
-import {COMMON_PROPERTY_HEADERS, COMMON_PROPERTY_TYPES, IGNORED_HEADERS} from './known-constants';
-import {ParserProvider} from './parse-table';
+import {COMMON_PARSERS, ValueParser} from '../../common-parsers';
+import {HeaderContext, ICellParser, NOOP_PARSER} from '../cell-parsers';
+import {COMMON_PROPERTY_HEADERS, COMMON_PROPERTY_TYPES, IGNORED_HEADERS} from '../known-constants';
+import {ParserProvider} from '../parse-table';
 
 export class CommonParserProvider implements ParserProvider {
   getParser(header: HeaderContext): ICellParser | undefined {
