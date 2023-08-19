@@ -1,5 +1,5 @@
 import {PlatformList} from '../../platform-varying';
-import {HeaderContext, ICellParser, NOOP_PARSER, ParsedItem, ParsingException, TableContext} from './cell-parsers';
+import {HeaderContext, ICellParser, ItemSourceInfo, NOOP_PARSER, ParsedItem, ParsingException, TableContext} from './cell-parsers';
 
 export interface ParserProvider {
   getParser(header: HeaderContext): ICellParser | undefined;
@@ -36,6 +36,10 @@ export class ItemTableParser {
     for (let row = 0; row < rowNum; ++row) {
       const itemRow = bodyRows[row];
       const item: ParsedItem = result[row] = {};
+      (item as any).source = [{
+        file: context.file,
+        section: context.section
+      }];
       let platforms: PlatformList = context.platforms;
       platformSources.forEach(parser => {
         const td = itemRow.cells[parser.header.column];

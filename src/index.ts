@@ -22,7 +22,9 @@ async function keypress(): Promise<void> {
 }
 
 async function executeProgram(): Promise<void> {
-  const entry = await executeRoutine(loadEntry, 'Loading entry point...', false);
+  const entry = await executeRoutine(loadEntry, 'Loading entry point...', false
+      //, 'src/entry-short.json'
+  );
 //  await loadWeaponList();
 //  await loadWeaponCategories();
 //  await loadCardsFromWeaponList();
@@ -57,8 +59,8 @@ function forAnyPlatform<T>(test: (value: T) => boolean): (value: PlatformVarying
   };
 }
 
-async function loadEntry() {
-  let content = await fs.promises.readFile('src/entry.json', {encoding: 'utf8'});
+async function loadEntry(path = 'src/entry.json') {
+  let content = await fs.promises.readFile(path, {encoding: 'utf8'});
   return JSON.parse(content);
 }
 
@@ -150,14 +152,14 @@ executeProgram().then(() => process.exit(0));
 
 async function executeRoutine<T extends (...args: any) => any>(
     routine: T, prompt: string | undefined, awaitKeyPress: boolean,
-    ...params: Parameters<T>[]): Promise<Awaited<ReturnType<T>>> {
+    ...params: Parameters<T>): Promise<Awaited<ReturnType<T>>> {
   if (prompt)
     console.log(prompt);
   if (awaitKeyPress) {
     console.log('Press any key to continue');
     await keypress();
   }
-  let result = await Promise.resolve(routine(...params));
+  let result = await Promise.resolve(routine(...(params as any[])));
   if (prompt || awaitKeyPress)
     console.log('Done');
   return result;

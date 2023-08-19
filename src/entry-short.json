@@ -1,0 +1,8 @@
+{
+  "srcRoot": "https://terraria.wiki.gg/wiki/",
+  "destRoot": "out/raw",
+  "categories": "Weapons",
+  "lists": [
+    "Launchers"
+  ]
+}

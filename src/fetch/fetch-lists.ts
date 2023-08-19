@@ -7,7 +7,6 @@ export interface EntryInfo {
   srcRoot: string,
   destRoot: string,
   categories: string,
-  globalList: string;
   lists: string[];
 }
 
@@ -20,8 +19,7 @@ export async function fetchLists(entry: EntryInfo): Promise<void> {
   let prepareDest = ensureExists(entry.destRoot + '/lists');
   let tasks: FetchTask[] = Array(2 + entry.lists.length);
   tasks[0] = {src: entry.categories, dest: 'Categories'};
-  tasks[1] = {src: entry.globalList, dest: 'Global List'};
-  entry.lists.forEach((list, i) => tasks[i + 2] = {src: list, dest: 'lists/' + list});
+  entry.lists.forEach((list, i) => tasks[i + 1] = {src: list, dest: 'lists/' + list});
 
   const fetcher = parallelLimit(fetchHtmlRaw, 5, 100);
   const writer = (file: string, content: string) => fs.promises.writeFile(`${entry.destRoot}/${file}`, content, {encoding: 'utf8'});

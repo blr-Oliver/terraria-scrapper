@@ -14,7 +14,7 @@ import {WhipEffectParserProvider} from './providers/WhipEffectParserProvider';
 
 export type NormalizedItem = PlatformVaryingValue<ItemDescriptor>;
 
-function combine(a: any, b: any): any {
+function combine(a: any, b: any, key?: string): any {
   if (a == null) return b;
   if (b == null) return a;
   const aType = getType(a);
@@ -28,7 +28,7 @@ function combine(a: any, b: any): any {
   if (aType === 'object') {
     const result: any = {};
     for (let aKey in a) {
-      let value = combine(a[aKey], b[aKey]);
+      let value = combine(a[aKey], b[aKey], aKey);
       if (value != null)
         result[aKey] = value;
     }
@@ -42,6 +42,9 @@ function combine(a: any, b: any): any {
     return result;
   }
   if (aType === 'array') {
+    if (key === 'source') {
+      return a.concat(b);
+    }
     const l = Math.max(a.length, b.length);
     const result = Array(l);
     for (let i = 0; i < l; ++i)

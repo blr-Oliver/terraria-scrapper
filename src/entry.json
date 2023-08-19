@@ -2,7 +2,6 @@
   "srcRoot": "https://terraria.wiki.gg/wiki/",
   "destRoot": "out/raw",
   "categories": "Weapons",
-  "globalList": "List_of_weapons",
   "lists": [
     "Swords",
     "Yoyos",
@@ -27,6 +26,7 @@
     "List_of_melee_weapons",
     "List_of_ranged_weapons",
     "List_of_magic_weapons",
-    "List_of_summon_weapons"
+    "List_of_summon_weapons",
+    "List_of_weapons"
   ]
 }

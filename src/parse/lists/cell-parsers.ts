@@ -3,7 +3,12 @@ import {PlatformList, PlatformVarying} from '../../platform-varying';
 export type BaseItemDescriptor = {
   id?: number;
   name?: string;
+  sources: ItemSourceInfo[];
 };
+export type ItemSourceInfo = {
+  file: string;
+  section: string;
+}
 export type ItemDescriptor = BaseItemDescriptor & { [key: string]: any };
 
 export type ParsingException = {

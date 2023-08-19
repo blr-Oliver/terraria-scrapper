@@ -16,19 +16,17 @@ export class ListProcessor {
   }
 
   async processLists(entry: EntryInfo): Promise<void> {
-    let files: string[] = Array(entry.lists.length + 1);
-    files[0] = `${entry.destRoot}/Global List.html`;
-    for (let i = 0; i < entry.lists.length; ++i)
-      files[i + 1] = `${entry.destRoot}/lists/${entry.lists[i]}.html`;
-    await Promise.allSettled(files.map(file => this.processFile(file)));
+    let files: { key: string, path: string }[] =
+        entry.lists.map(key => ({key, path: `${entry.destRoot}/lists/${key}.html`}))
+    await Promise.allSettled(files.map(file => this.processFile(file.path, file.key)));
     this.handler.finalizeParsing();
   }
 
-  private async processFile(file: string): Promise<void> {
-    let document = await this.loadDocument(file);
-    let content = this.fileParser.parseTablesPerSection(document, file);
+  private async processFile(path: string, key: string): Promise<void> {
+    let document = await this.loadDocument(path);
+    let content = this.fileParser.parseTablesPerSection(document, key);
     try {
-      this.handler.handle(content, file);
+      this.handler.handle(content, key);
     } catch (ex) {
       console.error(ex);
     }
