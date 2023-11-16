@@ -42,15 +42,15 @@ function combine(a: any, b: any, key?: string): any {
   }
 }
 
-export class ItemDataCollector implements ItemListCollector {
-  intermediateData: { [file: string]: { [section: string]: NormalizedItem[] } } = {};
-  finalData: { [name: string]: NormalizedItem } = {};
+export class CombiningItemDataCollector implements ItemListCollector<{ [name: string]: NormalizedItem }> {
+  private intermediateData: { [file: string]: { [section: string]: NormalizedItem[] } } = {};
+  private finalData: { [name: string]: NormalizedItem } = {};
 
   collect(fileContent: { [section: string]: ParsedItem[] }, fileKey: string): void {
     this.intermediateData[fileKey] = this.normalizeContent(fileContent);
   }
 
-  finish(): void {
+  finish(): { [name: string]: NormalizedItem } {
     for (let file in this.intermediateData) {
       let fileContent = this.intermediateData[file];
       for (let section in fileContent) {
@@ -66,9 +66,10 @@ export class ItemDataCollector implements ItemListCollector {
       }
     }
     this.sortKeys();
+    return this.finalData;
   }
 
-  sortKeys() {
+  private sortKeys() {
     let sorted = Object.keys(this.finalData).sort();
     let sortedData: { [name: string]: NormalizedItem } = {};
     for (let key of sorted)

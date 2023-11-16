@@ -1,6 +1,6 @@
 import {ItemListPerSection} from '../common';
 
-export interface ItemListCollector {
+export interface ItemListCollector<T> {
   collect(fileContent: ItemListPerSection, fileKey: string): void;
-  finish(): void;
+  finish(): T;
 }

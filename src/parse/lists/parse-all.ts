@@ -1,10 +1,10 @@
 import {EntryInfo} from '../../fetch/fetch-lists';
 import {NormalizedItem} from '../common';
 import {NOOP_PARSER_PROVIDER} from './cell-parsers';
-import {ItemDataCollector} from './collectors/ItemDataCollector';
-import {ListProcessor} from './ListProcessor';
+import {CombiningItemDataCollector} from './collectors/CombiningItemDataCollector';
 import {ItemListDocumentParser} from './ItemListDocumentParser';
 import {ItemTableParser} from './ItemTableParser';
+import {ListProcessor} from './ListProcessor';
 import {BehaviorPropertiesProvider} from './providers/BehaviorPropertiesProvider';
 import {BlastRadiusProvider} from './providers/BlastRadiusProvider';
 import {CommonParserProvider} from './providers/CommonParserProvider';
@@ -13,7 +13,7 @@ import {NameBlockParserProvider} from './providers/NameBlockParserProvider';
 import {WhipEffectParserProvider} from './providers/WhipEffectParserProvider';
 
 export async function parseAll(entry: EntryInfo): Promise<{ [name: string]: NormalizedItem }> {
-  const collector = new ItemDataCollector();
+  const collector = new CombiningItemDataCollector();
   const parseProvider = new CompositeParserProvider(
       new CommonParserProvider(),
       new NameBlockParserProvider(),
@@ -24,6 +24,5 @@ export async function parseAll(entry: EntryInfo): Promise<{ [name: string]: Norm
   const tableParser = new ItemTableParser(parseProvider);
   const fileParser = new ItemListDocumentParser(tableParser);
   const processor = new ListProcessor(fileParser, collector);
-  await processor.processLists(entry);
-  return collector.finalData;
+  return processor.processLists(entry);
 }

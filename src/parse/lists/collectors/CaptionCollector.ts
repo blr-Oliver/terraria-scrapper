@@ -2,9 +2,9 @@ import {EntryInfo} from '../../../fetch/fetch-lists';
 import {ParsedItem} from '../../common';
 import {HeaderContext, ICellParser, ParserProvider} from '../cell-parsers';
 import {ItemListCollector} from '../ItemListCollector';
-import {ListProcessor} from '../ListProcessor';
 import {ItemListDocumentParser} from '../ItemListDocumentParser';
 import {ItemTableParser} from '../ItemTableParser';
+import {ListProcessor} from '../ListProcessor';
 
 export type HeaderOccurrence = {
   file: string;
@@ -15,7 +15,7 @@ type Hash<T> = {
   [key: string]: T;
 }
 
-export class CaptionCollector implements ParserProvider, ItemListCollector {
+export class CaptionCollector implements ParserProvider, ItemListCollector<Hash<HeaderOccurrence[]>> {
   private preStats: Hash<Hash<Hash<boolean>>> = {};
   private stats?: Hash<HeaderOccurrence[]>;
 
@@ -47,17 +47,19 @@ export class CaptionCollector implements ParserProvider, ItemListCollector {
     // do nothing
   }
 
-  finish(): void {
-    if (this.stats) return;
-    this.stats = {};
-    for (let file in this.preStats) {
-      for (let section in this.preStats[file]) {
-        for (let header in this.preStats[file][section]) {
-          let occurrences: HeaderOccurrence[] = this.stats[header] || (this.stats[header] = []);
-          occurrences.push({file, section});
+  finish(): Hash<HeaderOccurrence[]> {
+    if (!this.stats) {
+      this.stats = {};
+      for (let file in this.preStats) {
+        for (let section in this.preStats[file]) {
+          for (let header in this.preStats[file][section]) {
+            let occurrences: HeaderOccurrence[] = this.stats[header] || (this.stats[header] = []);
+            occurrences.push({file, section});
+          }
         }
       }
     }
+    return this.stats;
   }
 }
 
