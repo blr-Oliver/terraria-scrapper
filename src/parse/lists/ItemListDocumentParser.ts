@@ -1,15 +1,16 @@
 import {ALL_PLATFORMS, PlatformList} from '../../platform-varying';
+import {ItemListPerSection} from '../common';
 import {extractPlatformsFromImages} from '../extract-varying';
-import {ParsedItem, TableContext} from './cell-parsers';
-import {ItemTableParser} from './parse-table';
+import {TableContext} from './cell-parsers';
+import {ItemTableParser} from './ItemTableParser';
 
 export class ItemListDocumentParser {
   constructor(private tableParser: ItemTableParser) {
   }
 
-  parseTablesPerSection(root: Document, fileKey: string): { [section: string]: ParsedItem[] } {
+  parseTablesPerSection(root: Document, fileKey: string): ItemListPerSection {
     let tables = root.querySelectorAll<HTMLTableElement>('table.terraria.sortable');
-    let result: { [section: string]: ParsedItem[] } = {};
+    let result: ItemListPerSection = {};
     let platforms = this.getPlatforms(root);
     for (let table of tables) {
       let sectionHeader = this.getClosestSectionHeader(table);

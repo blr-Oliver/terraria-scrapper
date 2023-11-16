@@ -1,9 +1,6 @@
 import {PlatformList} from '../../platform-varying';
-import {HeaderContext, ICellParser, ItemSourceInfo, NOOP_PARSER, ParsedItem, ParsingException, TableContext} from './cell-parsers';
-
-export interface ParserProvider {
-  getParser(header: HeaderContext): ICellParser | undefined;
-}
+import {ParsedItem} from '../common';
+import {HeaderContext, ICellParser, ParserProvider, ParsingException, TableContext} from './cell-parsers';
 
 type CellCoordinates = {
   td: HTMLTableCellElement;
@@ -140,11 +137,5 @@ export class ItemTableParser {
       }
     }
     return result;
-  }
-}
-
-export const NOOP_PARSER_PROVIDER: ParserProvider = {
-  getParser() {
-    return NOOP_PARSER;
   }
 }

@@ -88,3 +88,25 @@ export const COMMON_PROPERTY_TYPES: StringMapping = {
   'useTime': 'integer',
   'velocity': 'decimal'
 }
+
+export const PROPERTIES_BY_NAME: StringMapping = {
+  'damage': 'damage',
+  'knockback': 'knockback',
+  'consumable': 'consumable',
+  'mana': 'manaCost',
+  'use time': 'useTime',
+  'tool speed': 'toolSpeed',
+  'velocity': 'velocity',
+  'rarity': 'rarity',
+  'buy': 'buyValue',
+  'sell': 'sellValue',
+  'critical chance': 'critChance',
+  'tooltip': 'tooltip',
+  'max stack': 'maxStack',
+  'ammo': 'ammo',
+  'uses ammo': 'ammo',
+  'bonus': 'bonus',
+  'research': 'ignore_',
+  'placeable': 'ignore_',
+  'type': 'ignore_'
+};

@@ -1,6 +1,5 @@
 import {parseString} from '../../common-parsers';
-import {HeaderContext, ICellParser} from '../cell-parsers';
-import {ParserProvider} from '../parse-table';
+import {HeaderContext, ICellParser, ParserProvider} from '../cell-parsers';
 import {constructPropertyParser} from './CommonParserProvider';
 
 export class BlastRadiusProvider implements ParserProvider {

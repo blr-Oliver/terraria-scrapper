@@ -10,10 +10,12 @@ import {
   extractVaryingInteger,
   extractVaryingPercent,
   extractVaryingString,
-  extractVaryingValue, flagsNodeMatcher,
+  extractVaryingValue,
+  flagsNodeMatcher,
   Node,
   selectorMatcher
 } from './extract-varying';
+import {PROPERTIES_BY_NAME} from './known-constants';
 
 export interface WeaponInfo {
   id: number | number[];
@@ -256,28 +258,6 @@ function processToolPower(list: Element, weapon: ScrappedWeapon, meta: MetaInfo)
     weapon[type!] = extractVaryingPercent(platformMarker ? platformMarker.parentElement! : li, meta.platforms);
   }
 }
-
-const PROPERTIES_BY_NAME: { [key: string]: string } = {
-  'damage': 'damage',
-  'knockback': 'knockback',
-  'consumable': 'consumable',
-  'mana': 'manaCost',
-  'use time': 'useTime',
-  'tool speed': 'toolSpeed',
-  'velocity': 'velocity',
-  'rarity': 'rarity',
-  'buy': 'buyValue',
-  'sell': 'sellValue',
-  'critical chance': 'critChance',
-  'tooltip': 'tooltip',
-  'max stack': 'maxStack',
-  'ammo': 'ammo',
-  'uses ammo': 'ammo',
-  'bonus': 'bonus',
-  'research': 'ignore_',
-  'placeable': 'ignore_',
-  'type': 'ignore_'
-};
 
 function processProperty(name: string, td: Element, weapon: ScrappedWeapon, meta: MetaInfo) {
   name = name.toLowerCase();

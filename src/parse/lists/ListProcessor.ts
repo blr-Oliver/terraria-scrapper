@@ -1,32 +1,27 @@
 import * as fs from 'fs';
 import {JSDOM} from 'jsdom';
 import {EntryInfo} from '../../fetch/fetch-lists';
-import {ParsedItem} from './cell-parsers';
-import {ItemListDocumentParser} from './parse-list-file';
-
-export interface ContentHandler {
-  handle(parsedContent: { [p: string]: ParsedItem[] }, fileKey: string): void;
-  finalizeParsing(): void;
-}
+import {ItemListCollector} from './ItemListCollector';
+import {ItemListDocumentParser} from './ItemListDocumentParser';
 
 export class ListProcessor {
   constructor(
       private fileParser: ItemListDocumentParser,
-      private handler: ContentHandler) {
+      private collector: ItemListCollector) {
   }
 
   async processLists(entry: EntryInfo): Promise<void> {
     let files: { key: string, path: string }[] =
         entry.lists.map(key => ({key, path: `${entry.destRoot}/lists/${key}.html`}))
     await Promise.allSettled(files.map(file => this.processFile(file.path, file.key)));
-    this.handler.finalizeParsing();
+    this.collector.finish();
   }
 
   private async processFile(path: string, key: string): Promise<void> {
     let document = await this.loadDocument(path);
     let content = this.fileParser.parseTablesPerSection(document, key);
     try {
-      this.handler.handle(content, key);
+      this.collector.collect(content, key);
     } catch (ex) {
       console.error(ex);
     }

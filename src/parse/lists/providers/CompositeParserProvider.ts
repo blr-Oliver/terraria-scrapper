@@ -1,5 +1,4 @@
-import {HeaderContext, ICellParser} from '../cell-parsers';
-import {ParserProvider} from '../parse-table';
+import {HeaderContext, ICellParser, ParserProvider} from '../cell-parsers';
 
 export class CompositeParserProvider implements ParserProvider {
   private readonly providers: ParserProvider[];

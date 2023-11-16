@@ -1,8 +1,10 @@
-import {EntryInfo} from '../../fetch/fetch-lists';
-import {HeaderContext, ICellParser, ParsedItem} from './cell-parsers';
-import {ContentHandler, ListProcessor} from './list-processor';
-import {ItemListDocumentParser} from './parse-list-file';
-import {ItemTableParser, ParserProvider} from './parse-table';
+import {EntryInfo} from '../../../fetch/fetch-lists';
+import {ParsedItem} from '../../common';
+import {HeaderContext, ICellParser, ParserProvider} from '../cell-parsers';
+import {ItemListCollector} from '../ItemListCollector';
+import {ListProcessor} from '../ListProcessor';
+import {ItemListDocumentParser} from '../ItemListDocumentParser';
+import {ItemTableParser} from '../ItemTableParser';
 
 export type HeaderOccurrence = {
   file: string;
@@ -13,7 +15,7 @@ type Hash<T> = {
   [key: string]: T;
 }
 
-export class CaptionCollector implements ParserProvider, ContentHandler {
+export class CaptionCollector implements ParserProvider, ItemListCollector {
   private preStats: Hash<Hash<Hash<boolean>>> = {};
   private stats?: Hash<HeaderOccurrence[]>;
 
@@ -41,11 +43,11 @@ export class CaptionCollector implements ParserProvider, ContentHandler {
   getStats(): Hash<HeaderOccurrence[]> {
     return this.stats!;
   }
-  handle(parsedContent: { [p: string]: ParsedItem[] }, fileKey: string): void {
+  collect(fileContent: { [p: string]: ParsedItem[] }, fileKey: string): void {
     // do nothing
   }
 
-  finalizeParsing(): void {
+  finish(): void {
     if (this.stats) return;
     this.stats = {};
     for (let file in this.preStats) {

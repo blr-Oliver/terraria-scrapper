@@ -1,14 +1,15 @@
 import * as fs from 'fs';
 import {findInAllCards} from './analyze/analyze-data';
 import {mergeExceptions} from './analyze/analyze-exceptions';
-import {EntryInfo} from './fetch/fetch-lists';
+import {EntryInfo, fetchLists} from './fetch/fetch-lists';
 import {parallelLimit} from './fetch/FloodGate';
-import {ItemDescriptor} from './parse/lists/cell-parsers';
-import {collectCaptions} from './parse/lists/collect-captions';
+import {ItemDescriptor} from './parse/common';
+import {collectCaptions} from './parse/lists/collectors/CaptionCollector';
 import {parseAll} from './parse/lists/parse-all';
 import {getWeaponInfo, WeaponInfo} from './parse/weapon-card';
-import {getWeaponCategories} from './parse/weapon-categories';
+import {Category, getWeaponCategories} from './parse/weapon-categories';
 import {ALL_PLATFORMS, PlatformName, PlatformVaryingValue, pullToTop} from './platform-varying';
+import {matchCategory} from './post-parse/match-category';
 
 async function keypress(): Promise<void> {
   process.stdin.setRawMode(true);
@@ -22,20 +23,22 @@ async function keypress(): Promise<void> {
 }
 
 async function executeProgram(): Promise<void> {
-  const entry = await executeRoutine(loadEntry, 'Loading entry point...', false
+  const pause = false;
+  const entry = await executeRoutine(loadEntry, 'Loading entry point...', pause
       //, 'src/entry-short.json'
   );
-//  await loadWeaponList();
 //  await loadWeaponCategories();
 //  await loadCardsFromWeaponList();
 //  await processExceptions();
 //  await loadSingleWeapon({name: 'Bone Pickaxe', href: '/wiki/Bone_Pickaxe'});
 //  await findMultiCards();
-//  await fetchLists(entry);
+  await executeRoutine(fetchLists, 'Fetching raw data...', pause, entry);
 //  await extractAllCaptions(entry);
-  let data = await executeRoutine(parseAll, 'Parsing lists...', false, entry);
+  let categories = await executeRoutine(loadCategories, 'Loading categories...', pause);
+  let data = await executeRoutine(parseAll, 'Parsing lists...', pause, entry);
+  await executeRoutine(matchCategory, 'Matching items and categories...', pause, data, categories);
   let pivoted = await executeRoutine(() => pullToTop<{ [name: string]: ItemDescriptor }>(data),
-      'Separating platform variants...', false);
+      'Separating platform variants...', pause);
   for (let platform in pivoted) {
     await saveWithPrompt(`out/platforms/${platform}.json`, pivoted[platform as PlatformName], `Saving ${platform} data`);
   }
@@ -59,7 +62,12 @@ function forAnyPlatform<T>(test: (value: T) => boolean): (value: PlatformVarying
   };
 }
 
-async function loadEntry(path = 'src/entry.json') {
+async function loadEntry(path = 'src/entry.json'): Promise<EntryInfo> {
+  let content = await fs.promises.readFile(path, {encoding: 'utf8'});
+  return JSON.parse(content);
+}
+
+async function loadCategories(path = 'out/weapon-categories.json'): Promise<Category> {
   let content = await fs.promises.readFile(path, {encoding: 'utf8'});
   return JSON.parse(content);
 }

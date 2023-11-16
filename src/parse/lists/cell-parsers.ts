@@ -1,4 +1,5 @@
-import {PlatformList, PlatformVarying} from '../../platform-varying';
+import {PlatformList} from '../../platform-varying';
+import {ParsedItem} from '../common';
 
 export type BaseItemDescriptor = {
   id?: number;
@@ -9,16 +10,12 @@ export type ItemSourceInfo = {
   file: string;
   section: string;
 }
-export type ItemDescriptor = BaseItemDescriptor & { [key: string]: any };
 
 export type ParsingException = {
   col: number;
   property?: string;
   message?: string;
   value?: any;
-}
-export type ParsingExceptions = {
-  exceptions?: ParsingException[];
 }
 
 export type TableContext = {
@@ -49,8 +46,6 @@ export type CellContext = {
   platforms: PlatformList;
 }
 
-export type ParsedItem = PlatformVarying<ItemDescriptor> & ParsingExceptions;
-
 export interface ICellParser {
   parse: (td: HTMLTableCellElement, item: ParsedItem, context: CellContext) => void;
   getPlatforms?: (td: HTMLTableCellElement, item: ParsedItem, context: CellContext) => PlatformList;
@@ -59,3 +54,13 @@ export interface ICellParser {
 export const NOOP_PARSER: ICellParser = {
   parse: () => void 0
 };
+
+export interface ParserProvider {
+  getParser(header: HeaderContext): ICellParser | undefined;
+}
+
+export const NOOP_PARSER_PROVIDER: ParserProvider = {
+  getParser() {
+    return NOOP_PARSER;
+  }
+}
