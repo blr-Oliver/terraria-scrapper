@@ -6,7 +6,8 @@ import {
   extractVaryingInteger,
   extractVaryingPercent,
   extractVaryingString,
-  extractVaryingValue, flagsNodeMatcher,
+  extractVaryingValue,
+  flagsNodeMatcher,
   selectorMatcher,
   unwrapSingleChildElement
 } from './extract-varying';
@@ -82,7 +83,20 @@ function parseSortKey(el: Element, platforms: PlatformList) {
   );
 }
 
-export const COMMON_PARSERS: { [type: string]: ValueParser<unknown> } = {
+export type COMMON_PARSER_TYPES = {
+  'string': string;
+  'integer': number;
+  'decimal': number;
+  'percent': number;
+  'number': number,
+  'sortable': number,
+  'flag': boolean;
+  'image': string;
+}
+
+export const COMMON_PARSERS: {
+  [K in keyof COMMON_PARSER_TYPES]: ValueParser<COMMON_PARSER_TYPES[K]>;
+} = {
   'string': parseString,
   'integer': parseInteger,
   'decimal': parseDecimal,

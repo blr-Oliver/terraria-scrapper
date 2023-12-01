@@ -1,3 +1,5 @@
+import {COMMON_PARSER_TYPES} from './common-parsers';
+
 export type StringMapping = { [text: string]: string };
 export type StringSet = { [text: string]: true };
 
@@ -61,7 +63,7 @@ export const COMMON_PROPERTY_HEADERS: StringMapping = {
   'velocity': 'velocity'
 };
 
-export const COMMON_PROPERTY_TYPES: StringMapping = {
+export const COMMON_PROPERTY_TYPES: { [property: string]: keyof COMMON_PARSER_TYPES } = {
   'ammoType': 'string',
   'autoSwing': 'flag',
   'axePower': 'percent',
