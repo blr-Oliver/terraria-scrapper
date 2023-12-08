@@ -1,6 +1,6 @@
 {
-  "srcRoot": "https://terraria.wiki.gg/wiki/",
-  "destRoot": "out/raw",
+  "htmlRootUrl": "https://terraria.wiki.gg/wiki/",
+  "htmlOutputPath": "out/raw",
   "categories": "Weapons",
   "lists": [
     "Launchers"

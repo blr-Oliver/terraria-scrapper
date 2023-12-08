@@ -1,5 +1,4 @@
 import {JSDOM} from 'jsdom';
-import {fetchHtmlRaw} from '../fetch/fetch';
 
 export interface ItemInCategory {
   name: string;
@@ -12,9 +11,8 @@ export interface Category {
   items: ItemInCategory[];
 }
 
-export async function getWeaponCategories(): Promise<Category> {
-  let rootText = await fetchHtmlRaw('https://terraria.wiki.gg/wiki/Weapons');
-  let rootDoc: Document = new JSDOM(rootText).window.document;
+export function parseCategoriesFromHtml(html: string) {
+  let rootDoc: Document = new JSDOM(html).window.document;
   const rootCategory: Category = {
     name: 'Weapons',
     categories: [],

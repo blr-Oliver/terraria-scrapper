@@ -1,13 +1,14 @@
 import * as fs from 'fs';
 import {findInAllCards} from './analyze/analyze-data';
 import {mergeExceptions} from './analyze/analyze-exceptions';
+import {fetchHtmlRaw} from './fetch/fetch';
 import {EntryInfo, fetchLists} from './fetch/fetch-lists';
 import {parallelLimit} from './fetch/FloodGate';
 import {ItemDescriptor} from './parse/common';
 import {collectCaptions} from './parse/lists/collectors/CaptionCollector';
 import {parseAll} from './parse/lists/parse-all';
 import {getWeaponInfo, WeaponInfo} from './parse/weapon-card';
-import {Category, getWeaponCategories} from './parse/weapon-categories';
+import {Category, parseCategoriesFromHtml} from './parse/weapon-categories';
 import {ALL_PLATFORMS, PlatformName, PlatformVaryingValue, pullToTop} from './platform-varying';
 import {matchCategory} from './post-parse/match-category';
 
@@ -94,6 +95,11 @@ async function findMultiCards(): Promise<void> {
   console.log('Saving...');
   fs.writeFileSync('out/multi-cards.json', JSON.stringify(multiCards, null, 2), {encoding: 'utf8'});
   console.log('Done');
+}
+
+export async function getWeaponCategories(): Promise<Category> {
+  let rootText = await fetchHtmlRaw('https://terraria.wiki.gg/wiki/Weapons');
+  return parseCategoriesFromHtml(rootText);
 }
 
 async function loadWeaponCategories() {
