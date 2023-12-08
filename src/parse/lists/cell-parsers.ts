@@ -45,6 +45,10 @@ export interface ICellParser {
   getPlatforms?: (td: HTMLTableCellElement, item: ParsedItem, context: CellContext) => PlatformList;
 }
 
+export interface ICellPropertyParser extends ICellParser {
+  property: string
+}
+
 export const NOOP_PARSER: ICellParser = {
   parse: () => void 0
 };

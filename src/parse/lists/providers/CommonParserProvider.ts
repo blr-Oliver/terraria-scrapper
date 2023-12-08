@@ -1,6 +1,6 @@
 import {COMMON_PARSERS, ValueParser} from '../../common-parsers';
-import {HeaderContext, ICellParser, NOOP_PARSER, ParserProvider} from '../cell-parsers';
 import {COMMON_PROPERTY_HEADERS, COMMON_PROPERTY_TYPES, IGNORED_HEADERS} from '../../known-constants';
+import {HeaderContext, ICellParser, ICellPropertyParser, NOOP_PARSER, ParserProvider} from '../cell-parsers';
 
 export class CommonParserProvider implements ParserProvider {
   getParser(header: HeaderContext): ICellParser | undefined {
@@ -15,8 +15,9 @@ export class CommonParserProvider implements ParserProvider {
   }
 }
 
-export function constructPropertyParser(property: string, parser: ValueParser<unknown>): ICellParser {
+export function constructPropertyParser(property: string, parser: ValueParser<unknown>): ICellPropertyParser {
   return {
+    property,
     parse(td, item, context) {
       item[property] = parser(td, context.platforms);
     }

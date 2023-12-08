@@ -38,15 +38,15 @@ export class ItemTableParser {
         section: context.section
       }];
       let platforms: PlatformList = context.platforms;
-      platformSources.forEach(parser => {
-        const td = itemRow.cells[parser.header.column];
+      platformSources.forEach(binding => {
+        const td = itemRow.cells[binding.header.column];
         const cellContext = {
           table: context,
-          header: parser.header,
+          header: binding.header,
           td, column: row, row: row,
           platforms
         };
-        platforms = parser.parser.getPlatforms!(td, item, cellContext);
+        platforms = binding.parser.getPlatforms!(td, item, cellContext);
       })
       for (let column = 0; column < colNum; ++column) {
         const td = itemRow.cells[column];
@@ -56,13 +56,17 @@ export class ItemTableParser {
           td, column: row, row: row,
           platforms
         };
+        const parser = parsers[column].parser;
         try {
-          parsers[column].parser.parse(td, item, cellContext);
+          parser.parse(td, item, cellContext);
         } catch (ex) {
           let exInfo: ListRowParsingException = {col: column};
           if (ex instanceof Error)
             exInfo.message = ex.message;
-          else exInfo.value = String(ex);
+          else
+            exInfo.value = String(ex);
+          if ('property' in parser) // property parsers report dedicated property on them
+            exInfo.property = parser.property as string;
           if (!item.exceptions)
             item.exceptions = [];
           item.exceptions.push(exInfo);
