@@ -1,4 +1,4 @@
-import {EntryInfo} from '../../../fetch/fetch-lists';
+import {EntryInfo} from '../../../execution';
 import {ParsedSection} from '../../common';
 import {HeaderContext, ICellParser, ParserProvider} from '../cell-parsers';
 import {ItemListCollector} from '../ItemListCollector';

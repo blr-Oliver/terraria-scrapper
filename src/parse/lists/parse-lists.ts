@@ -1,4 +1,4 @@
-import {EntryInfo} from '../../fetch/fetch-lists';
+import {EntryInfo} from '../../execution';
 import {NormalizedItem} from '../common';
 import {NOOP_PARSER_PROVIDER} from './cell-parsers';
 import {CombiningItemDataCollector} from './collectors/CombiningItemDataCollector';

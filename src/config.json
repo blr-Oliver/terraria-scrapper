@@ -1,15 +1,40 @@
 {
   "entry": "entry.json",
   "operations": {
-    "fetchCategories": true,
-    "fetchLists": true,
-    "parseCategories": true,
-    "parseLists": true,
-    "collectNames": false,
-    "fetchCards": false,
-    "parseCards": false,
-    "combineItemData": false,
-    "splitPlatforms": false,
-    "packPlatforms": false
+    "fetchCategories": {
+      "enabled": true,
+      "prompt": "Fetching categories"
+    },
+    "fetchLists": {
+      "enabled": true,
+      "prompt": "Fetching lists"
+    },
+    "parseCategories": {
+      "prompt": "Parsing categories",
+      "pause": true
+    },
+    "parseLists": {
+      "prompt": "Parsing lists"
+    },
+    "collectNames": {
+      "prompt": "Collecting item names"
+    },
+    "fetchCards": {
+      "prompt": "Fetching item cards",
+      "pause": true
+    },
+    "parseCards": {
+      "prompt": "Parsing cards",
+      "pause": true
+    },
+    "combineItemData": {
+      "prompt": "Combining item data from all sources"
+    },
+    "splitPlatforms": {
+      "prompt": "Splitting values per platform"
+    },
+    "packPlatforms": {
+      "prompt": "Packing common data between platforms"
+    }
   }
 }

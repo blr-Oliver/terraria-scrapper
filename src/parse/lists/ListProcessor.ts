@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import {JSDOM} from 'jsdom';
-import {EntryInfo} from '../../fetch/fetch-lists';
+import {EntryInfo} from '../../execution';
 import {ItemListCollector} from './ItemListCollector';
 import {ItemListDocumentParser} from './ItemListDocumentParser';
 
