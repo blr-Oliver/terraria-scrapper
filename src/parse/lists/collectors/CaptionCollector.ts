@@ -1,5 +1,5 @@
 import {EntryInfo} from '../../../fetch/fetch-lists';
-import {ParsedItem} from '../../common';
+import {ParsedSection} from '../../common';
 import {HeaderContext, ICellParser, ParserProvider} from '../cell-parsers';
 import {ItemListCollector} from '../ItemListCollector';
 import {ItemListDocumentParser} from '../ItemListDocumentParser';
@@ -43,7 +43,7 @@ export class CaptionCollector implements ParserProvider, ItemListCollector<Hash<
   getStats(): Hash<HeaderOccurrence[]> {
     return this.stats!;
   }
-  collect(fileContent: { [p: string]: ParsedItem[] }, fileKey: string): void {
+  collect(fileContent: ParsedSection[], fileKey: string): void {
     // do nothing
   }
 

@@ -1,6 +1,6 @@
 import {PlatformList} from '../../platform-varying';
-import {ParsedItem} from '../common';
-import {HeaderContext, ICellParser, ParserProvider, ParsingException, TableContext} from './cell-parsers';
+import {ListRowParsingException, ParsedItem} from '../common';
+import {HeaderContext, ICellParser, ParserProvider, TableContext} from './cell-parsers';
 
 type CellCoordinates = {
   td: HTMLTableCellElement;
@@ -59,7 +59,7 @@ export class ItemTableParser {
         try {
           parsers[column].parser.parse(td, item, cellContext);
         } catch (ex) {
-          let exInfo: ParsingException = {col: column};
+          let exInfo: ListRowParsingException = {col: column};
           if (ex instanceof Error)
             exInfo.message = ex.message;
           else exInfo.value = String(ex);

@@ -1,6 +1,6 @@
 import {getType} from '../../../packed-varying';
 import {ALL_PLATFORMS, PlatformList, PlatformName, pullToTop} from '../../../platform-varying';
-import {NormalizedItem, ParsedItem} from '../../common';
+import {NormalizedItem, ParsedItem, ParsedSection} from '../../common';
 import {ItemListCollector} from '../ItemListCollector';
 
 function combine(a: any, b: any, key?: string): any {
@@ -46,7 +46,7 @@ export class CombiningItemDataCollector implements ItemListCollector<{ [name: st
   private intermediateData: { [file: string]: { [section: string]: NormalizedItem[] } } = {};
   private finalData: { [name: string]: NormalizedItem } = {};
 
-  collect(fileContent: { [section: string]: ParsedItem[] }, fileKey: string): void {
+  collect(fileContent: ParsedSection[], fileKey: string): void {
     this.intermediateData[fileKey] = this.normalizeContent(fileContent);
   }
 
@@ -85,10 +85,10 @@ export class CombiningItemDataCollector implements ItemListCollector<{ [name: st
     throw new Error('unnamed item');
   }
 
-  private normalizeContent(parsedContent: { [section: string]: ParsedItem[] }): { [section: string]: NormalizedItem[] } {
+  private normalizeContent(parsedContent: ParsedSection[]): { [section: string]: NormalizedItem[] } {
     let result: { [section: string]: NormalizedItem[] } = {};
-    for (let section in parsedContent) {
-      result[section] = parsedContent[section]
+    for (let section of parsedContent) {
+      result[section.title] = section.items
           .map(item => this.normalizeItem(item))
     }
     return result;

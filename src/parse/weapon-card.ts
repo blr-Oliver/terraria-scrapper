@@ -1,6 +1,7 @@
 import {JSDOM} from 'jsdom';
 import {fetchHtmlRaw} from '../fetch/fetch';
 import {ALL_PLATFORMS, makeVarying, PlatformList, PlatformName, PlatformVarying, PlatformVaryingValue, transform} from '../platform-varying';
+import {ParsingException} from './common';
 import {parseFlag} from './common-parsers';
 import {
   extractPlatformsFromClasses,
@@ -54,12 +55,11 @@ export interface ProjectileInfo {
 
 export interface MetaInfo {
   platforms: PlatformList;
-  parsingExceptions: ParsingException[];
+  parsingExceptions: CardParsingException[];
 }
 
-export interface ParsingException {
+export interface CardParsingException extends ParsingException {
   stage: string;
-  description: string;
   value?: any;
 }
 
@@ -99,7 +99,7 @@ function processSection(section: Element, weapon: ScrappedWeapon, meta: MetaInfo
   else {
     meta.parsingExceptions.push({
       stage: 'categorize section',
-      description: 'unknown section selector',
+      message: 'unknown section selector',
       value: section.className
     });
   }
@@ -188,7 +188,7 @@ function processIdsSection(section: Element, weapon: ScrappedWeapon, meta: MetaI
       default:
         meta.parsingExceptions.push({
           stage: 'ids section',
-          description: 'unknown id category',
+          message: 'unknown id category',
           value: info.category
         });
     }
@@ -209,14 +209,14 @@ function processStatisticsSection(section: Element, weapon: ScrappedWeapon, meta
       default:
         meta.parsingExceptions.push({
           stage: 'statistics categorization',
-          description: 'unknown title',
+          message: 'unknown title',
           value: title
         });
     }
   } else {
     meta.parsingExceptions.push({
       stage: 'statistics categorization',
-      description: 'missing title'
+      message: 'missing title'
     });
   }
 }
@@ -234,7 +234,7 @@ function processGeneralStatistics(section: Element, weapon: ScrappedWeapon, meta
     // TODO this is probably tool power stats
     meta.parsingExceptions.push({
       stage: 'statistics',
-      description: 'table not found'
+      message: 'table not found'
     });
   }
 }
@@ -249,7 +249,7 @@ function processToolPower(list: Element, weapon: ScrappedWeapon, meta: MetaInfo)
     else {
       meta.parsingExceptions.push({
         stage: 'parsing tool power',
-        description: 'unknown tool type',
+        message: 'unknown tool type',
         value: li.className
       });
       continue;
@@ -336,7 +336,7 @@ function processProperty(name: string, td: Element, weapon: ScrappedWeapon, meta
     default:
       meta.parsingExceptions.push({
         stage: 'property detection',
-        description: 'unknown property',
+        message: 'unknown property',
         value: name
       });
   }

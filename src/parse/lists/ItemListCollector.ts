@@ -1,6 +1,6 @@
-import {ItemListPerSection} from '../common';
+import {ParsedSection} from '../common';
 
 export interface ItemListCollector<T> {
-  collect(fileContent: ItemListPerSection, fileKey: string): void;
+  collect(fileContent: ParsedSection[], fileKey: string): void;
   finish(): T;
 }

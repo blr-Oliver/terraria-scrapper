@@ -5,7 +5,7 @@
     "declaration": false,
     "downlevelIteration": true,
     "forceConsistentCasingInFileNames": true,
-    "importHelpers": true,
+    "importHelpers": false,
     "module": "commonjs",
     "moduleResolution": "node",
     "noFallthroughCasesInSwitch": false,

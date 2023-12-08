@@ -11,16 +11,10 @@ export type ItemSourceInfo = {
   section: string;
 }
 
-export type ParsingException = {
-  col: number;
-  property?: string;
-  message?: string;
-  value?: any;
-}
-
 export type TableContext = {
   file: string;
   section: string;
+  sectionIndex: number;
   table: HTMLTableElement;
   columnCount: number;
   platforms: PlatformList;

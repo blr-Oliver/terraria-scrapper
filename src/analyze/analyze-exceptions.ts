@@ -1,8 +1,8 @@
 import * as fs from 'fs';
-import {ParsingException} from '../parse/weapon-card';
+import {CardParsingException} from '../parse/weapon-card';
 
 type ExceptionStats = {
-  ex: ParsingException;
+  ex: CardParsingException;
   files: string[];
 }
 
@@ -37,10 +37,10 @@ function processFiles(files: string[]): Map<string, ExceptionStats> {
 
 type HashedException = {
   key: string,
-  value: ParsingException
+  value: CardParsingException
 }
 
-function getExceptions(file: string): ParsingException[] | undefined {
+function getExceptions(file: string): CardParsingException[] | undefined {
   let content = fs.readFileSync(`out/cards/${file}`, {encoding: 'utf8'});
   let data: any;
   try {
@@ -50,11 +50,11 @@ function getExceptions(file: string): ParsingException[] | undefined {
     return;
   }
   if (data && data.parsingExceptions)
-    return data.parsingExceptions as ParsingException[];
+    return data.parsingExceptions as CardParsingException[];
 }
 
-function getExceptionKey(ex: ParsingException): HashedException {
-  const key = [ex.stage, ex.description, JSON.stringify(ex.value || '')].join('|');
+function getExceptionKey(ex: CardParsingException): HashedException {
+  const key = [ex.stage, ex.message, JSON.stringify(ex.value || '')].join('|');
   return {
     key,
     value: ex
