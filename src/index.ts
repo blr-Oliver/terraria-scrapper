@@ -6,9 +6,9 @@ import {EntryInfo, fetchLists} from './fetch/fetch-lists';
 import {parallelLimit} from './fetch/FloodGate';
 import {ItemDescriptor} from './parse/common';
 import {collectCaptions} from './parse/lists/collectors/CaptionCollector';
-import {parseAll} from './parse/lists/parse-all';
-import {getWeaponInfo, WeaponInfo} from './parse/weapon-card';
-import {Category, parseCategoriesFromHtml} from './parse/weapon-categories';
+import {parseLists} from './parse/lists/parse-lists';
+import {getWeaponInfo, WeaponInfo} from './parse/parse-card';
+import {Category, parseCategories} from './parse/parse-categories';
 import {ALL_PLATFORMS, PlatformName, PlatformVaryingValue, pullToTop} from './platform-varying';
 import {matchCategory} from './post-parse/match-category';
 
@@ -36,7 +36,7 @@ async function executeProgram(): Promise<void> {
   await executeRoutine(fetchLists, 'Fetching raw data...', pause, entry);
 //  await extractAllCaptions(entry);
   let categories = await executeRoutine(loadCategories, 'Loading categories...', pause);
-  let data = await executeRoutine(parseAll, 'Parsing lists...', pause, entry);
+  let data = await executeRoutine(parseLists, 'Parsing lists...', pause, entry);
   await executeRoutine(matchCategory, 'Matching items and categories...', pause, data, categories);
   let pivoted = await executeRoutine(() => pullToTop<{ [name: string]: ItemDescriptor }>(data),
       'Separating platform variants...', pause);
@@ -76,7 +76,7 @@ async function loadCategories(path = 'out/weapon-categories.json'): Promise<Cate
 async function parseAllData(entry: EntryInfo) {
   console.log('Press any key to continue');
   await keypress();
-  const data = await parseAll(entry);
+  const data = await parseLists(entry);
   await fs.promises.writeFile('out/data.json', JSON.stringify(data, null, 2), {encoding: 'utf8'});
 }
 
@@ -99,7 +99,7 @@ async function findMultiCards(): Promise<void> {
 
 export async function getWeaponCategories(): Promise<Category> {
   let rootText = await fetchHtmlRaw('https://terraria.wiki.gg/wiki/Weapons');
-  return parseCategoriesFromHtml(rootText);
+  return parseCategories(rootText);
 }
 
 async function loadWeaponCategories() {

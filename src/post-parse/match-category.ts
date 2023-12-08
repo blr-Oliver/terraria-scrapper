@@ -1,5 +1,5 @@
 import {NormalizedItem} from '../parse/common';
-import {Category} from '../parse/weapon-categories';
+import {Category} from '../parse/parse-categories';
 import {PlatformName} from '../platform-varying';
 
 export function matchCategory(items: { [name: string]: NormalizedItem }, root: Category): void {

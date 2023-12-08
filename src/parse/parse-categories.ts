@@ -11,7 +11,7 @@ export interface Category {
   items: ItemInCategory[];
 }
 
-export function parseCategoriesFromHtml(html: string) {
+export function parseCategories(html: string) {
   let rootDoc: Document = new JSDOM(html).window.document;
   const rootCategory: Category = {
     name: 'Weapons',

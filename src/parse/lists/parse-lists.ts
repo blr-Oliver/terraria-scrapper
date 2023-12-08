@@ -12,7 +12,7 @@ import {CompositeParserProvider} from './providers/CompositeParserProvider';
 import {NameBlockParserProvider} from './providers/NameBlockParserProvider';
 import {WhipEffectParserProvider} from './providers/WhipEffectParserProvider';
 
-export async function parseAll(entry: EntryInfo): Promise<{ [name: string]: NormalizedItem }> {
+export async function parseLists(entry: EntryInfo): Promise<{ [name: string]: NormalizedItem }> {
   const collector = new CombiningItemDataCollector();
   const parseProvider = new CompositeParserProvider(
       new CommonParserProvider(),

@@ -1,0 +1,15 @@
+{
+  "entry": "entry.json",
+  "operations": {
+    "fetchCategories": true,
+    "fetchLists": true,
+    "parseCategories": true,
+    "parseLists": true,
+    "collectNames": false,
+    "fetchCards": false,
+    "parseCards": false,
+    "combineItemData": false,
+    "splitPlatforms": false,
+    "packPlatforms": false
+  }
+}

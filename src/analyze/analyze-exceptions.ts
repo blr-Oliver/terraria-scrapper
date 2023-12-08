@@ -1,5 +1,5 @@
 import * as fs from 'fs';
-import {CardParsingException} from '../parse/weapon-card';
+import {CardParsingException} from '../parse/parse-card';
 
 type ExceptionStats = {
   ex: CardParsingException;
