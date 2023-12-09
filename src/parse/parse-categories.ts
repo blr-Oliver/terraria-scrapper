@@ -1,4 +1,7 @@
+import * as fs from 'fs';
 import {JSDOM} from 'jsdom';
+import {EntryInfo} from '../execution';
+import {ensureExists} from '../fetch/common';
 
 export interface ItemInCategory {
   name: string;
@@ -11,7 +14,14 @@ export interface Category {
   items: ItemInCategory[];
 }
 
-export function parseCategories(html: string) {
+export async function parseCategories(entry: EntryInfo): Promise<void> {
+  let html = await fs.promises.readFile(`${entry.out}/html/${entry.categories}.html`, {encoding: 'utf8'});
+  let category = parseCategoriesFromHtml(html);
+  await ensureExists(`${entry.out}/json`);
+  return fs.promises.writeFile(`${entry.out}/json/categories.json`, JSON.stringify(category, null, 2), {encoding: 'utf8'});
+}
+
+function parseCategoriesFromHtml(html: string): Category {
   let rootDoc: Document = new JSDOM(html).window.document;
   const rootCategory: Category = {
     name: 'Weapons',
@@ -24,6 +34,9 @@ export function parseCategories(html: string) {
       ['.infocard', 'h2', 'h3', 'h4'],
       processInfoCard,
       extractTopLevelName);
+
+  omitEmptyCategories(rootCategory);
+
   return rootCategory;
 }
 
@@ -57,6 +70,20 @@ function processFlatSections(root: Category,
       category = newCategory;
     }
   }
+}
+
+/**
+ * Recursively removes empty categories.
+ *
+ * @param root category to clean
+ * @return true if passed category is empty
+ */
+function omitEmptyCategories(root: Category): boolean {
+  for (let i = root.categories.length - 1; i >= 0; --i) {
+    if (omitEmptyCategories(root.categories[i]))
+      root.categories.splice(i, 1);
+  }
+  return !root.categories.length && !root.items.length;
 }
 
 function extractTopLevelName(section: Element): string {

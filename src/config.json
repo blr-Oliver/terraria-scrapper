@@ -2,16 +2,16 @@
   "entry": "entry.json",
   "operations": {
     "fetchCategories": {
-      "enabled": true,
+      "enabled": false,
       "prompt": "Fetching categories"
     },
     "fetchLists": {
-      "enabled": true,
+      "enabled": false,
       "prompt": "Fetching lists"
     },
     "parseCategories": {
-      "prompt": "Parsing categories",
-      "pause": true
+      "enabled": false,
+      "prompt": "Parsing categories"
     },
     "parseLists": {
       "prompt": "Parsing lists"

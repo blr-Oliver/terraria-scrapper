@@ -9,7 +9,7 @@ type FetchTask = {
 }
 
 export async function fetchLists(entry: EntryInfo): Promise<void> {
-  let prepareDest = ensureExists(entry.htmlOutputPath + '/lists');
+  let prepareDest = ensureExists(`${entry.out}/html/lists`);
   let tasks: FetchTask[] = Array(2 + entry.lists.length);
   tasks[0] = {src: entry.categories, dest: entry.categories};
   entry.lists.forEach((list, i) => tasks[i + 1] = {src: list, dest: 'lists/' + list});
@@ -20,7 +20,7 @@ export async function fetchLists(entry: EntryInfo): Promise<void> {
       .map(task =>
           fetcher(entry.htmlRootUrl + task.src)
               .then(html => prepareDest
-                  .then(() => writeFile(`${entry.htmlOutputPath}/${task.dest}.html`, html)))
+                  .then(() => writeFile(`${entry.out}/html/${task.dest}.html`, html)))
               .catch(ex => fails[task.dest] = ex));
   await Promise.allSettled(requests);
   if (Object.keys(fails).length > 0)

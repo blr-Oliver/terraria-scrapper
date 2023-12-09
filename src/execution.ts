@@ -1,59 +1,22 @@
 import * as fs from 'fs';
-import {fetchCategories} from './fetch/fetch-categories';
-import {fetchLists} from './fetch/fetch-lists';
+import {OPERATION_ORDER, OperationNames, OPERATIONS} from './operations';
 
 export type OperationConfig = {
   enabled: boolean,
   prompt?: string,
   pause: boolean
 }
+
 export type Config = {
   entry: string,
   operations: { [opName in OperationNames]: OperationConfig },
 }
 
 export interface EntryInfo {
-  htmlRootUrl: string,
-  htmlOutputPath: string,
-  categories: string,
+  htmlRootUrl: string;
+  out: string;
+  categories: string;
   lists: string[];
-}
-
-type Operation = (entry: EntryInfo) => Promise<void>;
-
-export type OperationNames =
-    'fetchCategories' |
-    'fetchLists' |
-    'parseCategories' |
-    'parseLists' |
-    'collectNames' |
-    'fetchCards' |
-    'parseCards' |
-    'combineItemData' |
-    'splitPlatforms' |
-    'packPlatforms';
-
-export const OPERATION_ORDER: OperationNames[] = [
-  'fetchCategories',
-  'fetchLists',
-  'parseCategories',
-  'parseLists',
-  'collectNames',
-  'fetchCards',
-  'parseCards',
-  'combineItemData',
-  'splitPlatforms',
-  'packPlatforms'
-]
-
-export type OperationSet = {
-  [key in OperationNames]: boolean
-}
-
-// @ts-ignore
-const OPERATIONS: { [key in OperationNames]: Operation } = {
-  fetchCategories,
-  fetchLists
 }
 
 export async function executeRoutine<T extends (...args: any) => any>(
@@ -96,7 +59,7 @@ export class Execution {
     let enabledTasks = OPERATION_ORDER
         .filter(opName => this.config.operations[opName]?.enabled)
     for (let task of enabledTasks) {
-      await executeRoutine(OPERATIONS[task], this.config.operations[task]?.prompt || task, this.config.operations[task]?.pause, entry);
+      await executeRoutine(OPERATIONS[task]!, this.config.operations[task]?.prompt || task, this.config.operations[task]?.pause, entry);
     }
   }
 }

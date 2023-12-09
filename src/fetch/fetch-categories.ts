@@ -3,7 +3,8 @@ import {ensureExists, writeFile} from './common';
 import {fetchHtmlRaw} from './fetch';
 
 export async function fetchCategories(entry: EntryInfo): Promise<void> {
-  await ensureExists(entry.htmlOutputPath);
+  await ensureExists(`${entry.out}/html`);
+
   return fetchHtmlRaw(entry.htmlRootUrl + entry.categories)
-      .then(html => writeFile(`${entry.htmlOutputPath}/${entry.categories}.html`, html));
+      .then(html => writeFile(`${entry.out}/html/${entry.categories}.html`, html));
 }

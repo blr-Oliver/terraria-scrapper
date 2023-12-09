@@ -12,7 +12,7 @@ export class ListProcessor<T> {
 
   async processLists(entry: EntryInfo): Promise<T> {
     let files: { key: string, path: string }[] =
-        entry.lists.map(key => ({key, path: `${entry.htmlOutputPath}/lists/${key}.html`}))
+        entry.lists.map(key => ({key, path: `${entry.out}/html/lists/${key}.html`}))
     await Promise.allSettled(files.map(file => this.processFile(file.path, file.key)));
     return this.collector.finish();
   }

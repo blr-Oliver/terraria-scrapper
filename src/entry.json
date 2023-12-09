@@ -1,7 +1,6 @@
 {
   "htmlRootUrl": "https://terraria.wiki.gg/wiki/",
-  "htmlOutputPath": "out/html",
-  "jsonOutputPath": "out/json",
+  "out": "out",
   "categories": "Weapons",
   "lists": [
     "Swords",
