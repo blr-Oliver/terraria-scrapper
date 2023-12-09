@@ -15,7 +15,7 @@ export class ItemListDocumentParser {
   constructor(private tableParser: ItemTableParser) {
   }
 
-  parseTablesPerSection(root: Document, fileKey: string): ParsedSection[] {
+  parseLists(root: Document, /* deprecated */fileKey: string): ParsedSection[] {
     let tables = root.querySelectorAll<HTMLTableElement>(SELECTORS.TABLE);
     let platforms = this.getPlatforms(root);
     let result: ParsedSection[] = [];
@@ -25,7 +25,7 @@ export class ItemListDocumentParser {
     return result;
   }
 
-  private parseTable(table: HTMLTableElement, index: number, platforms: PlatformList, /* deprecated */fileKey: string): ParsedSection {
+  private parseTable(table: HTMLTableElement, index: number, platforms: PlatformList, fileKey: string): ParsedSection {
     let exceptions: ParsingException[] = [];
     let sectionHeader = this.getClosestSectionHeader(table);
     if (!sectionHeader) {

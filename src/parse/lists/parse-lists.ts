@@ -1,7 +1,7 @@
 import {EntryInfo} from '../../execution';
-import {NormalizedItem} from '../common';
+import {ensureExists} from '../../fetch/common';
 import {NOOP_PARSER_PROVIDER} from './cell-parsers';
-import {CombiningItemDataCollector} from './collectors/CombiningItemDataCollector';
+import {SavingCollector} from './collectors/SavingCollector';
 import {ItemListDocumentParser} from './ItemListDocumentParser';
 import {ItemTableParser} from './ItemTableParser';
 import {ListProcessor} from './ListProcessor';
@@ -12,8 +12,8 @@ import {CompositeParserProvider} from './providers/CompositeParserProvider';
 import {NameBlockParserProvider} from './providers/NameBlockParserProvider';
 import {WhipEffectParserProvider} from './providers/WhipEffectParserProvider';
 
-export async function parseLists(entry: EntryInfo): Promise<{ [name: string]: NormalizedItem }> {
-  const collector = new CombiningItemDataCollector();
+export async function parseLists(entry: EntryInfo): Promise<void> {
+  const collector = new SavingCollector(entry);
   const parseProvider = new CompositeParserProvider(
       new CommonParserProvider(),
       new NameBlockParserProvider(),
@@ -23,6 +23,7 @@ export async function parseLists(entry: EntryInfo): Promise<{ [name: string]: No
       NOOP_PARSER_PROVIDER);
   const tableParser = new ItemTableParser(parseProvider);
   const fileParser = new ItemListDocumentParser(tableParser);
-  const processor = new ListProcessor(fileParser, collector);
-  return processor.processLists(entry);
+  const processor = new ListProcessor(entry, fileParser, collector);
+  await ensureExists(`${entry.out}/json/lists`);
+  return processor.processLists();
 }

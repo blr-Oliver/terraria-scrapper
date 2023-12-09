@@ -67,7 +67,7 @@ export async function collectCaptions(entry: EntryInfo): Promise<Hash<HeaderOccu
   const collector = new CaptionCollector();
   const tableParser = new ItemTableParser(collector);
   const fileParser = new ItemListDocumentParser(tableParser);
-  const processor = new ListProcessor(fileParser, collector);
-  await processor.processLists(entry);
+  const processor = new ListProcessor(entry, fileParser, collector);
+  await processor.processLists();
   return collector.getStats();
 }

@@ -1,3 +1,5 @@
+import * as fs from 'fs';
+import {JSDOM} from 'jsdom';
 import {PlatformVarying, PlatformVaryingValue} from '../platform-varying';
 import {BaseItemDescriptor} from './lists/cell-parsers';
 
@@ -26,3 +28,8 @@ export type ParsedSection = {
 } & ParsingExceptions;
 
 export type NormalizedItem = PlatformVaryingValue<ItemDescriptor>;
+
+export async function loadDocument(file: string): Promise<Document> {
+  const content = await fs.promises.readFile(file, {encoding: 'utf8'});
+  return new JSDOM(content).window.document;
+}

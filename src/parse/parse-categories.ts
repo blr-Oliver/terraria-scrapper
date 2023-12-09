@@ -1,8 +1,3 @@
-import * as fs from 'fs';
-import {JSDOM} from 'jsdom';
-import {EntryInfo} from '../execution';
-import {ensureExists} from '../fetch/common';
-
 export interface ItemInCategory {
   name: string;
   href: string;
@@ -14,15 +9,7 @@ export interface Category {
   items: ItemInCategory[];
 }
 
-export async function parseCategories(entry: EntryInfo): Promise<void> {
-  let html = await fs.promises.readFile(`${entry.out}/html/${entry.categories}.html`, {encoding: 'utf8'});
-  let category = parseCategoriesFromHtml(html);
-  await ensureExists(`${entry.out}/json`);
-  return fs.promises.writeFile(`${entry.out}/json/categories.json`, JSON.stringify(category, null, 2), {encoding: 'utf8'});
-}
-
-function parseCategoriesFromHtml(html: string): Category {
-  let rootDoc: Document = new JSDOM(html).window.document;
+export function parseCategoriesFromDom(document: Document): Category {
   const rootCategory: Category = {
     name: 'Weapons',
     categories: [],
@@ -30,7 +17,7 @@ function parseCategoriesFromHtml(html: string): Category {
   }
   processFlatSections(
       rootCategory,
-      rootDoc.querySelector('.mw-parser-output')!,
+      document.querySelector('.mw-parser-output')!,
       ['.infocard', 'h2', 'h3', 'h4'],
       processInfoCard,
       extractTopLevelName);
