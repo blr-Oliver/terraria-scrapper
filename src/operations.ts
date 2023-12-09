@@ -1,4 +1,5 @@
 import * as fs from 'fs';
+import {collectNames} from './analyze/collect-names';
 import {EntryInfo} from './execution';
 import {ensureExists} from './fetch/common';
 import {fetchCategories} from './fetch/fetch-categories';
@@ -44,5 +45,6 @@ export const OPERATIONS: { [key in OperationNames]?: Operation } = {
   fetchCategories,
   fetchLists,
   parseCategories,
-  parseLists
+  parseLists,
+  collectNames
 }
