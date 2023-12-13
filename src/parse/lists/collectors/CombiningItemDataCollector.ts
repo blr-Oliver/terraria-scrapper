@@ -1,6 +1,6 @@
 import {getType} from '../../../packed-varying';
 import {ALL_PLATFORMS, PlatformList, PlatformName, pullToTop} from '../../../platform-varying';
-import {NormalizedItem, ParsedItem, ParsedSection} from '../../common';
+import {NormalizedItem, ParsedListItem, ParsedSection} from '../../common';
 import {ItemListCollector} from '../ItemListCollector';
 
 function combine(a: any, b: any, key?: string): any {
@@ -94,7 +94,7 @@ export class CombiningItemDataCollector implements ItemListCollector<{ [name: st
     return result;
   }
 
-  private normalizeItem(item: ParsedItem): NormalizedItem {
+  private normalizeItem(item: ParsedListItem): NormalizedItem {
     let platforms: PlatformList;
     if (item.name)
       platforms = Object.keys(item.name) as PlatformList;

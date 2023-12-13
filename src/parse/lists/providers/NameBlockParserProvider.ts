@@ -1,5 +1,5 @@
 import {makeVarying, PlatformList} from '../../../platform-varying';
-import {ParsedItem} from '../../common';
+import {ParsedListItem} from '../../common';
 import {parseImage} from '../../common-parsers';
 import {extractPlatformsFromClasses, extractVaryingValue, flagsNodeMatcher, Node, unwrapSingleChildElement} from '../../extract-varying';
 import {CellContext, HeaderContext, ICellParser, ParserProvider} from '../cell-parsers';
@@ -32,7 +32,7 @@ export class NameBlockParserProvider implements ParserProvider {
     }
   }
 
-  parseNameCell(td: HTMLTableCellElement, item: ParsedItem, context: CellContext) {
+  parseNameCell(td: HTMLTableCellElement, item: ParsedListItem, context: CellContext) {
     let src = unwrapSingleChildElement(td);
     let idBlock = src.querySelector('.id');
     let platforms = context.platforms || context.table.platforms;

@@ -1,11 +1,15 @@
 import {PlatformList} from '../../platform-varying';
-import {ParsedItem} from '../common';
+import {ParsedListItem} from '../common';
 
-export type BaseItemDescriptor = {
+export interface Item {
   id?: number;
   name?: string;
+}
+
+export interface MultiSourceItem extends Item {
   sources: ItemSourceInfo[];
-};
+}
+
 export type ItemSourceInfo = {
   file: string;
   section: string;
@@ -41,8 +45,8 @@ export type CellContext = {
 }
 
 export interface ICellParser {
-  parse: (td: HTMLTableCellElement, item: ParsedItem, context: CellContext) => void;
-  getPlatforms?: (td: HTMLTableCellElement, item: ParsedItem, context: CellContext) => PlatformList;
+  parse: (td: HTMLTableCellElement, item: ParsedListItem, context: CellContext) => void;
+  getPlatforms?: (td: HTMLTableCellElement, item: ParsedListItem, context: CellContext) => PlatformList;
 }
 
 export interface ICellPropertyParser extends ICellParser {

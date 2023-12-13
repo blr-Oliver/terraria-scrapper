@@ -1,5 +1,5 @@
 import {makeVarying} from '../../../platform-varying';
-import {ParsedItem} from '../../common';
+import {ParsedListItem} from '../../common';
 import {CellContext, HeaderContext, ICellParser, ParserProvider} from '../cell-parsers';
 
 export class WhipEffectParserProvider implements ParserProvider {
@@ -19,7 +19,7 @@ export class WhipEffectParserProvider implements ParserProvider {
     }
   }
 
-  parseWhipEffectCell(td: HTMLTableCellElement, item: ParsedItem, context: CellContext) {
+  parseWhipEffectCell(td: HTMLTableCellElement, item: ParsedListItem, context: CellContext) {
     let platforms = context.platforms;
     let text = td.textContent!.trim().toLowerCase();
     let tagMatch = text.match(WhipEffectParserProvider.TAG_PATTERN);

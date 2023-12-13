@@ -1,4 +1,4 @@
-import {ParsedItem, ParsedSection} from '../parse/common';
+import {ParsedListItem, ParsedSection} from '../parse/common';
 import {PlatformName} from '../platform-varying';
 
 export interface ShortItemInfo {
@@ -26,7 +26,7 @@ export class ShortInfoCollector {
         .forEach(item => this.collectItem(item));
   }
 
-  collectItem(item: ParsedItem): ShortItemInfo | undefined {
+  collectItem(item: ParsedListItem): ShortItemInfo | undefined {
     const exceptions: NameCollectionException[] = [];
     const key = this.extractKey(item, exceptions);
     if (!key) {
@@ -67,7 +67,7 @@ export class ShortInfoCollector {
     }
   }
 
-  private extractProperties(item: ParsedItem, exceptions: NameCollectionException[]): Partial<ShortItemInfo> {
+  private extractProperties(item: ParsedListItem, exceptions: NameCollectionException[]): Partial<ShortItemInfo> {
     let id: number | undefined = 'id' in item ? this.extractVaryingProperty(item, 'id', exceptions) : undefined;
     let result: Partial<ShortItemInfo> = {
       name: this.extractVaryingProperty(item, 'name', exceptions),
@@ -78,11 +78,11 @@ export class ShortInfoCollector {
     return result;
   }
 
-  private extractKey(item: ParsedItem, exceptions: NameCollectionException[]): string | undefined {
+  private extractKey(item: ParsedListItem, exceptions: NameCollectionException[]): string | undefined {
     return this.extractVaryingProperty(item, 'name', exceptions, s => s.toLowerCase());
   }
 
-  private extractVaryingProperty<T>(item: ParsedItem, property: string, exceptions: NameCollectionException[], transform: (x: T) => T = x => x): T | undefined {
+  private extractVaryingProperty<T>(item: ParsedListItem, property: string, exceptions: NameCollectionException[], transform: (x: T) => T = x => x): T | undefined {
     let varyingValue = item[property];
     if (!varyingValue) {
       exceptions.push({

@@ -1,5 +1,5 @@
 import {PlatformList} from '../../platform-varying';
-import {ListRowParsingException, ParsedItem} from '../common';
+import {ListRowParsingException, ParsedListItem} from '../common';
 import {HeaderContext, ICellParser, ParserProvider, TableContext} from './cell-parsers';
 
 type CellCoordinates = {
@@ -23,16 +23,16 @@ export class ItemTableParser {
   constructor(private parserProvider: ParserProvider) {
   }
 
-  parse(context: TableContext): ParsedItem[] {
+  parse(context: TableContext): ParsedListItem[] {
     const [headerRows, bodyRows] = this.separateHeaderRows(context.table);
     const rowNum = bodyRows.length;
     const colNum = context.columnCount = bodyRows[0].cells.length;
     const parsers = this.getParsers(context, this.getHeaderCells(headerRows, colNum));
-    const result: ParsedItem[] = Array(rowNum);
+    const result: ParsedListItem[] = Array(rowNum);
     const platformSources = parsers.filter(parser => parser.parser.getPlatforms);
     for (let row = 0; row < rowNum; ++row) {
       const itemRow = bodyRows[row];
-      const item: ParsedItem = result[row] = {};
+      const item: ParsedListItem = result[row] = {};
       (item as any).source = [{
         file: context.file,
         section: context.section

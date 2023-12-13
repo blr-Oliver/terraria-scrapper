@@ -14,9 +14,11 @@
       "prompt": "Parsing categories"
     },
     "parseLists": {
+      "enabled": false,
       "prompt": "Parsing lists"
     },
     "collectNames": {
+      "enabled": true,
       "prompt": "Collecting item names"
     },
     "fetchCards": {

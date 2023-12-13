@@ -135,7 +135,7 @@ type IdInfo = {
   values: PlatformVaryingValue<number[]>
 }
 
-function parseIds(section: Element, meta: MetaInfo) {
+function parseIds(section: Element, meta: MetaInfo): IdInfo[] {
   let ids: IdInfo[] = [];
   section.querySelectorAll('ul>li').forEach(idBlock => {
     const category = idBlock.querySelector('a')!.textContent!;
