@@ -47,3 +47,7 @@ function validate(response: http.IncomingMessage): Error | undefined {
       return new Error(`Content-Type is not compatible with 'text/html': ${contentType}`);
   }
 }
+
+export function normalizeFileName(name: string): string {
+  return name.replaceAll(/[\.:]/g, '_');
+}

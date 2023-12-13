@@ -14,6 +14,7 @@ export type Config = {
 
 export interface EntryInfo {
   htmlRootUrl: string;
+  htmlEntrySuffix: string;
   out: string;
   categories: string;
   lists: string[];

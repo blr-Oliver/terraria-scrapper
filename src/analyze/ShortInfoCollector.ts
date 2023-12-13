@@ -16,7 +16,12 @@ export interface FailedItem {
   exceptions: NameCollectionException[]
 }
 
-export class ShortInfoCollector {
+export interface ShortInfoCollection {
+  items: { [key: string]: ShortItemInfo };
+  fails: FailedItem[];
+}
+
+export class ShortInfoCollector implements ShortInfoCollection {
   items: { [key: string]: ShortItemInfo } = {};
   fails: FailedItem[] = [];
 

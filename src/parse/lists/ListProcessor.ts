@@ -1,4 +1,5 @@
 import {EntryInfo} from '../../execution';
+import {normalizeFileName} from '../../fetch/fetch';
 import {loadDocument} from '../common';
 import {ItemListCollector} from './ItemListCollector';
 import {ItemListDocumentParser} from './ItemListDocumentParser';
@@ -12,7 +13,7 @@ export class ListProcessor<T> {
 
   async processLists(): Promise<T> {
     let files: { key: string, path: string }[] =
-        this.entry.lists.map(key => ({key, path: `${this.entry.out}/html/lists/${key}.html`}))
+        this.entry.lists.map(key => ({key, path: `${this.entry.out}/html/lists/${normalizeFileName(key)}.html`}))
     await Promise.allSettled(files.map(file => this.processFile(file.path, file.key)));
     return this.collector.finish();
   }

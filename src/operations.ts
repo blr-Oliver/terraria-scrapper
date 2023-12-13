@@ -2,6 +2,7 @@ import * as fs from 'fs';
 import {collectNames} from './analyze/collect-names';
 import {EntryInfo} from './execution';
 import {ensureExists} from './fetch/common';
+import {fetchCards} from './fetch/fetch-cards';
 import {fetchCategories} from './fetch/fetch-categories';
 import {fetchLists} from './fetch/fetch-lists';
 import {loadDocument} from './parse/common';
@@ -46,5 +47,6 @@ export const OPERATIONS: { [key in OperationNames]?: Operation } = {
   fetchLists,
   parseCategories,
   parseLists,
-  collectNames
+  collectNames,
+  fetchCards
 }

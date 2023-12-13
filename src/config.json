@@ -2,19 +2,19 @@
   "entry": "entry.json",
   "operations": {
     "fetchCategories": {
-      "enabled": false,
+      "enabled": true,
       "prompt": "Fetching categories"
     },
     "fetchLists": {
-      "enabled": false,
+      "enabled": true,
       "prompt": "Fetching lists"
     },
     "parseCategories": {
-      "enabled": false,
+      "enabled": true,
       "prompt": "Parsing categories"
     },
     "parseLists": {
-      "enabled": false,
+      "enabled": true,
       "prompt": "Parsing lists"
     },
     "collectNames": {
@@ -22,8 +22,8 @@
       "prompt": "Collecting item names"
     },
     "fetchCards": {
-      "prompt": "Fetching item cards",
-      "pause": true
+      "enabled": true,
+      "prompt": "Fetching item cards"
     },
     "parseCards": {
       "prompt": "Parsing cards",
