@@ -11,19 +11,20 @@ export interface NameCollectionException {
   message: string;
 }
 
-export interface FailedItem {
-  item: Partial<ShortItemInfo>,
-  exceptions: NameCollectionException[]
+export interface ExtractionResult {
+  item: Partial<ShortItemInfo>;
+  exceptions: NameCollectionException[];
+  missing: { [key: string]: true };
 }
 
 export interface ShortInfoCollection {
   items: { [key: string]: ShortItemInfo };
-  fails: FailedItem[];
+  fails: ExtractionResult[];
 }
 
 export class ShortInfoCollector implements ShortInfoCollection {
   items: { [key: string]: ShortItemInfo } = {};
-  fails: FailedItem[] = [];
+  fails: ExtractionResult[] = [];
 
   collect(fileContent: ParsedSection[]): void {
     fileContent
@@ -31,56 +32,85 @@ export class ShortInfoCollector implements ShortInfoCollection {
         .forEach(item => this.collectItem(item));
   }
 
-  collectItem(item: ParsedListItem): ShortItemInfo | undefined {
+  collectItem(item: ParsedListItem) {
     const exceptions: NameCollectionException[] = [];
     const key = this.extractKey(item, exceptions);
     if (!key) {
       this.fails.push({
         item: (item as any),
-        exceptions
+        exceptions,
+        missing: {'name': true}
       });
     } else {
-      return this.collectDirectly(this.extractProperties(item, exceptions), exceptions);
+      this.collectInternal(this.extractProperties(item));
     }
   }
 
-  collectDirectly(extracted: Partial<ShortItemInfo>, exceptions: NameCollectionException[] = []): ShortItemInfo | undefined {
+  collectDirectly(extracted: Partial<ShortItemInfo>) {
+    this.collectInternal({
+      item: extracted,
+      exceptions: [],
+      missing: {}
+    });
+  }
+
+  private collectInternal(report: ExtractionResult) {
+    const {item: extracted, exceptions, missing} = report;
     const key = extracted.name!.toLowerCase();
     if (exceptions.length) {
-      this.fails.push({
-        item: extracted,
-        exceptions
-      })
+      this.fails.push(report);
     } else {
       if (key in this.items) {
         const collected = this.items[key];
-        let matches = extracted.name === collected.name && extracted.page === collected.page;
-        if (('id' in extracted) && ('id' in collected))
-          matches &&= extracted.id === collected.id;
-        if (!matches) {
-          exceptions.push({
-            message: 'conflicting values with other source'
-          });
-          this.fails.push({
-            item: extracted,
-            exceptions
-          });
-        } else return Object.assign(collected, extracted);
+        let matches = ['id', 'name', 'page']
+            .map(property => this.checkMatch(collected, report, property as keyof ShortItemInfo))
+            .every(x => x);
+        if (!matches)
+          this.fails.push(report);
+        else {
+          if (Object.keys(missing).length)
+            this.fails.push(report);
+          Object.assign(collected, extracted);
+        }
       } else {
-        return this.items[key] = extracted as ShortItemInfo;
+        if (Object.keys(missing).length)
+          this.fails.push(report);
+        this.items[key] = extracted as ShortItemInfo;
       }
     }
   }
 
-  private extractProperties(item: ParsedListItem, exceptions: NameCollectionException[]): Partial<ShortItemInfo> {
-    let id: number | undefined = 'id' in item ? this.extractVaryingProperty(item, 'id', exceptions) : undefined;
-    let result: Partial<ShortItemInfo> = {
-      name: this.extractVaryingProperty(item, 'name', exceptions),
-      page: this.extractVaryingProperty(item, 'page', exceptions)
+  private checkMatch(collected: Partial<ShortItemInfo>, report: ExtractionResult, property: keyof ShortItemInfo): boolean {
+    if (!(property in collected) || !(property in report.item)) return true;
+    if (collected[property] === report.item[property]) return true;
+    report.exceptions.push({
+      message: `${property}: conflicting values with other source`
+    });
+    return false;
+  }
+
+  private extractProperties(item: ParsedListItem): ExtractionResult {
+    const result: ExtractionResult = {
+      item: {},
+      exceptions: [],
+      missing: {}
     };
-    if (id !== undefined)
-      result.id = id;
+
+    const getProperty = (property: keyof ShortItemInfo, reportMissing = true) => {
+      let value: any = this.extractVaryingProperty(item, property, result.exceptions);
+      if (value === undefined) {
+        if (reportMissing)
+          result.missing[property] = true;
+      } else
+        result.item[property] = value;
+    };
+
+    getProperty('id', false);
+    getProperty('name');
+    getProperty('page');
+
     return result;
+
   }
 
   private extractKey(item: ParsedListItem, exceptions: NameCollectionException[]): string | undefined {
@@ -89,11 +119,7 @@ export class ShortInfoCollector implements ShortInfoCollection {
 
   private extractVaryingProperty<T>(item: ParsedListItem, property: string, exceptions: NameCollectionException[], transform: (x: T) => T = x => x): T | undefined {
     let varyingValue = item[property];
-    if (!varyingValue) {
-      exceptions.push({
-        message: `missing ${property}`
-      });
-    } else {
+    if (varyingValue) {
       let value: T;
       let hasValue = false;
       for (let key in varyingValue) {
