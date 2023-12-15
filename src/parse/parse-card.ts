@@ -162,8 +162,6 @@ function parseIds(section: Element, meta: MetaInfo): IdInfo[] {
     const category = idBlock.querySelector('a')!.textContent!;
     const contentMerger: (a: string | null, b: string) => string =
         (a, b) => a ? [a, b].join(',') : b;
-    const contentFinalizer: (x: string) => number[] =
-        x => x.split(',').map(id => +id.trim());
     let contentExtractor = (node: Node) =>
         [...node.childNodes]
             .filter(node => node.nodeType === Node.TEXT_NODE)
@@ -176,7 +174,7 @@ function parseIds(section: Element, meta: MetaInfo): IdInfo[] {
         contentExtractor,
         node => extractPlatformsFromClasses(node as Element),
         contentMerger,
-        contentFinalizer,
+        parseIdList,
         meta.platforms
     );
     ids.push({
@@ -185,6 +183,18 @@ function parseIds(section: Element, meta: MetaInfo): IdInfo[] {
     });
   });
   return ids;
+}
+
+function parseIdList(x: string): number[] {
+  return x.split(',')
+      .map(g => g.trim())
+      .map(g => g.split(/\s*[-\u{2013}\u{2014}]\s*/gu)) // also en dash and em dash
+      .flatMap(g => allInInterval(g));
+}
+
+function allInInterval([start, end = start]: string[]): number[] {
+  let s = +start, e = +end;
+  return Array.from({length: e - s + 1}, (_, i) => s + i);
 }
 
 function processIdsSection(section: Element, weapon: ScrappedWeapon, meta: MetaInfo) {
