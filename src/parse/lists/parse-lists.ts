@@ -5,6 +5,7 @@ import {SavingCollector} from './collectors/SavingCollector';
 import {ItemListDocumentParser} from './ItemListDocumentParser';
 import {ItemTableParser} from './ItemTableParser';
 import {ListProcessor} from './ListProcessor';
+import {AmmoNameBlockParserProvider} from './providers/AmmoNameBlockParserProvider';
 import {BehaviorPropertiesProvider} from './providers/BehaviorPropertiesProvider';
 import {BlastRadiusProvider} from './providers/BlastRadiusProvider';
 import {CommonParserProvider} from './providers/CommonParserProvider';
@@ -15,6 +16,7 @@ import {WhipEffectParserProvider} from './providers/WhipEffectParserProvider';
 export async function parseLists(entry: EntryInfo): Promise<void> {
   const collector = new SavingCollector(entry);
   const parseProvider = new CompositeParserProvider(
+      new AmmoNameBlockParserProvider(),
       new CommonParserProvider(),
       new NameBlockParserProvider(),
       new WhipEffectParserProvider(),

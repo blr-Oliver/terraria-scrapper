@@ -20,6 +20,7 @@ export type TableContext = {
   section: string;
   sectionIndex: number;
   table: HTMLTableElement;
+  isLined: boolean;
   columnCount: number;
   platforms: PlatformList;
 }

@@ -6,6 +6,7 @@ import {ItemTableParser} from './ItemTableParser';
 
 const SELECTORS = {
   TABLE: 'table.terraria.sortable',
+  TABLE_LINED: 'table.terraria.lined',
   CONTENT_ROOT: '.mw-parser-output',
   PLATFORM_BOX: '.message-box.msgbox-color-blue',
   HEADERS: 'h1, h2, h3, h4'
@@ -16,7 +17,7 @@ export class ItemListDocumentParser {
   }
 
   parseLists(root: Document, /* deprecated */fileKey: string): ParsedSection[] {
-    let tables = root.querySelectorAll<HTMLTableElement>(SELECTORS.TABLE);
+    let tables = root.querySelectorAll<HTMLTableElement>([SELECTORS.TABLE, SELECTORS.TABLE_LINED].join(','));
     let platforms = this.getPlatforms(root);
     let result: ParsedSection[] = [];
     for (let i = 0; i < tables.length; ++i) {
@@ -36,6 +37,7 @@ export class ItemListDocumentParser {
       file: fileKey,
       section: sectionName,
       sectionIndex: index,
+      isLined: table.matches(SELECTORS.TABLE_LINED),
       columnCount: -1,
       table,
       platforms

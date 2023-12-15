@@ -5,7 +5,7 @@ import {extractPlatformsFromClasses, extractVaryingValue, flagsNodeMatcher, Node
 import {CellContext, HeaderContext, ICellParser, ParserProvider} from '../cell-parsers';
 import {constructPropertyParser} from './CommonParserProvider';
 
-export class NameBlockParserProvider implements ParserProvider {
+export class AmmoNameBlockParserProvider implements ParserProvider {
   private readonly imageCellParser = constructPropertyParser('image', parseImage);
   private readonly nameCellParser: ICellParser = {
     parse: (td, item, context) => {
@@ -17,11 +17,11 @@ export class NameBlockParserProvider implements ParserProvider {
     }
   };
   private readonly basicNameNodeMatcher: (node: Node) => boolean =
-      (node: Node) => node.nodeType === Node.ELEMENT_NODE && (node as Element).matches('a[href][title]');
+      (node: Node) => node.nodeType === Node.ELEMENT_NODE && (node as Element).matches('span[title]:first-child');
 
   getParser(header: HeaderContext): ICellParser | undefined {
     let caption = header.th.textContent!.trim().toLowerCase();
-    if (caption === 'name' || caption === 'item') {
+    if (caption === 'type' && header.table.isLined && this.isAmmoFile(header)) {
       if (header.colSpan === 1 || header.colSpan === 2 && header.shift === 1)
         return this.nameCellParser;
       else if (header.colSpan === 2 && header.shift === 0)
@@ -30,6 +30,11 @@ export class NameBlockParserProvider implements ParserProvider {
       if (header.column === 0)
         return this.imageCellParser;
     }
+  }
+
+  private isAmmoFile(header: HeaderContext): boolean {
+    let fileName = header.table.file.toLowerCase();
+    return fileName.indexOf('rockets') !== -1 || fileName.indexOf('bombs') !== -1;
   }
 
   parseNameCell(td: HTMLTableCellElement, item: ParsedListItem, context: CellContext) {
@@ -53,16 +58,6 @@ export class NameBlockParserProvider implements ParserProvider {
     )
 
     platforms = Object.keys(item.name) as PlatformList;
-
-    item['page'] = extractVaryingValue<string, string>(src,
-        nameValueNodeMatcher,
-        flagsNodeMatcher,
-        node => (node as HTMLAnchorElement).href,
-        node => extractPlatformsFromClasses(node as Element),
-        (a, b) => (a || '') + b,
-        x => x,
-        platforms
-    )
 
     if (idBlock) {
       let text = idBlock.textContent!;

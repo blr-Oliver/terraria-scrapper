@@ -36,7 +36,7 @@ export class ShortInfoCollector implements ShortInfoCollection {
     const key = this.extractKey(item, exceptions);
     if (!key) {
       this.fails.push({
-        item: this.extractProperties(item, exceptions),
+        item: (item as any),
         exceptions
       });
     } else {
