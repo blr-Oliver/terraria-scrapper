@@ -7,7 +7,7 @@ export interface Item {
 }
 
 export interface MultiSourceItem extends Item {
-  sources: ItemSourceInfo[];
+  source: ItemSourceInfo[];
 }
 
 export type ItemSourceInfo = {

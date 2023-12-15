@@ -22,6 +22,5 @@ export class AmmoNameBlockParserProvider extends NameBlockParserProvider {
     super.parseNameCell(td, dummy, context);
     item.name = dummy.name;
     item.id = dummy.id;
-    if (dummy['page']) item['page'] = dummy['page'];
   }
 }

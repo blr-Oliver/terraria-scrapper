@@ -73,7 +73,7 @@ export class ItemTableParser {
         }
       }
     }
-    return result;
+    return result.filter(item => Object.keys(item).length > 1);
   }
 
   private separateHeaderRows(table: HTMLTableElement): [ArrayLike<HTMLTableRowElement>, ArrayLike<HTMLTableRowElement>] {

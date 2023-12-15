@@ -64,7 +64,7 @@ export abstract class NameBlockParserProvider implements ParserProvider {
     item['page'] = extractVaryingValue<string, string>(src,
         nameValueNodeMatcher,
         flagsNodeMatcher,
-        node => (node as HTMLAnchorElement).href,
+        node => (node as HTMLElement).getAttribute('href') || '',
         node => extractPlatformsFromClasses(node as Element),
         (a, b) => (a || '') + b,
         x => x,
