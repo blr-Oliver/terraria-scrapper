@@ -26,8 +26,8 @@
       "prompt": "Fetching item cards"
     },
     "parseCards": {
-      "prompt": "Parsing cards",
-      "pause": true
+      "enabled": true,
+      "prompt": "Parsing cards"
     },
     "combineItemData": {
       "prompt": "Combining item data from all sources"

@@ -10,12 +10,15 @@ export async function fetchCards(entry: EntryInfo): Promise<void> {
   await ensureExists(`${entry.out}/html/cards`);
   const queue: Promise<void>[] = [];
   const fetch = parallelLimit(fetchHtmlRaw, 5, 100);
-  for (let key in collection.items) {
-    let info = collection.items[key];
-    queue.push(
-        fetch(entry.htmlRootUrl + info.page)
-            .then(text => fs.promises.writeFile(`${entry.out}/html/cards/${normalizeFileName(info.name)}.html`, text, {encoding: 'utf8'}))
-    );
+  let items = collection.items;
+  for (let key in items) {
+    let info = items[key];
+    if (!entry.excludeCards.some(x => x.toLowerCase() === key)) {
+      queue.push(
+          fetch(entry.htmlRootUrl + info.page)
+              .then(text => fs.promises.writeFile(`${entry.out}/html/cards/${normalizeFileName(info.name)}.html`, text, {encoding: 'utf8'}))
+      );
+    }
   }
   await Promise.allSettled(queue);
 }

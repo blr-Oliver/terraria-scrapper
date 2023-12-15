@@ -7,6 +7,7 @@ import {fetchCategories} from './fetch/fetch-categories';
 import {fetchLists} from './fetch/fetch-lists';
 import {loadDocument} from './parse/common';
 import {parseLists} from './parse/lists/parse-lists';
+import {parseCards} from './parse/parse-card';
 import {parseCategoriesFromDom} from './parse/parse-categories';
 
 export type OperationNames =
@@ -48,5 +49,6 @@ export const OPERATIONS: { [key in OperationNames]?: Operation } = {
   parseCategories,
   parseLists,
   collectNames,
-  fetchCards
+  fetchCards,
+  parseCards
 }

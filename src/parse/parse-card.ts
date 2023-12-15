@@ -1,7 +1,10 @@
-import {JSDOM} from 'jsdom';
-import {fetchHtmlRaw} from '../fetch/fetch';
+import * as fs from 'fs';
+import {ShortInfoCollection} from '../analyze/ShortInfoCollector';
+import {EntryInfo} from '../execution';
+import {ensureExists} from '../fetch/common';
+import {normalizeFileName} from '../fetch/fetch';
 import {ALL_PLATFORMS, makeVarying, PlatformList, PlatformName, PlatformVarying, PlatformVaryingValue, transform} from '../platform-varying';
-import {ParsingException} from './common';
+import {loadDocument, ParsingException} from './common';
 import {parseFlag} from './common-parsers';
 import {
   extractPlatformsFromClasses,
@@ -65,11 +68,29 @@ export interface CardParsingException extends ParsingException {
 
 export type ScrappedWeapon = PlatformVarying<WeaponInfo> & { meta?: MetaInfo };
 
-export async function getWeaponInfo(path: string): Promise<ScrappedWeapon> {
-  const rootText = await fetchHtmlRaw('https://terraria.wiki.gg' + path);
-  const rootDoc: Document = new JSDOM(rootText).window.document;
+export async function parseCards(entry: EntryInfo): Promise<void> {
+  const collection: ShortInfoCollection = JSON.parse(await fs.promises.readFile(`${entry.out}/json/short-info.json`, {encoding: 'utf8'}));
+  await ensureExists(`${entry.out}/json/cards`);
+  const queue: Promise<void>[] = [];
+  for (let key in collection.items) {
+    const name = collection.items[key].name;
+    if (!entry.excludeCards.some(x => x.toLowerCase() === key)) {
+      queue.push(
+          processCardName(entry, name).catch(ex => console.error(name, ex))
+      );
+    }
+  }
+  await Promise.allSettled(queue);
+}
 
-  const contentRoot = rootDoc.querySelector('.mw-parser-output')!;
+async function processCardName(entry: EntryInfo, name: string): Promise<void> {
+  const fileName = normalizeFileName(name);
+  const card = parseCard(await loadDocument(`${entry.out}/html/cards/${fileName}.html`));
+  return fs.promises.writeFile(`${entry.out}/json/cards/${fileName}.json`, JSON.stringify(card, null, 2), {encoding: 'utf8'});
+}
+
+export function parseCard(document: Document): ScrappedWeapon {
+  const contentRoot = document.querySelector('.mw-parser-output')!;
   let messageBox = contentRoot.querySelector('.message-box.msgbox-color-blue');
   let platforms: PlatformName[] = messageBox ? extractPlatformsFromImages(messageBox) : ALL_PLATFORMS as PlatformName[];
   let meta: MetaInfo = {

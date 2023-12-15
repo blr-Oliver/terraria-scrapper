@@ -13,6 +13,8 @@
     "Repeaters",
     "Guns",
     "Launchers",
+    "Rockets",
+    "Liquid_rockets",
     "Wands",
     "Magic_Guns",
     "Spell_Books",
@@ -29,5 +31,11 @@
     "List_of_magic_weapons",
     "List_of_summon_weapons",
     "List_of_weapons"
+  ],
+  "excludeCards": [
+    "Rocket I",
+    "Rocket II",
+    "Rocket III",
+    "Rocket IV"
   ]
 }

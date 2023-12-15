@@ -18,6 +18,7 @@ export interface EntryInfo {
   out: string;
   categories: string;
   lists: string[];
+  excludeCards: string[];
 }
 
 export async function executeRoutine<T extends (...args: any) => any>(
