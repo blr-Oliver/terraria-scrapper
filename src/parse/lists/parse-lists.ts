@@ -10,7 +10,7 @@ import {BehaviorPropertiesProvider} from './providers/BehaviorPropertiesProvider
 import {BlastRadiusProvider} from './providers/BlastRadiusProvider';
 import {CommonParserProvider} from './providers/CommonParserProvider';
 import {CompositeParserProvider} from './providers/CompositeParserProvider';
-import {NameBlockParserProvider} from './providers/NameBlockParserProvider';
+import {RegularNameBlockParserProvider} from './providers/RegularNameBlockParserProvider';
 import {WhipEffectParserProvider} from './providers/WhipEffectParserProvider';
 
 export async function parseLists(entry: EntryInfo): Promise<void> {
@@ -18,7 +18,7 @@ export async function parseLists(entry: EntryInfo): Promise<void> {
   const parseProvider = new CompositeParserProvider(
       new AmmoNameBlockParserProvider(),
       new CommonParserProvider(),
-      new NameBlockParserProvider(),
+      new RegularNameBlockParserProvider(),
       new WhipEffectParserProvider(),
       new BlastRadiusProvider(),
       new BehaviorPropertiesProvider(),
