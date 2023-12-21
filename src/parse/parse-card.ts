@@ -97,7 +97,9 @@ export function parseCard(document: Document): ScrappedWeapon {
     platforms,
     parsingExceptions: []
   }
-  let weaponInfo = extractWeaponCard(contentRoot.querySelector('.infobox.item')!, meta);
+  let cardBlocks = contentRoot.querySelectorAll('.infobox.item');
+  let cardBlock = cardBlocks[0];
+  let weaponInfo = extractWeaponCard(cardBlock!, meta);
   (weaponInfo as ScrappedWeapon).meta = meta;
   return weaponInfo as ScrappedWeapon;
 }
@@ -372,4 +374,3 @@ function processProperty(name: string, td: Element, weapon: ScrappedWeapon, meta
       });
   }
 }
-

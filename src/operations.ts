@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import {collectNames} from './analyze/collect-names';
+import {findMultiCards} from './analyze/find-multi-cards';
 import {EntryInfo} from './execution';
 import {ensureExists} from './fetch/common';
 import {fetchCards} from './fetch/fetch-cards';
@@ -18,6 +19,7 @@ export type OperationNames =
     'collectNames' |
     'fetchCards' |
     'parseCards' |
+    'findMultiCards' |
     'combineItemData' |
     'splitPlatforms' |
     'packPlatforms';
@@ -30,6 +32,7 @@ export const OPERATION_ORDER: OperationNames[] = [
   'collectNames',
   'fetchCards',
   'parseCards',
+  'findMultiCards',
   'combineItemData',
   'splitPlatforms',
   'packPlatforms'
@@ -50,5 +53,6 @@ export const OPERATIONS: { [key in OperationNames]?: Operation } = {
   parseLists,
   collectNames,
   fetchCards,
-  parseCards
+  parseCards,
+  findMultiCards
 }

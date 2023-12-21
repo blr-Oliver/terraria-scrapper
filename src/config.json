@@ -2,32 +2,40 @@
   "entry": "entry.json",
   "operations": {
     "fetchCategories": {
-      "enabled": true,
+      "enabled": false,
       "prompt": "Fetching categories"
     },
     "fetchLists": {
-      "enabled": true,
+      "enabled": false,
       "prompt": "Fetching lists"
     },
     "parseCategories": {
-      "enabled": true,
+      "enabled": false,
       "prompt": "Parsing categories"
     },
     "parseLists": {
-      "enabled": true,
-      "prompt": "Parsing lists"
+      "enabled": false,
+      "prompt": "Parsing lists",
+      "pause": false
     },
     "collectNames": {
-      "enabled": true,
-      "prompt": "Collecting item names"
+      "enabled": false,
+      "prompt": "Collecting item names",
+      "pause": false
     },
     "fetchCards": {
-      "enabled": true,
+      "enabled": false,
       "prompt": "Fetching item cards"
     },
     "parseCards": {
       "enabled": true,
-      "prompt": "Parsing cards"
+      "prompt": "Parsing cards",
+      "pause": true
+    },
+    "findMultiCards": {
+      "enabled": false,
+      "prompt": "Finding multi-item cards",
+      "pause": false
     },
     "combineItemData": {
       "prompt": "Combining item data from all sources"
