@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import {PlatformVaryingValue} from '../platform-varying';
-import {MetaInfo, WeaponInfo} from '../parse/parse-card';
+import {MetaInfo, WeaponInfo} from '../parse/parse-item';
 
 export type SavedItem = PlatformVaryingValue<WeaponInfo> & Omit<MetaInfo, 'platforms'>;
 export function findInAllCards(test: (item: SavedItem) => boolean): { [file: string]: SavedItem } {

@@ -1,14 +1,8 @@
-import * as fs from 'fs';
-import {ShortInfoCollection} from '../analyze/ShortInfoCollector';
-import {EntryInfo} from '../execution';
-import {ensureExists} from '../fetch/common';
-import {normalizeFileName} from '../fetch/fetch';
-import {ALL_PLATFORMS, makeVarying, PlatformList, PlatformName, PlatformVarying, PlatformVaryingValue, transform} from '../platform-varying';
-import {loadDocument, ParsingException} from './common';
+import {makeVarying, PlatformList, PlatformName, PlatformVarying, PlatformVaryingValue, transform} from '../platform-varying';
+import {ParsingException} from './common';
 import {parseFlag} from './common-parsers';
 import {
   extractPlatformsFromClasses,
-  extractPlatformsFromImages,
   extractVaryingCoinValue,
   extractVaryingDecimal,
   extractVaryingInteger,
@@ -68,50 +62,24 @@ export interface CardParsingException extends ParsingException {
 
 export type ScrappedWeapon = PlatformVarying<WeaponInfo> & { meta?: MetaInfo };
 
-export async function parseCards(entry: EntryInfo): Promise<void> {
-  const collection: ShortInfoCollection = JSON.parse(await fs.promises.readFile(`${entry.out}/json/short-info.json`, {encoding: 'utf8'}));
-  await ensureExists(`${entry.out}/json/cards`);
-  const queue: Promise<void>[] = [];
-  for (let key in collection.items) {
-    const name = collection.items[key].name;
-    if (!entry.excludeCards.some(x => x.toLowerCase() === key)) {
-      queue.push(
-          processCardName(entry, name).catch(ex => console.error(name, ex))
-      );
-    }
-  }
-  await Promise.allSettled(queue);
-}
-
-async function processCardName(entry: EntryInfo, name: string): Promise<void> {
-  const fileName = normalizeFileName(name);
-  const card = parseCard(await loadDocument(`${entry.out}/html/cards/${fileName}.html`));
-  return fs.promises.writeFile(`${entry.out}/json/cards/${fileName}.json`, JSON.stringify(card, null, 2), {encoding: 'utf8'});
-}
-
-export function parseCard(document: Document): ScrappedWeapon {
-  const contentRoot = document.querySelector('.mw-parser-output')!;
-  let messageBox = contentRoot.querySelector('.message-box.msgbox-color-blue');
-  let platforms: PlatformName[] = messageBox ? extractPlatformsFromImages(messageBox) : ALL_PLATFORMS as PlatformName[];
-  let meta: MetaInfo = {
-    platforms,
-    parsingExceptions: []
-  }
-  let cardBlocks = contentRoot.querySelectorAll('.infobox.item');
-  let cardBlock = cardBlocks[0];
-  let weaponInfo = extractWeaponCard(cardBlock!, meta);
-  (weaponInfo as ScrappedWeapon).meta = meta;
-  return weaponInfo as ScrappedWeapon;
-}
-
-export function extractWeaponCard(card: Element, meta: MetaInfo): PlatformVarying<WeaponInfo> {
+export function parseItemFromCard(card: Element, meta: MetaInfo): PlatformVarying<WeaponInfo> {
   const result: ScrappedWeapon = {} as ScrappedWeapon;
   result.name = extractVaryingString(card.querySelector('.title')!, meta.platforms);
+  let namePlatforms = Object.keys(result.name);
+  if (!isSameArray(namePlatforms, meta.platforms))
+    meta.platforms = namePlatforms as PlatformList;
 
   card.querySelectorAll('.section')
       .forEach(section => processSection(section, result, meta));
 
   return result;
+}
+
+function isSameArray(a: string[], b: string[]): boolean {
+  if (a.length !== b.length) return false;
+  let a_ = a.slice().sort();
+  let b_ = b.slice().sort();
+  return a_.every((x, i) => x === b_[i]);
 }
 
 function processSection(section: Element, weapon: ScrappedWeapon, meta: MetaInfo) {

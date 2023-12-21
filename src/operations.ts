@@ -8,7 +8,7 @@ import {fetchCategories} from './fetch/fetch-categories';
 import {fetchLists} from './fetch/fetch-lists';
 import {loadDocument} from './parse/common';
 import {parseLists} from './parse/lists/parse-lists';
-import {parseCards} from './parse/parse-card';
+import {parseCards} from './parse/parse-cards';
 import {parseCategoriesFromDom} from './parse/parse-categories';
 
 export type OperationNames =

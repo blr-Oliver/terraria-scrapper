@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import {EntryInfo} from '../execution';
 import {normalizeFileName} from '../fetch/fetch';
-import {ScrappedWeapon} from '../parse/parse-card';
+import {ScrappedWeapon} from '../parse/parse-item';
 import {PlatformVaryingValue} from '../platform-varying';
 import {Varying} from '../varying';
 import {ShortInfoCollection} from './ShortInfoCollector';
