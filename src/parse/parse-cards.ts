@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import {ShortInfoCollection} from '../analyze/ShortInfoCollector';
-import {ItemCard, ScrappedItem} from '../common/types';
+import {ItemCard, ScrappedItem, ScrappedItemWithSource} from '../common/types';
 import {EntryInfo} from '../execution';
 import {ensureExists} from '../fetch/common';
 import {normalizeFileName} from '../fetch/fetch';
@@ -24,26 +24,30 @@ export async function parseCards(entry: EntryInfo): Promise<void> {
   await Promise.allSettled(queue);
 }
 async function processCardName(entry: EntryInfo, name: string): Promise<void> {
-  const fileName = normalizeFileName(name);
-  const card = parseSinglePage(await loadDocument(`${entry.out}/html/cards/${fileName}.html`));
-  return fs.promises.writeFile(`${entry.out}/json/pages/${fileName}.json`, JSON.stringify(card, null, 2), {encoding: 'utf8'});
+  const filename = normalizeFileName(name);
+  const card = parseSinglePage(await loadDocument(`${entry.out}/html/cards/${filename}.html`), filename);
+  return fs.promises.writeFile(`${entry.out}/json/pages/${filename}.json`, JSON.stringify(card, null, 2), {encoding: 'utf8'});
 }
 
-export function parseSinglePage(document: Document): ScrappedItem[] {
+function parseSinglePage(document: Document, filename: string): ScrappedItem[] {
   const contentRoot = document.querySelector('.mw-parser-output')!;
   let messageBox = contentRoot.querySelector('.message-box.msgbox-color-blue');
   let platforms: PlatformName[] = messageBox ? extractPlatformsFromImages(messageBox) : ALL_PLATFORMS as PlatformName[];
   let cardBlocks = contentRoot.querySelectorAll('.infobox.item');
   let result = Array.prototype.map.call(cardBlocks, (block: Element, i: number) => {
-    let result = parseItemFromCard(block, platforms);
-    // TODO add sources
+    let result = parseItemFromCard(block, platforms) as ScrappedItemWithSource;
+    result.sources = [{
+      type: 'card',
+      filename,
+      index: i
+    }];
     return result;
-  }) as ScrappedItem[];
+  }) as ScrappedItemWithSource[];
   return maybeMerge(result);
 }
 
-function maybeMerge(items: ScrappedItem[]): ScrappedItem[] {
-  let collection: { [name: string]: ScrappedItem } = {};
+function maybeMerge(items: ScrappedItemWithSource[]): ScrappedItemWithSource[] {
+  let collection: { [name: string]: ScrappedItemWithSource } = {};
   let hasCollision = false;
   for (let item of items) {
     const platforms = item.platforms;
@@ -56,13 +60,13 @@ function maybeMerge(items: ScrappedItem[]): ScrappedItem[] {
     }
   }
   if (!hasCollision) return items;
-  let result: ScrappedItem[] = [];
+  let result: ScrappedItemWithSource[] = [];
   for (let name in collection)
     result.push(collection[name]);
   return result;
 }
 
-function mergeInto(dest: ScrappedItem, src: ScrappedItem, platforms: PlatformList) {
+function mergeInto(dest: ScrappedItemWithSource, src: ScrappedItemWithSource, platforms: PlatformList) {
   for (let property in src.item) {
     let itemCardProperty = property as keyof ItemCard;
     const srcElement = src.item[itemCardProperty]!;
@@ -77,4 +81,5 @@ function mergeInto(dest: ScrappedItem, src: ScrappedItem, platforms: PlatformLis
   }
   dest.platforms.push(...platforms);
   dest.exceptions.push(...src.exceptions);
+  dest.sources.push(...src.sources);
 }

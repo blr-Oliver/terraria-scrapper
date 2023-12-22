@@ -77,7 +77,7 @@ export interface ScrappedItem {
 }
 
 export interface ScrappedItemWithSource extends ScrappedItem {
-  source: CardSource | ListSource;
+  sources: (CardSource | ListSource)[];
 }
 
 export interface CardSource {
