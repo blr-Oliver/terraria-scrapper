@@ -28,14 +28,14 @@
       "prompt": "Fetching item cards"
     },
     "parseCards": {
-      "enabled": true,
-      "prompt": "Parsing cards",
-      "pause": true
-    },
-    "findMultiCards": {
       "enabled": false,
-      "prompt": "Finding multi-item cards",
+      "prompt": "Parsing cards",
       "pause": false
+    },
+    "collectCards": {
+      "enabled": true,
+      "prompt": "Building card index",
+      "pause": true
     },
     "combineItemData": {
       "prompt": "Combining item data from all sources"
