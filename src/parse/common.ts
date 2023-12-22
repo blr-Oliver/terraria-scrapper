@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import {JSDOM} from 'jsdom';
+import {MultiSourceItem} from '../common/types';
 import {PlatformVarying, PlatformVaryingValue} from '../platform-varying';
-import {MultiSourceItem} from './lists/cell-parsers';
 
 export type ItemDescriptor = MultiSourceItem & { [key: string]: any };
 

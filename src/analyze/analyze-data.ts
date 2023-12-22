@@ -1,8 +1,9 @@
 import * as fs from 'fs';
+import {ItemCard} from '../common/types';
 import {PlatformVaryingValue} from '../platform-varying';
-import {MetaInfo, WeaponInfo} from '../parse/parse-item';
+import {MetaInfo} from '../parse/parse-item';
 
-export type SavedItem = PlatformVaryingValue<WeaponInfo> & Omit<MetaInfo, 'platforms'>;
+export type SavedItem = PlatformVaryingValue<ItemCard> & Omit<MetaInfo, 'platforms'>;
 export function findInAllCards(test: (item: SavedItem) => boolean): { [file: string]: SavedItem } {
   let files = fs.readdirSync('out/cards', {encoding: 'utf8'})
       .filter(file => file.endsWith('.json'))

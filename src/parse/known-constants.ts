@@ -106,9 +106,9 @@ export const PROPERTIES_BY_NAME: StringMapping = {
   'critical chance': 'critChance',
   'tooltip': 'tooltip',
   'max stack': 'maxStack',
-  'ammo': 'ammo',
-  'uses ammo': 'ammo',
-  'bonus': 'bonus',
+  'ammo': 'ammoType',
+  'uses ammo': 'ammoType',
+  'bonus': 'rangeBonus',
   'research': 'ignore_',
   'placeable': 'ignore_'
 };

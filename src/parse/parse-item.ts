@@ -1,3 +1,4 @@
+import {ItemCard, ProjectileInfo, ScrappedItem} from '../common/types';
 import {makeVarying, PlatformList, PlatformName, PlatformVarying, PlatformVaryingValue, transform} from '../platform-varying';
 import {ParsingException} from './common';
 import {parseFlag} from './common-parsers';
@@ -15,42 +16,6 @@ import {
 } from './extract-varying';
 import {PROPERTIES_BY_NAME} from './known-constants';
 
-export interface WeaponInfo {
-  id: number | number[];
-  name: string;
-  image: string | string[],
-  tags: string[];
-  damage: number;
-  damageType: string;
-  knockback: number;
-  critChance: number;
-  useTime: number;
-  rarity: number;
-  autoSwing: boolean;
-  buyValue: number;
-  sellValue: number;
-  manaCost?: number;
-  velocity?: number;
-  ammo?: string;
-  projectiles?: ProjectileInfo[];
-  reach?: number;
-  spinDuration?: number;
-  tooltip?: string;
-  consumable?: boolean;
-  toolSpeed?: number;
-  maxStack?: number;
-  pickaxePower?: number;
-  hammerPower?: number;
-  axePower?: number;
-  bonus?: number;
-}
-
-export interface ProjectileInfo {
-  id: number;
-  name: string;
-  image: string;
-}
-
 export interface MetaInfo {
   platforms: PlatformList;
   parsingExceptions: CardParsingException[];
@@ -61,17 +26,23 @@ export interface CardParsingException extends ParsingException {
   value?: any;
 }
 
-export type ScrappedWeapon = PlatformVarying<WeaponInfo> & { meta?: MetaInfo };
+export function parseItemFromCard(card: Element, platforms: PlatformList): ScrappedItem {
+  const name = extractVaryingString(card.querySelector('.title')!, platforms);
+  let namePlatforms = Object.keys(name);
+  if (!isSameArray(namePlatforms, platforms))
+    platforms = namePlatforms as PlatformList;
 
-export function parseItemFromCard(card: Element, meta: MetaInfo): PlatformVarying<WeaponInfo> {
-  const result: ScrappedWeapon = {} as ScrappedWeapon;
-  result.name = extractVaryingString(card.querySelector('.title')!, meta.platforms);
-  let namePlatforms = Object.keys(result.name);
-  if (!isSameArray(namePlatforms, meta.platforms))
-    meta.platforms = namePlatforms as PlatformList;
+  const result: ScrappedItem = {
+    name: name[platforms[0]]!,
+    platforms,
+    item: {
+      name
+    } as PlatformVarying<ItemCard>,
+    exceptions: []
+  };
 
   card.querySelectorAll('.section')
-      .forEach(section => processSection(section, result, meta));
+      .forEach(section => processSection(section, result));
 
   return result;
 }
@@ -83,13 +54,13 @@ function isSameArray(a: string[], b: string[]): boolean {
   return a_.every((x, i) => x === b_[i]);
 }
 
-function processSection(section: Element, weapon: ScrappedWeapon, meta: MetaInfo) {
-  if (section.matches('.images')) processImagesSection(section, weapon, meta);
-  else if (section.matches('.projectile')) processProjectileSection(section, weapon, meta);
-  else if (section.matches('.ids')) processIdsSection(section, weapon, meta);
-  else if (section.matches('.statistics')) processStatisticsSection(section, weapon, meta);
+function processSection(section: Element, context: ScrappedItem) {
+  if (section.matches('.images')) processImagesSection(section, context);
+  else if (section.matches('.projectile')) processProjectileSection(section, context);
+  else if (section.matches('.ids')) processIdsSection(section, context);
+  else if (section.matches('.statistics')) processStatisticsSection(section, context);
   else {
-    meta.parsingExceptions.push({
+    context.exceptions.push({
       stage: 'categorize section',
       message: 'unknown section selector',
       value: section.className
@@ -97,18 +68,18 @@ function processSection(section: Element, weapon: ScrappedWeapon, meta: MetaInfo
   }
 }
 
-function processImagesSection(section: Element, weapon: ScrappedWeapon, meta: MetaInfo) {
+function processImagesSection(section: Element, context: ScrappedItem) {
   let imageList = section.querySelector('ul.infobox-inline, ul.infobox-block')!;
   let images = imageList.querySelectorAll('img[src]');
   let sources = [...images].map(image => image.getAttribute('src')!);
-  weapon.image = makeVarying(sources.length > 1 ? sources : sources[0], meta.platforms);
-  weapon.autoSwing = makeVarying(!!section.querySelector('.auto'), meta.platforms);
+  context.item.image = makeVarying(sources, context.platforms);
+  context.item.autoSwing = makeVarying(!!section.querySelector('.auto'), context.platforms);
   let stack = section.querySelector('.stack[title]');
   if (stack)
-    weapon.maxStack = makeVarying(+stack.getAttribute('title')!.slice(11)); // 'Max stack: '
+    context.item.maxStack = makeVarying(+stack.getAttribute('title')!.slice(11), context.platforms); // 'Max stack: '
 }
 
-function processProjectileSection(section: Element, weapon: ScrappedWeapon, meta: MetaInfo) {
+function processProjectileSection(section: Element, context: ScrappedItem) {
   let projectileList = section.querySelector('ul.infobox-inline')!;
   const projectiles: ProjectileInfo[] = [];
   projectileList.querySelectorAll('li').forEach(li => {
@@ -116,7 +87,7 @@ function processProjectileSection(section: Element, weapon: ScrappedWeapon, meta
     const image = li.querySelector('.image img[src]')!.getAttribute('src')!;
     projectiles.push({id: 0, name, image});
   });
-  weapon.projectiles = makeVarying(projectiles); // TODO merge with existing
+  context.item.projectiles = makeVarying(projectiles); // TODO merge with existing
 }
 
 type IdInfo = {
@@ -124,7 +95,7 @@ type IdInfo = {
   values: PlatformVaryingValue<number[]>
 }
 
-function parseIds(section: Element, meta: MetaInfo): IdInfo[] {
+function parseIds(section: Element, platforms: PlatformList): IdInfo[] {
   let ids: IdInfo[] = [];
   section.querySelectorAll('ul>li').forEach(idBlock => {
     const category = idBlock.querySelector('a')!.textContent!;
@@ -143,7 +114,7 @@ function parseIds(section: Element, meta: MetaInfo): IdInfo[] {
         node => extractPlatformsFromClasses(node as Element),
         contentMerger,
         parseIdList,
-        meta.platforms
+        platforms
     );
     ids.push({
       category,
@@ -165,21 +136,22 @@ function allInInterval([start, end = start]: string[]): number[] {
   return Array.from({length: e - s + 1}, (_, i) => s + i);
 }
 
-function processIdsSection(section: Element, weapon: ScrappedWeapon, meta: MetaInfo) {
-  let ids = parseIds(section, meta);
+function processIdsSection(section: Element, context: ScrappedItem) {
+  let ids = parseIds(section, context.platforms);
+  const {item, exceptions} = context;
   for (let info of ids) {
     switch (info.category.toLowerCase()) {
       case 'item id':
-        weapon.id = transform(info.values, list => list.length > 1 ? list : list[0]);
+        item.id = transform(info.values, list => list.length > 1 ? list : list[0]);
         break;
       case 'projectile id':
-        const projectilePerPlatform = weapon.projectiles!;
+        const projectilePerPlatform = item.projectiles!;
         const projectileIds = info.values;
         for (let key in projectileIds) {
           const platform = key as PlatformName;
           const projectiles = projectilePerPlatform[platform];
           if (!projectiles) {
-            meta.parsingExceptions.push({
+            exceptions.push({
               stage: 'projectile ids',
               message: 'missing platform',
               value: platform
@@ -187,7 +159,7 @@ function processIdsSection(section: Element, weapon: ScrappedWeapon, meta: MetaI
           } else {
             let ids: number[] = projectileIds[platform]!;
             if (projectiles.length !== ids.length) {
-              meta.parsingExceptions.push({
+              exceptions.push({
                 stage: 'projectile ids',
                 message: 'unaligned length'
               });
@@ -201,7 +173,7 @@ function processIdsSection(section: Element, weapon: ScrappedWeapon, meta: MetaI
         break;
         // TODO maybe add buff ids
       default:
-        meta.parsingExceptions.push({
+        exceptions.push({
           stage: 'ids section',
           message: 'unknown id category',
           value: info.category
@@ -210,51 +182,51 @@ function processIdsSection(section: Element, weapon: ScrappedWeapon, meta: MetaI
   }
 }
 
-function processStatisticsSection(section: Element, weapon: ScrappedWeapon, meta: MetaInfo) {
+function processStatisticsSection(section: Element, context: ScrappedItem) {
   let titleDiv = section.querySelector('.title');
   if (titleDiv) {
     let title = titleDiv!.textContent!.trim().toLowerCase();
     switch (title) {
       case 'statistics':
-        processGeneralStatistics(section, weapon, meta);
+        processGeneralStatistics(section, context);
         break;
       case 'sounds':
         // TODO add sounds processing
         break;
       default:
-        meta.parsingExceptions.push({
+        context.exceptions.push({
           stage: 'statistics categorization',
           message: 'unknown title',
           value: title
         });
     }
   } else {
-    meta.parsingExceptions.push({
+    context.exceptions.push({
       stage: 'statistics categorization',
       message: 'missing title'
     });
   }
 }
 
-function processGeneralStatistics(section: Element, weapon: ScrappedWeapon, meta: MetaInfo) {
+function processGeneralStatistics(section: Element, context: ScrappedItem) {
   let toolPower = section.querySelector('ul.toolpower');
   if (toolPower) {
-    processToolPower(toolPower, weapon, meta);
+    processToolPower(toolPower, context);
   }
   let table = section.querySelector('table.stat');
   if (table) {
     let lines = (table as HTMLTableElement).rows;
-    [...lines].forEach(row => processProperty(row.cells[0].textContent!, row.cells[1], weapon, meta));
+    [...lines].forEach(row => processProperty(row.cells[0].textContent!, row.cells[1], context));
   } else {
     // TODO this is probably tool power stats
-    meta.parsingExceptions.push({
+    context.exceptions.push({
       stage: 'statistics',
       message: 'table not found'
     });
   }
 }
 
-function processToolPower(list: Element, weapon: ScrappedWeapon, meta: MetaInfo) {
+function processToolPower(list: Element, context: ScrappedItem) {
   let items = list.querySelectorAll('li:not(.zero)');
   for (let li of items) {
     let type: 'pickaxePower' | 'hammerPower' | 'axePower';
@@ -262,7 +234,7 @@ function processToolPower(list: Element, weapon: ScrappedWeapon, meta: MetaInfo)
     else if (li.matches('.hammer')) type = 'hammerPower';
     else if (li.matches('.axe')) type = 'axePower';
     else {
-      meta.parsingExceptions.push({
+      context.exceptions.push({
         stage: 'parsing tool power',
         message: 'unknown tool type',
         value: li.className
@@ -270,51 +242,52 @@ function processToolPower(list: Element, weapon: ScrappedWeapon, meta: MetaInfo)
       continue;
     }
     let platformMarker = li.querySelector('.eico');
-    weapon[type!] = extractVaryingPercent(platformMarker ? platformMarker.parentElement! : li, meta.platforms);
+    context.item[type!] = extractVaryingPercent(platformMarker ? platformMarker.parentElement! : li, context.platforms);
   }
 }
 
-function processProperty(name: string, td: Element, weapon: ScrappedWeapon, meta: MetaInfo) {
-  name = name.toLowerCase();
-  const key = PROPERTIES_BY_NAME[name];
+function processProperty(propertyName: string, td: Element, context: ScrappedItem) {
+  propertyName = propertyName.toLowerCase();
+  const key = PROPERTIES_BY_NAME[propertyName];
+  const {item, platforms, exceptions} = context;
   switch (key) {
     case 'tags':
       const tagBlocks = td.querySelectorAll('.tags .tag');
       const tags = Array.prototype.map.call(tagBlocks, e => e.textContent!.trim()) as string[];
-      weapon.tags = makeVarying(tags, meta.platforms);
+      item.tags = makeVarying(tags, platforms);
       break;
-    case 'ammo':
-      weapon.ammo = makeVarying(td.textContent!, meta.platforms);
+    case 'ammoType':
+      item.ammoType = makeVarying(td.textContent!, platforms);
       break;
     case 'damage':
-      weapon.damage = extractVaryingInteger(td, meta.platforms);
+      item.damage = extractVaryingInteger(td, platforms);
       let typeMarker = td.querySelector('.small-bold:last-child');
       if (typeMarker)
-        weapon.damageType = makeVarying(typeMarker.textContent!.trim().slice(1, -1).trim().toLowerCase(), meta.platforms);
+        item.damageType = makeVarying(typeMarker.textContent!.trim().slice(1, -1).trim().toLowerCase(), platforms);
       break;
     case 'knockback':
-      weapon.knockback = extractVaryingDecimal(td, meta.platforms);
+      item.knockback = extractVaryingDecimal(td, platforms);
       break;
-    case 'bonus':
-      weapon.bonus = extractVaryingInteger(td, meta.platforms);
+    case 'rangeBonus':
+      item.rangeBonus = extractVaryingInteger(td, platforms);
       break;
     case 'consumable':
-      weapon.consumable = parseFlag(td, meta.platforms);
+      item.consumable = parseFlag(td, platforms);
       break;
     case 'critChance':
-      weapon.critChance = extractVaryingPercent(td, meta.platforms);
+      item.critChance = extractVaryingPercent(td, platforms);
       break;
     case 'manaCost':
-      weapon.manaCost = extractVaryingInteger(td, meta.platforms);
+      item.manaCost = extractVaryingInteger(td, platforms);
       break;
     case 'useTime':
-      weapon.useTime = extractVaryingInteger(td, meta.platforms);
+      item.useTime = extractVaryingInteger(td, platforms);
       break;
     case 'toolSpeed':
-      weapon.toolSpeed = extractVaryingInteger(td, meta.platforms);
+      item.toolSpeed = extractVaryingInteger(td, platforms);
       break;
     case 'velocity':
-      weapon.velocity = extractVaryingDecimal(td, meta.platforms);
+      item.velocity = extractVaryingDecimal(td, platforms);
       break;
     case 'tooltip':
       let gameTextContainer = td.querySelector('.gameText');
@@ -326,38 +299,38 @@ function processProperty(name: string, td: Element, weapon: ScrappedWeapon, meta
           else if (child.nodeType === Node.ELEMENT_NODE && (child as Element).tagName.toLowerCase() === 'br')
             chunks.push('\n');
         }
-        weapon.tooltip = makeVarying(chunks.join('').trim(), meta.platforms);
+        item.tooltip = makeVarying(chunks.join('').trim(), platforms);
       } else
-        weapon.tooltip = makeVarying(td.textContent!.trim(), meta.platforms);
+        item.tooltip = makeVarying(td.textContent!.trim(), platforms);
       break;
     case 'maxStack':
-      weapon.maxStack = extractVaryingInteger(td, meta.platforms);
+      item.maxStack = extractVaryingInteger(td, platforms);
       break;
     case 'rarity':
       let wrapper = td.querySelector('.rarity')!;
       let sortKey = wrapper.querySelector('s.sortkey');
       if (sortKey) {
-        weapon.rarity = makeVarying(parseInt(sortKey.textContent!.trim()), meta.platforms);
+        item.rarity = makeVarying(parseInt(sortKey.textContent!.trim()), platforms);
       } else {
         let image = wrapper.querySelector('a img[alt]')!;
         let altString = image.getAttribute('alt')!.trim();
         let match = altString.match('/Rarity level:\s?(\d+)/i');
-        weapon.rarity = makeVarying(+match![1], meta.platforms);
+        item.rarity = makeVarying(+match![1], platforms);
       }
       break;
     case 'buyValue':
-      weapon.buyValue = extractVaryingCoinValue(td, meta.platforms);
+      item.buyValue = extractVaryingCoinValue(td, platforms);
       break;
     case 'sellValue':
-      weapon.sellValue = extractVaryingCoinValue(td, meta.platforms);
+      item.sellValue = extractVaryingCoinValue(td, platforms);
       break;
     case 'ignore_':
       break;
     default:
-      meta.parsingExceptions.push({
+      exceptions.push({
         stage: 'property detection',
         message: 'unknown property',
-        value: name
+        value: propertyName
       });
   }
 }

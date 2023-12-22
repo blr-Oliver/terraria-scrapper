@@ -1,20 +1,6 @@
 import {PlatformList} from '../../platform-varying';
 import {ParsedListItem} from '../common';
 
-export interface Item {
-  id?: number;
-  name?: string;
-}
-
-export interface MultiSourceItem extends Item {
-  source: ItemSourceInfo[];
-}
-
-export type ItemSourceInfo = {
-  file: string;
-  section: string;
-}
-
 export type TableContext = {
   file: string;
   section: string;

@@ -1,12 +1,13 @@
 import * as fs from 'fs';
 import {ShortInfoCollection} from '../analyze/ShortInfoCollector';
+import {ItemCard, ScrappedItem} from '../common/types';
 import {EntryInfo} from '../execution';
 import {ensureExists} from '../fetch/common';
 import {normalizeFileName} from '../fetch/fetch';
-import {ALL_PLATFORMS, PlatformList, PlatformName, PlatformVaryingValue} from '../platform-varying';
+import {ALL_PLATFORMS, PlatformList, PlatformName} from '../platform-varying';
 import {loadDocument} from './common';
 import {extractPlatformsFromImages} from './extract-varying';
-import {MetaInfo, parseItemFromCard, ScrappedWeapon} from './parse-item';
+import {parseItemFromCard} from './parse-item';
 
 export async function parseCards(entry: EntryInfo): Promise<void> {
   const collection: ShortInfoCollection = JSON.parse(await fs.promises.readFile(`${entry.out}/json/short-info.json`, {encoding: 'utf8'}));
@@ -28,30 +29,25 @@ async function processCardName(entry: EntryInfo, name: string): Promise<void> {
   return fs.promises.writeFile(`${entry.out}/json/pages/${fileName}.json`, JSON.stringify(card, null, 2), {encoding: 'utf8'});
 }
 
-export function parseSinglePage(document: Document): ScrappedWeapon[] {
+export function parseSinglePage(document: Document): ScrappedItem[] {
   const contentRoot = document.querySelector('.mw-parser-output')!;
   let messageBox = contentRoot.querySelector('.message-box.msgbox-color-blue');
   let platforms: PlatformName[] = messageBox ? extractPlatformsFromImages(messageBox) : ALL_PLATFORMS as PlatformName[];
   let cardBlocks = contentRoot.querySelectorAll('.infobox.item');
-  let result = Array.prototype.map.call(cardBlocks, block => {
-    let meta: MetaInfo = {
-      platforms: platforms.slice(),
-      parsingExceptions: []
-    }
-    let weaponInfo = parseItemFromCard(block, meta);
-    (weaponInfo as ScrappedWeapon).meta = meta;
-    return weaponInfo as ScrappedWeapon;
-  }) as ScrappedWeapon[];
+  let result = Array.prototype.map.call(cardBlocks, (block: Element, i: number) => {
+    let result = parseItemFromCard(block, platforms);
+    // TODO add sources
+    return result;
+  }) as ScrappedItem[];
   return maybeMerge(result);
 }
 
-function maybeMerge(items: ScrappedWeapon[]): ScrappedWeapon[] {
-  let collection: { [name: string]: ScrappedWeapon } = {};
+function maybeMerge(items: ScrappedItem[]): ScrappedItem[] {
+  let collection: { [name: string]: ScrappedItem } = {};
   let hasCollision = false;
   for (let item of items) {
-    const platforms = item.meta!.platforms;
-    const primaryPlatform = platforms[0];
-    const name = item.name[primaryPlatform]!;
+    const platforms = item.platforms;
+    const name = item.name;
     if (!(name in collection)) {
       collection[name] = item;
     } else {
@@ -60,25 +56,25 @@ function maybeMerge(items: ScrappedWeapon[]): ScrappedWeapon[] {
     }
   }
   if (!hasCollision) return items;
-  let result: ScrappedWeapon[] = [];
+  let result: ScrappedItem[] = [];
   for (let name in collection)
     result.push(collection[name]);
   return result;
 }
 
-function mergeInto(dest: ScrappedWeapon, src: ScrappedWeapon, platforms: PlatformList) {
-  for (let property in src) {
-    if (property === 'meta') continue;
-    const srcElement: PlatformVaryingValue<any> = (src as any)[property];
-    if (property in dest) {
-      const destElement: PlatformVaryingValue<any> = (dest as any)[property];
+function mergeInto(dest: ScrappedItem, src: ScrappedItem, platforms: PlatformList) {
+  for (let property in src.item) {
+    let itemCardProperty = property as keyof ItemCard;
+    const srcElement = src.item[itemCardProperty]!;
+    if (property in dest.item) {
+      const destElement = dest.item[itemCardProperty]!;
       for (let platform of platforms) {
         destElement[platform] = srcElement[platform];
       }
     } else {
-      (dest as any)[property] = srcElement;
+      (dest.item as any)[itemCardProperty] = srcElement;
     }
   }
-  dest.meta!.platforms.push(...platforms);
-  dest.meta!.parsingExceptions.push(...src.meta!.parsingExceptions);
+  dest.platforms.push(...platforms);
+  dest.exceptions.push(...src.exceptions);
 }
