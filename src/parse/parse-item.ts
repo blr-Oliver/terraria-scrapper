@@ -19,6 +19,7 @@ export interface WeaponInfo {
   id: number | number[];
   name: string;
   image: string | string[],
+  tags: string | string[];
   damage: number;
   damageType: string;
   knockback: number;
@@ -264,6 +265,11 @@ function processProperty(name: string, td: Element, weapon: ScrappedWeapon, meta
   name = name.toLowerCase();
   const key = PROPERTIES_BY_NAME[name];
   switch (key) {
+    case 'tags':
+      const tagBlocks = td.querySelectorAll('.tags .tag');
+      const tags = Array.prototype.map.call(tagBlocks, e => e.textContent!.trim()) as string[];
+      weapon.tags = makeVarying(tags, meta.platforms);
+      break;
     case 'ammo':
       weapon.ammo = makeVarying(td.textContent!, meta.platforms);
       break;

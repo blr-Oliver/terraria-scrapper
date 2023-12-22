@@ -92,6 +92,7 @@ export const COMMON_PROPERTY_TYPES: { [property: string]: keyof COMMON_PARSER_TY
 }
 
 export const PROPERTIES_BY_NAME: StringMapping = {
+  'type': 'tags',
   'damage': 'damage',
   'knockback': 'knockback',
   'consumable': 'consumable',
@@ -109,6 +110,5 @@ export const PROPERTIES_BY_NAME: StringMapping = {
   'uses ammo': 'ammo',
   'bonus': 'bonus',
   'research': 'ignore_',
-  'placeable': 'ignore_',
-  'type': 'ignore_'
+  'placeable': 'ignore_'
 };
