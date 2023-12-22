@@ -18,7 +18,7 @@
       "prompt": "Parsing lists",
       "pause": false
     },
-    "collectNames": {
+    "collectPages": {
       "enabled": false,
       "prompt": "Collecting item names",
       "pause": false

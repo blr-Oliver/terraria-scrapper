@@ -4,7 +4,7 @@ import {ParsedSection} from '../parse/common';
 import {Category} from '../parse/parse-categories';
 import {ShortInfoCollector} from './ShortInfoCollector';
 
-export async function collectNames(entry: EntryInfo): Promise<void> {
+export async function collectPages(entry: EntryInfo): Promise<void> {
   const collector: ShortInfoCollector = new ShortInfoCollector();
   const rootCategory: Category = JSON.parse(await fs.promises.readFile(`${entry.out}/json/categories.json`, {encoding: 'utf8'}));
   collectCategoriesRecursively(collector, rootCategory);
