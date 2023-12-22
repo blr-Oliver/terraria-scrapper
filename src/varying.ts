@@ -32,7 +32,7 @@ export type VaryingObject<T extends object, K extends keyof any> = {
 }
 
 export type Varying<T, K extends keyof any> =
-    T extends Array<infer E> ? Array<Varying<E, K>> :
+    T extends Array<infer E> ? VaryingValue<Array<E>, K> :
         T extends Function ? VaryingValue<T, K> :
             T extends object ? VaryingObject<T, K> :
                 VaryingValue<T, K>;

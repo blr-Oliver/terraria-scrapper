@@ -19,7 +19,7 @@ export interface WeaponInfo {
   id: number | number[];
   name: string;
   image: string | string[],
-  tags: string | string[];
+  tags: string[];
   damage: number;
   damageType: string;
   knockback: number;
@@ -110,16 +110,13 @@ function processImagesSection(section: Element, weapon: ScrappedWeapon, meta: Me
 
 function processProjectileSection(section: Element, weapon: ScrappedWeapon, meta: MetaInfo) {
   let projectileList = section.querySelector('ul.infobox-inline')!;
-  weapon.projectiles = weapon.projectiles || [];
+  const projectiles: ProjectileInfo[] = [];
   projectileList.querySelectorAll('li').forEach(li => {
     const name = li.querySelector('.name')!.textContent!.trim();
     const image = li.querySelector('.image img[src]')!.getAttribute('src')!;
-    weapon.projectiles!.push({
-      id: {},
-      name: makeVarying(name, meta.platforms),
-      image: makeVarying(image, meta.platforms)
-    } as PlatformVarying<ProjectileInfo>);
+    projectiles.push({id: 0, name, image});
   });
+  weapon.projectiles = makeVarying(projectiles); // TODO merge with existing
 }
 
 type IdInfo = {
@@ -176,13 +173,29 @@ function processIdsSection(section: Element, weapon: ScrappedWeapon, meta: MetaI
         weapon.id = transform(info.values, list => list.length > 1 ? list : list[0]);
         break;
       case 'projectile id':
-        const knownProjectiles = weapon.projectiles!;
+        const projectilePerPlatform = weapon.projectiles!;
         const projectileIds = info.values;
         for (let key in projectileIds) {
           const platform = key as PlatformName;
-          let ids: number[] = projectileIds[platform]!;
-          for (let i = 0; i < ids.length && i < knownProjectiles.length; ++i) {
-            knownProjectiles[i].id[platform] = ids[i];
+          const projectiles = projectilePerPlatform[platform];
+          if (!projectiles) {
+            meta.parsingExceptions.push({
+              stage: 'projectile ids',
+              message: 'missing platform',
+              value: platform
+            });
+          } else {
+            let ids: number[] = projectileIds[platform]!;
+            if (projectiles.length !== ids.length) {
+              meta.parsingExceptions.push({
+                stage: 'projectile ids',
+                message: 'unaligned length'
+              });
+            } else {
+              for (let i = 0; i < ids.length && i < ids.length; ++i) {
+                projectiles[i].id = ids[i];
+              }
+            }
           }
         }
         break;
