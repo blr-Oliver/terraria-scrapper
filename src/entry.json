@@ -1,6 +1,6 @@
 {
-  "htmlRootUrl": "https://terraria.wiki.gg/",
-  "htmlEntrySuffix": "wiki/",
+  "htmlRootUrl": "https://terraria.wiki.gg",
+  "htmlEntrySuffix": "/wiki/",
   "out": "out",
   "categories": "Weapons",
   "lists": [

@@ -17,8 +17,9 @@ export type ItemSourceInfo = {
 export interface ItemInfo {
   id?: number | number[];
   name: string;
+  page: string;
   image: string[],
-  tags: string[];
+  tags?: string[];
   tooltip?: string;
   consumable?: boolean;
   maxStack?: number;
