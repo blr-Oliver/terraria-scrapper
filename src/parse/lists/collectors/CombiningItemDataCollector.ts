@@ -90,7 +90,7 @@ export class CombiningItemDataCollector implements ItemListCollector<{ [name: st
     let result: { [section: string]: NormalizedItem[] } = {};
     for (let section of parsedContent) {
       result[section.title] = section.items
-          .map(item => this.normalizeItem(item))
+          .map(item => this.normalizeItem(item.item))
     }
     return result;
   }

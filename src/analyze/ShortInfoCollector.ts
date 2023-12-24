@@ -30,7 +30,7 @@ export class ShortInfoCollector implements ShortInfoCollection {
   collect(fileContent: ParsedSection[]): void {
     fileContent
         .flatMap(section => section.items)
-        .forEach(item => this.collectItem(item));
+        .forEach(item => this.collectItem(item.item));
   }
 
   collectItem(item: PlatformVarying<ItemCard>) {

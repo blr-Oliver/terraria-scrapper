@@ -1,5 +1,5 @@
 import {ALL_PLATFORMS, PlatformList} from '../../platform-varying';
-import {ParsedSection, ParsingException} from '../common';
+import {ParsedSection} from '../common';
 import {extractPlatformsFromImages} from '../extract-varying';
 import {TableContext} from './cell-parsers';
 import {ItemTableParser} from './ItemTableParser';
@@ -27,7 +27,7 @@ export class ItemListDocumentParser {
   }
 
   private parseTable(table: HTMLTableElement, index: number, platforms: PlatformList, fileKey: string): ParsedSection {
-    let exceptions: ParsingException[] = [];
+    let exceptions: any[] = [];
     let sectionHeader = this.getClosestSectionHeader(table);
     if (!sectionHeader) {
       exceptions.push({message: 'missing title'});
@@ -42,11 +42,7 @@ export class ItemListDocumentParser {
       table,
       platforms
     }
-    let result: ParsedSection = {
-      title: sectionName,
-      index,
-      items: this.tableParser.parse(tableContext)
-    };
+    let result: ParsedSection = this.tableParser.parse(tableContext);
     if (exceptions.length)
       result.exceptions = exceptions;
     return result;

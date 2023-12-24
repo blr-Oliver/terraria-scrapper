@@ -1,6 +1,6 @@
-import {ItemCard} from '../../common/types';
+import {ItemCard, ScrappedItemWithSource} from '../../common/types';
 import {PlatformList, PlatformVarying} from '../../platform-varying';
-import {ListRowParsingException} from '../common';
+import {ListRowParsingException, ParsedSection} from '../common';
 import {CellContext, HeaderContext, ICellParser, ParserProvider, TableContext} from './cell-parsers';
 
 type CellCoordinates = {
@@ -24,20 +24,17 @@ export class ItemTableParser {
   constructor(private parserProvider: ParserProvider) {
   }
 
-  parse(context: TableContext): PlatformVarying<ItemCard>[] {
+  parse(context: TableContext): ParsedSection {
     const [headerRows, bodyRows] = this.separateHeaderRows(context.table);
     const rowNum = bodyRows.length;
     const colNum = context.columnCount = bodyRows[0].cells.length;
     const parsers = this.getParsers(context, this.getHeaderCells(headerRows, colNum));
-    const result: PlatformVarying<ItemCard>[] = Array(rowNum);
+    const items: ScrappedItemWithSource[] = Array(rowNum);
     const platformSources = parsers.filter(parser => parser.parser.getPlatforms);
     for (let row = 0; row < rowNum; ++row) {
       const itemRow = bodyRows[row];
-      const item = result[row] = {} as PlatformVarying<ItemCard>;
-      (item as any).source = [{
-        file: context.file,
-        section: context.section
-      }];
+      const itemCard = {} as PlatformVarying<ItemCard>;
+
       let platforms: PlatformList = context.platforms;
       platformSources.forEach(binding => {
         const td = itemRow.cells[binding.header.column];
@@ -47,8 +44,23 @@ export class ItemTableParser {
           td, column: row, row: row,
           platforms
         };
-        platforms = binding.parser.getPlatforms!(td, item, cellContext);
+        platforms = binding.parser.getPlatforms!(td, itemCard, cellContext);
       })
+
+      const item: ScrappedItemWithSource = items[row] = {
+        name: '',
+        item: itemCard,
+        platforms,
+        exceptions: [],
+        sources: [{
+          type: 'list',
+          filename: context.file,
+          itemIndex: row,
+          section: context.section,
+          sectionIndex: context.sectionIndex
+        }]
+      };
+
       for (let column = 0; column < colNum; ++column) {
         const td = itemRow.cells[column];
         const cellContext: CellContext = {
@@ -60,7 +72,7 @@ export class ItemTableParser {
         };
         const parser = parsers[column].parser;
         try {
-          parser.parse(td, item, cellContext);
+          parser.parse(td, itemCard, cellContext);
         } catch (ex) {
           let exInfo: ListRowParsingException = {col: column};
           if (ex instanceof Error)
@@ -72,8 +84,13 @@ export class ItemTableParser {
           cellContext.exceptions!.push(exInfo);
         }
       }
+      item.name = item.item.name[item.platforms[0]]!;
     }
-    return result.filter(item => Object.keys(item).length > 1);
+    return {
+      title: context.section,
+      index: context.sectionIndex,
+      items: items.filter(item => Object.keys(item.item).length > 1)
+    }
   }
 
   private separateHeaderRows(table: HTMLTableElement): [ArrayLike<HTMLTableRowElement>, ArrayLike<HTMLTableRowElement>] {

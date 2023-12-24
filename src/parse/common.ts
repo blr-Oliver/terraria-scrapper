@@ -1,29 +1,23 @@
 import * as fs from 'fs';
 import {JSDOM} from 'jsdom';
-import {ItemCard, MultiSourceItem} from '../common/types';
-import {PlatformVarying, PlatformVaryingValue} from '../platform-varying';
+import {MultiSourceItem, ScrappedItemWithSource} from '../common/types';
+import {PlatformVaryingValue} from '../platform-varying';
 
 export type ItemDescriptor = MultiSourceItem & { [key: string]: any };
 
-export interface ParsingException {
-  message?: string;
-}
-
-export interface ListRowParsingException extends ParsingException {
+export interface ListRowParsingException {
   col: number;
   property?: string;
   value?: any;
-}
-
-export type ParsingExceptions<T extends ParsingException = ParsingException> = {
-  exceptions?: T[];
+  message?: string;
 }
 
 export type ParsedSection = {
   title: string,
   index: number,
-  items: PlatformVarying<ItemCard>[]
-} & ParsingExceptions;
+  items: ScrappedItemWithSource[];
+  exceptions?: any[];
+}
 
 export type NormalizedItem = PlatformVaryingValue<ItemDescriptor>;
 

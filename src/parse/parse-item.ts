@@ -1,6 +1,5 @@
 import {ItemCard, ProjectileInfo, ScrappedItem} from '../common/types';
 import {makeVarying, PlatformList, PlatformName, PlatformVarying, PlatformVaryingValue, transform} from '../platform-varying';
-import {ParsingException} from './common';
 import {parseFlag} from './common-parsers';
 import {
   extractPlatformsFromClasses,
@@ -21,9 +20,10 @@ export interface MetaInfo {
   parsingExceptions: CardParsingException[];
 }
 
-export interface CardParsingException extends ParsingException {
+export interface CardParsingException {
   stage: string;
   value?: any;
+  message?: string;
 }
 
 export function parseItemFromCard(card: Element, platforms: PlatformList): ScrappedItem {
