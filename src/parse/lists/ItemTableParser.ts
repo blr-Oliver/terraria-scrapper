@@ -84,7 +84,8 @@ export class ItemTableParser {
           cellContext.exceptions!.push(exInfo);
         }
       }
-      item.name = item.item.name[item.platforms[0]]!;
+      if ('name' in item.item)
+        item.name = item.item.name[item.platforms[0]]!;
     }
     return {
       title: context.section,
@@ -112,7 +113,7 @@ export class ItemTableParser {
     const matrix: CellCoordinates[][] = Array.from(headerRows, _ => Array(width));
     for (let y = 0, rowIdx = 0; y < height; ++y, ++rowIdx) {
       let cells = headerRows[rowIdx].cells;
-      for (let x = 0, cellIdx = 0; x < width; ++x) {
+      for (let x = 0, cellIdx = 0; x < width && cellIdx < cells.length; ++x) {
         if (matrix[y][x]) continue;
         const td = cells[cellIdx];
         const colSpan = td.colSpan || 1;

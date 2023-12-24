@@ -1,8 +1,15 @@
 {
-  "htmlRootUrl": "https://terraria.wiki.gg/wiki/",
-  "htmlOutputPath": "out/raw",
+  "htmlRootUrl": "https://terraria.wiki.gg",
+  "htmlEntrySuffix": "/wiki/",
+  "out": "out",
   "categories": "Weapons",
   "lists": [
-    "Launchers"
+    "Pickaxes"
+  ],
+  "excludeCards": [
+    "Rocket I",
+    "Rocket II",
+    "Rocket III",
+    "Rocket IV"
   ]
 }

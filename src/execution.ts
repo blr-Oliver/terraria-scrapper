@@ -57,7 +57,7 @@ export class Execution {
   }
 
   async run(): Promise<void> {
-    const entry = await loadEntry();
+    const entry = await loadEntry(this.config.entry);
     let enabledTasks = OPERATION_ORDER
         .filter(opName => this.config.operations[opName]?.enabled)
     for (let task of enabledTasks) {
