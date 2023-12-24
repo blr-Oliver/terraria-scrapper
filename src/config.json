@@ -1,39 +1,38 @@
 {
-  "entry": "entry.json",
+  "entry": "src/entry.json",
   "operations": {
     "fetchCategories": {
-      "enabled": true,
+      "enabled": false,
       "prompt": "Fetching categories"
     },
     "fetchLists": {
-      "enabled": true,
+      "enabled": false,
       "prompt": "Fetching lists"
     },
     "parseCategories": {
-      "enabled": true,
+      "enabled": false,
       "prompt": "Parsing categories"
     },
     "parseLists": {
-      "enabled": true,
+      "enabled": false,
       "prompt": "Parsing lists",
       "pause": false
     },
     "collectPages": {
-      "enabled": true,
-      "prompt": "Collecting item names",
-      "pause": false
+      "enabled": false,
+      "prompt": "Collecting item names"
     },
     "fetchCards": {
-      "enabled": true,
+      "enabled": false,
       "prompt": "Fetching item cards"
     },
     "parseCards": {
-      "enabled": true,
+      "enabled": false,
       "prompt": "Parsing cards",
-      "pause": true
+      "pause": false
     },
     "collectCards": {
-      "enabled": true,
+      "enabled": false,
       "prompt": "Building card index",
       "pause": false
     },

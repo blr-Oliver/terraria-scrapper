@@ -10,7 +10,7 @@ export class AmmoNameBlockParserProvider extends NameBlockParserProvider {
   }
 
   protected isNameBlock(caption: string, header: HeaderContext): boolean {
-    return caption === 'type' && header.table.isLined && this.isAmmoFile(header);
+    return header.table.isLined && (caption === 'type' && this.isAmmoFile(header) || caption === 'flare');
   }
 
   private isAmmoFile(header: HeaderContext): boolean {

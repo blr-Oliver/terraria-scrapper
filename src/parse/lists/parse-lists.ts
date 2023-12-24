@@ -10,12 +10,19 @@ import {BehaviorPropertiesProvider} from './providers/BehaviorPropertiesProvider
 import {BlastRadiusProvider} from './providers/BlastRadiusProvider';
 import {CommonParserProvider} from './providers/CommonParserProvider';
 import {CompositeParserProvider} from './providers/CompositeParserProvider';
+import {IgnoreSectionProvider} from './providers/IgnoreSectionProvider';
 import {RegularNameBlockParserProvider} from './providers/RegularNameBlockParserProvider';
 import {WhipEffectParserProvider} from './providers/WhipEffectParserProvider';
 
 export async function parseLists(entry: EntryInfo): Promise<void> {
   const collector = new SavingCollector(entry);
   const parseProvider = new CompositeParserProvider(
+      new IgnoreSectionProvider({
+        'Ammunition_items': [
+          {name: 'bait'},
+          {name: 'wire'}
+        ]
+      }),
       new AmmoNameBlockParserProvider(),
       new CommonParserProvider(),
       new RegularNameBlockParserProvider(),

@@ -14,8 +14,13 @@ export async function fetchCards(entry: EntryInfo): Promise<void> {
   for (let key in items) {
     let info = items[key];
     if (!entry.excludeCards.some(x => x.toLowerCase() === key)) {
+      let url = entry.htmlRootUrl;
+      if (info.page)
+        url += info.page;
+      else
+        url += entry.htmlEntrySuffix + info.name.replaceAll(' ', '_');
       queue.push(
-          fetch(entry.htmlRootUrl + info.page)
+          fetch(url)
               .then(text => fs.promises.writeFile(`${entry.out}/html/cards/${normalizeFileName(info.name)}.html`, text, {encoding: 'utf8'}))
       );
     }
