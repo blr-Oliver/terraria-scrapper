@@ -1,6 +1,7 @@
+import {ItemCard} from '../../../common/types';
 import {getType} from '../../../packed-varying';
-import {ALL_PLATFORMS, PlatformList, PlatformName, pullToTop} from '../../../platform-varying';
-import {NormalizedItem, ParsedListItem, ParsedSection} from '../../common';
+import {ALL_PLATFORMS, PlatformList, PlatformName, PlatformVarying, pullToTop} from '../../../platform-varying';
+import {NormalizedItem, ParsedSection} from '../../common';
 import {ItemListCollector} from '../ItemListCollector';
 
 function combine(a: any, b: any, key?: string): any {
@@ -94,7 +95,7 @@ export class CombiningItemDataCollector implements ItemListCollector<{ [name: st
     return result;
   }
 
-  private normalizeItem(item: ParsedListItem): NormalizedItem {
+  private normalizeItem(item: PlatformVarying<ItemCard>): NormalizedItem {
     let platforms: PlatformList;
     if (item.name)
       platforms = Object.keys(item.name) as PlatformList;
@@ -102,12 +103,6 @@ export class CombiningItemDataCollector implements ItemListCollector<{ [name: st
       platforms = Object.keys(item.id) as PlatformList;
     else
       platforms = ALL_PLATFORMS as PlatformList;
-    let exceptions = item.exceptions;
-    delete item.exceptions;
-    let result: NormalizedItem = pullToTop(item, platforms);
-    if (exceptions) {
-      //TODO
-    }
-    return result;
+    return pullToTop(item, platforms);
   }
 }

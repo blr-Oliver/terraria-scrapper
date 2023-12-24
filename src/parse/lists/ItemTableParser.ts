@@ -1,6 +1,7 @@
-import {PlatformList} from '../../platform-varying';
-import {ListRowParsingException, ParsedListItem} from '../common';
-import {HeaderContext, ICellParser, ParserProvider, TableContext} from './cell-parsers';
+import {ItemCard} from '../../common/types';
+import {PlatformList, PlatformVarying} from '../../platform-varying';
+import {ListRowParsingException} from '../common';
+import {CellContext, HeaderContext, ICellParser, ParserProvider, TableContext} from './cell-parsers';
 
 type CellCoordinates = {
   td: HTMLTableCellElement;
@@ -23,16 +24,16 @@ export class ItemTableParser {
   constructor(private parserProvider: ParserProvider) {
   }
 
-  parse(context: TableContext): ParsedListItem[] {
+  parse(context: TableContext): PlatformVarying<ItemCard>[] {
     const [headerRows, bodyRows] = this.separateHeaderRows(context.table);
     const rowNum = bodyRows.length;
     const colNum = context.columnCount = bodyRows[0].cells.length;
     const parsers = this.getParsers(context, this.getHeaderCells(headerRows, colNum));
-    const result: ParsedListItem[] = Array(rowNum);
+    const result: PlatformVarying<ItemCard>[] = Array(rowNum);
     const platformSources = parsers.filter(parser => parser.parser.getPlatforms);
     for (let row = 0; row < rowNum; ++row) {
       const itemRow = bodyRows[row];
-      const item: ParsedListItem = result[row] = {};
+      const item = result[row] = {} as PlatformVarying<ItemCard>;
       (item as any).source = [{
         file: context.file,
         section: context.section
@@ -50,11 +51,12 @@ export class ItemTableParser {
       })
       for (let column = 0; column < colNum; ++column) {
         const td = itemRow.cells[column];
-        const cellContext = {
+        const cellContext: CellContext = {
           table: context,
           header: parsers[column].header,
           td, column: row, row: row,
-          platforms
+          platforms,
+          exceptions: []
         };
         const parser = parsers[column].parser;
         try {
@@ -67,9 +69,7 @@ export class ItemTableParser {
             exInfo.value = String(ex);
           if ('property' in parser) // property parsers report dedicated property on them
             exInfo.property = parser.property as string;
-          if (!item.exceptions)
-            item.exceptions = [];
-          item.exceptions.push(exInfo);
+          cellContext.exceptions!.push(exInfo);
         }
       }
     }

@@ -55,8 +55,8 @@ export const parseSortableNumber: ValueParser<number> = (el: Element, platforms:
   return hasSortKey ? parseSortKey(el, platforms) : parseSortValue(el, platforms);
 }
 
-export const parseImage: ValueParser<string> = (el: Element, platforms: PlatformList) => {
-  return makeVarying(el.querySelector<HTMLImageElement>('img[src]')!.src, platforms);
+export const parseImage: ValueParser<string[]> = (el: Element, platforms: PlatformList) => {
+  return makeVarying([el.querySelector<HTMLImageElement>('img[src]')!.src], platforms);
 }
 
 function parseSortValue(el: Element, platforms: PlatformList): PlatformVaryingValue<number> {
@@ -91,7 +91,7 @@ export type COMMON_PARSER_TYPES = {
   'number': number,
   'sortable': number,
   'flag': boolean;
-  'image': string;
+  'image': string[];
 }
 
 export const COMMON_PARSERS: {

@@ -1,5 +1,5 @@
-import {makeVarying} from '../../../platform-varying';
-import {ParsedListItem} from '../../common';
+import {ItemCard} from '../../../common/types';
+import {makeVarying, PlatformVarying} from '../../../platform-varying';
 import {CellContext, HeaderContext, ICellParser, ParserProvider} from '../cell-parsers';
 
 export class WhipEffectParserProvider implements ParserProvider {
@@ -19,14 +19,14 @@ export class WhipEffectParserProvider implements ParserProvider {
     }
   }
 
-  parseWhipEffectCell(td: HTMLTableCellElement, item: ParsedListItem, context: CellContext) {
+  parseWhipEffectCell(td: HTMLTableCellElement, item: PlatformVarying<ItemCard>, context: CellContext) {
     let platforms = context.platforms;
     let text = td.textContent!.trim().toLowerCase();
     let tagMatch = text.match(WhipEffectParserProvider.TAG_PATTERN);
     let critMatch = text.match(WhipEffectParserProvider.CRIT_PATTERN);
     if (tagMatch)
-      item['tagDamage'] = makeVarying(+tagMatch[1], platforms);
+      item.tagDamage = makeVarying(+tagMatch[1], platforms);
     if (critMatch)
-      item['tagCrit'] = makeVarying(+critMatch[1], platforms);
+      item.tagCrit = makeVarying(+critMatch[1], platforms);
   }
 }

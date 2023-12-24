@@ -1,4 +1,5 @@
-import {ParsedListItem} from '../../common';
+import {ItemCard} from '../../../common/types';
+import {PlatformVarying} from '../../../platform-varying';
 import {CellContext, HeaderContext} from '../cell-parsers';
 import {NameBlockParserProvider} from './NameBlockParserProvider';
 
@@ -17,8 +18,8 @@ export class AmmoNameBlockParserProvider extends NameBlockParserProvider {
     return fileName.indexOf('rockets') !== -1 || fileName.indexOf('bombs') !== -1;
   }
 // @ts-ignore
-  protected parseNameCell(td: HTMLTableCellElement, item: ParsedListItem, context: CellContext) {
-    let dummy: ParsedListItem = {};
+  protected parseNameCell(td: HTMLTableCellElement, item: PlatformVarying<ItemCard>, context: CellContext) {
+    let dummy: PlatformVarying<ItemCard> = {} as PlatformVarying<ItemCard>;
     super.parseNameCell(td, dummy, context);
     item.name = dummy.name;
     item.id = dummy.id;

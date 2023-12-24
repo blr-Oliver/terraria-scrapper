@@ -43,6 +43,19 @@ export interface WeaponInfo {
   summonType?: string;
 }
 
+export interface ExplosiveInfo {
+  radius?: number;
+  explosivesDestroyTiles?: boolean;
+  liquidRocketsWork?: boolean;
+  clusterRocketSecondaryExplosion?: boolean;
+  // TODO blast radius is actually (Tiny | Small | Large | Huge | Spread)
+  blastRadius?: string;
+  liquidRocketBlastRadius?: string;
+  clusterRocketBlastRadius?: string;
+  miniNukeBlastRadius?: string;
+  bigRocketBlastRadius?: string;
+}
+
 export interface ToolInfo {
   pickaxePower?: number;
   hammerPower?: number;
@@ -60,9 +73,11 @@ export interface YoyoInfo {
 export interface WhipInfo {
   multiHitPenalty?: number;
   range?: number;
+  tagDamage?: number;
+  tagCrit?: number;
 }
 
-export type ItemCard = ItemInfo & WeaponInfo & ToolInfo & YoyoInfo & WhipInfo;
+export type ItemCard = ItemInfo & WeaponInfo & ExplosiveInfo & ToolInfo & YoyoInfo & WhipInfo;
 
 export interface ProjectileInfo {
   id: number;

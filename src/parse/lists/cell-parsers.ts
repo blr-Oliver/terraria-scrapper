@@ -1,5 +1,5 @@
-import {PlatformList} from '../../platform-varying';
-import {ParsedListItem} from '../common';
+import {ItemCard} from '../../common/types';
+import {PlatformList, PlatformVarying} from '../../platform-varying';
 
 export type TableContext = {
   file: string;
@@ -29,11 +29,12 @@ export type CellContext = {
   column: number;
   row: number;
   platforms: PlatformList;
+  exceptions?: any[];
 }
 
 export interface ICellParser {
-  parse: (td: HTMLTableCellElement, item: ParsedListItem, context: CellContext) => void;
-  getPlatforms?: (td: HTMLTableCellElement, item: ParsedListItem, context: CellContext) => PlatformList;
+  parse: (td: HTMLTableCellElement, item: PlatformVarying<ItemCard>, context: CellContext) => void;
+  getPlatforms?: (td: HTMLTableCellElement, item: PlatformVarying<ItemCard>, context: CellContext) => PlatformList;
 }
 
 export interface ICellPropertyParser extends ICellParser {

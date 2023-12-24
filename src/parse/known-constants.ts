@@ -1,3 +1,4 @@
+import {ItemCard} from '../common/types';
 import {COMMON_PARSER_TYPES} from './common-parsers';
 
 export type StringMapping = { [text: string]: string };
@@ -13,7 +14,7 @@ export const IGNORED_HEADERS: StringSet = {
   'with ammo': true
 }
 
-export const COMMON_PROPERTY_HEADERS: StringMapping = {
+export const COMMON_PROPERTY_HEADERS: { [text: string]: keyof ItemCard } = {
   'ammotype': 'ammoType',
   'ammo type': 'ammoType',
   'axepower': 'axePower',
@@ -63,7 +64,15 @@ export const COMMON_PROPERTY_HEADERS: StringMapping = {
   'velocity': 'velocity'
 };
 
-export const COMMON_PROPERTY_TYPES: { [property: string]: keyof COMMON_PARSER_TYPES } = {
+// find those keys of COMMON_PARSER_TYPES which have mapping to corresponding property type of ItemCard
+export type PropertyParserTypes<K extends keyof ItemCard> = keyof {
+  [T in keyof COMMON_PARSER_TYPES as COMMON_PARSER_TYPES[T] extends ItemCard[K] ? T : never]: ItemCard[K];
+};
+
+export type PropertyToParserMapping = {
+  [K in keyof ItemCard]?: PropertyParserTypes<K>;
+}
+export const COMMON_PROPERTY_TYPES: PropertyToParserMapping = {
   'ammoType': 'string',
   'autoSwing': 'flag',
   'axePower': 'percent',

@@ -2,6 +2,8 @@ import {parseString} from '../../common-parsers';
 import {HeaderContext, ICellParser, ParserProvider} from '../cell-parsers';
 import {constructPropertyParser} from './CommonParserProvider';
 
+type RadiusProperties = 'blastRadius' | 'liquidRocketBlastRadius' | 'clusterRocketBlastRadius' | 'miniNukeBlastRadius' | 'bigRocketBlastRadius';
+
 export class BlastRadiusProvider implements ParserProvider {
   getParser(header: HeaderContext): ICellParser | undefined {
     let caption = header.th.textContent!.trim().toLowerCase();
@@ -12,7 +14,7 @@ export class BlastRadiusProvider implements ParserProvider {
     }
   }
 
-  getPropertyName(header: HeaderContext, caption: string): string | undefined {
+  getPropertyName(header: HeaderContext, caption: string): RadiusProperties | undefined {
     if (caption.indexOf('normal') !== -1) return 'blastRadius'; // ammo item property
     // behavior properties
     if (caption.indexOf('liquid rocket') !== -1) return 'liquidRocketBlastRadius';
