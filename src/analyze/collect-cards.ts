@@ -39,7 +39,7 @@ export async function collectCards(entry: EntryInfo): Promise<void> {
   await Promise.allSettled(queue);
   collector.finish();
 
-  return fs.promises.writeFile(`${entry.out}/json/card-index.json`, JSON.stringify(collector, null, 2), {encoding: 'utf8'});
+  return fs.promises.writeFile(`${entry.out}/json/cardIndex.json`, JSON.stringify(collector, null, 2), {encoding: 'utf8'});
 }
 
 

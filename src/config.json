@@ -13,6 +13,10 @@
       "enabled": false,
       "prompt": "Parsing categories"
     },
+    "flattenCategories": {
+      "enabled": true,
+      "prompt": "Collecting flat category info"
+    },
     "parseLists": {
       "enabled": false,
       "prompt": "Parsing lists",

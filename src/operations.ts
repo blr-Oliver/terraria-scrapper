@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import {collectCards} from './analyze/collect-cards';
 import {collectPages} from './analyze/collect-pages';
+import {flattenCategories} from './analyze/flatten-categories';
 import {EntryInfo} from './execution';
 import {ensureExists} from './fetch/common';
 import {fetchCards} from './fetch/fetch-cards';
@@ -15,6 +16,7 @@ export type OperationNames =
     'fetchCategories' |
     'fetchLists' |
     'parseCategories' |
+    'flattenCategories' |
     'parseLists' |
     'collectPages' |
     'fetchCards' |
@@ -28,6 +30,7 @@ export const OPERATION_ORDER: OperationNames[] = [
   'fetchCategories',
   'fetchLists',
   'parseCategories',
+  'flattenCategories',
   'parseLists',
   'collectPages',
   'fetchCards',
@@ -50,6 +53,7 @@ export const OPERATIONS: { [key in OperationNames]?: Operation } = {
   fetchCategories,
   fetchLists,
   parseCategories,
+  flattenCategories,
   parseLists,
   collectPages,
   fetchCards,

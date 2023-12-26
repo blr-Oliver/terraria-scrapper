@@ -1,4 +1,5 @@
 import {ItemCard} from '../../../common/types';
+import {sortKeys} from '../../../common/utils';
 import {getType} from '../../../packed-varying';
 import {ALL_PLATFORMS, PlatformList, PlatformName, PlatformVarying, pullToTop} from '../../../platform-varying';
 import {NormalizedItem, ParsedSection} from '../../common';
@@ -71,11 +72,7 @@ export class CombiningItemDataCollector implements ItemListCollector<{ [name: st
   }
 
   private sortKeys() {
-    let sorted = Object.keys(this.finalData).sort();
-    let sortedData: { [name: string]: NormalizedItem } = {};
-    for (let key of sorted)
-      sortedData[key] = this.finalData[key];
-    this.finalData = sortedData;
+    this.finalData = sortKeys(this.finalData);
   }
 
   private getName(item: NormalizedItem): string {
