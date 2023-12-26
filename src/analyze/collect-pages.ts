@@ -1,4 +1,5 @@
 import * as fs from 'fs';
+import {sortKeys} from '../common/utils';
 import {EntryInfo} from '../execution';
 import {ParsedSection} from '../parse/common';
 import {Category} from '../parse/parse-categories';
@@ -13,6 +14,7 @@ export async function collectPages(entry: EntryInfo): Promise<void> {
           .then(str => JSON.parse(str) as ParsedSection[])
           .then(data => collector.collect(data)));
   await Promise.all(listTasks);
+  collector.items = sortKeys(collector.items);
   return fs.promises.writeFile(`${entry.out}/json/short-info.json`, JSON.stringify(collector, null, 2), {encoding: 'utf8'});
 }
 

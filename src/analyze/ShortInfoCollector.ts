@@ -57,7 +57,7 @@ export class ShortInfoCollector implements ShortInfoCollection {
 
   private collectInternal(report: ExtractionResult) {
     const {item: extracted, exceptions, missing} = report;
-    const key = extracted.name!.toLowerCase();
+    const key = extracted.name!;
     if (exceptions.length) {
       this.fails.push(report);
     } else {
@@ -115,7 +115,8 @@ export class ShortInfoCollector implements ShortInfoCollection {
   }
 
   private extractKey(item: PlatformVarying<ItemCard>, exceptions: NameCollectionException[]): string | undefined {
-    return this.extractVaryingProperty(item, 'name', exceptions, s => s.toLowerCase());
+    // TODO this was probably overkill - remove redundant layer
+    return this.extractVaryingProperty(item, 'name', exceptions/*, s => s.toLowerCase()*/);
   }
 
   private extractVaryingProperty<K extends keyof ItemCard, T = ItemCard[K]>(item: PlatformVarying<ItemCard>, property: K, exceptions: NameCollectionException[], transform: (x: T) => T = x => x): T | undefined {
