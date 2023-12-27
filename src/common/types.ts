@@ -18,6 +18,7 @@ export interface ItemInfo {
   id?: number | number[];
   name: string;
   page: string;
+  pageTitle: string;
   image: string[],
   tags?: string[];
   tooltip?: string;

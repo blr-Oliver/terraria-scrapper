@@ -35,9 +35,11 @@ function parseSinglePage(document: Document, filename: string, htmlRoot: string)
   let platforms: PlatformName[] = messageBox ? extractPlatformsFromImages(messageBox) : ALL_PLATFORMS as PlatformName[];
   let cardBlocks = contentRoot.querySelectorAll('.infobox.item');
   const page = extractPage(document, htmlRoot);
+  const title = extractPageTitle(document);
   let result = Array.prototype.map.call(cardBlocks, (block: Element, i: number) => {
     let result = parseItemFromCard(block, platforms) as ScrappedItemWithSource;
     result.item.page = makeVarying(page, result.platforms);
+    result.item.pageTitle = makeVarying(title, result.platforms);
     result.sources = [{
       type: 'card',
       filename,
@@ -54,6 +56,11 @@ function extractPage(document: Document, htmlRoot: string): string {
   if (fullUrl.startsWith(htmlRoot))
     return fullUrl.slice(htmlRoot.length);
   return fullUrl;
+}
+
+function extractPageTitle(document: Document): string {
+  let pageTitleBlock = document.querySelector('h1 .mw-page-title-main')!;
+  return pageTitleBlock.textContent!.trim();
 }
 
 function maybeMerge(items: ScrappedItemWithSource[]): ScrappedItemWithSource[] {
