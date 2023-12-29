@@ -14,12 +14,17 @@
       "prompt": "Parsing categories"
     },
     "flattenCategories": {
-      "enabled": true,
+      "enabled": false,
       "prompt": "Collecting flat category info"
     },
     "parseLists": {
       "enabled": false,
       "prompt": "Parsing lists",
+      "pause": false
+    },
+    "buildListIndex": {
+      "enabled": true,
+      "prompt": "Building list index",
       "pause": false
     },
     "collectPages": {

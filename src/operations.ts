@@ -1,4 +1,5 @@
 import * as fs from 'fs';
+import {buildListIndex} from './analyze/build-list-index';
 import {collectCards} from './analyze/collect-cards';
 import {collectPages} from './analyze/collect-pages';
 import {flattenCategories} from './analyze/flatten-categories';
@@ -18,6 +19,7 @@ export type OperationNames =
     'parseCategories' |
     'flattenCategories' |
     'parseLists' |
+    'buildListIndex' |
     'collectPages' |
     'fetchCards' |
     'parseCards' |
@@ -32,6 +34,7 @@ export const OPERATION_ORDER: OperationNames[] = [
   'parseCategories',
   'flattenCategories',
   'parseLists',
+  'buildListIndex',
   'collectPages',
   'fetchCards',
   'parseCards',
@@ -55,6 +58,7 @@ export const OPERATIONS: { [key in OperationNames]?: Operation } = {
   parseCategories,
   flattenCategories,
   parseLists,
+  buildListIndex,
   collectPages,
   fetchCards,
   parseCards,
