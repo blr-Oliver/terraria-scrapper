@@ -1,18 +1,26 @@
 import * as fs from 'fs';
 import {ItemCard, ScrappedItem} from '../common/types';
-import {sortKeys} from '../common/utils';
 import {EntryInfo} from '../execution';
 import {normalizeFileName} from '../fetch/fetch';
 import {ALL_PLATFORMS, PlatformVarying} from '../platform-varying';
 import {ItemShortInfo} from './ShortInfoBuilder';
 
+
 export interface CardRecord {
   name: string;
   commonName?: string;
-  pageTitle?: string;
+  files: CardLocation[];
+  exceptions?: any;
+}
+
+export interface CardLocation {
+  pageTitle: string;
   fileName: string;
   index: number;
-  exceptions?: any;
+}
+
+interface IntermediateCardRecord extends CardRecord {
+  pages: { [pageTitle: string]: CardLocation };
 }
 
 export async function collectCards(entry: EntryInfo): Promise<void> {
@@ -33,13 +41,14 @@ export async function collectCards(entry: EntryInfo): Promise<void> {
   await Promise.allSettled(queue);
   collector.finish();
 
-  return fs.promises.writeFile(`${entry.out}/json/cardIndex.json`, JSON.stringify(collector.data, null, 2), {encoding: 'utf8'});
+  return fs.promises.writeFile(`${entry.out}/json/cardIndex.json`, JSON.stringify(collector.finalData, null, 2), {encoding: 'utf8'});
 }
 
 
 class CardIndexCollector {
 
-  data: { [itemName: string]: CardRecord } = {};
+  data: { [itemName: string]: IntermediateCardRecord } = {};
+  finalData: { [itemName: string]: CardRecord } = {};
 
   collect(itemName: string, fileName: string, page: ScrappedItem[]) {
     for (let i = 0; i < page.length; i++) {
@@ -52,44 +61,68 @@ class CardIndexCollector {
     const card = item.item;
     const pageTitle = card.pageTitle[item.platforms[0]]!;
     if (checkName && (itemName !== item.name || itemName != pageTitle || item.name !== pageTitle) || this.hasMultiId(card)) {
-      this.collectMultiCard(itemName, fileName, pageTitle, item, index);
+      this.collectMultiCard(itemName, fileName, pageTitle, item.name, index);
     } else {
-      this.collectNormalCard(itemName, fileName, index);
+      this.collectNormalCard(fileName, pageTitle, item.name, index);
     }
   }
 
-  private collectNormalCard(itemName: string, fileName: string, index: number) {
-    if (!(itemName in this.data)) {
-      this.data[itemName] = {
-        name: itemName,
+  private collectNormalCard(fileName: string, pageTitle: string, cardName: string, index: number) {
+    if (cardName in this.data) {
+      this.addPage(this.data[cardName], pageTitle, fileName, index);
+    } else
+      this.data[cardName] = {
+        name: cardName,
+        files: [],
+        pages: {
+          [pageTitle]: {
+            pageTitle,
+            fileName,
+            index
+          }
+        }
+      }
+  }
+
+  private addPage(oldRecord: IntermediateCardRecord, pageTitle: string, fileName: string, index: number) {
+    if (pageTitle in oldRecord.pages) {
+      this.setWithNoConflicts(oldRecord, oldRecord.pages![pageTitle], 'fileName', fileName);
+      this.setWithNoConflicts(oldRecord, oldRecord.pages![pageTitle], 'index', index);
+    } else {
+      oldRecord.pages[pageTitle] = {
+        pageTitle,
         fileName,
         index
-      }
+      };
     }
   }
 
-  private collectMultiCard(itemName: string, fileName: string, pageTitle: string, item: ScrappedItem, index: number) {
+  private collectMultiCard(itemName: string, fileName: string, pageTitle: string, cardName: string, index: number) {
     let oldRecord = this.data[itemName];
     if (oldRecord) {
-      this.setWithNoConflicts(oldRecord, 'commonName', item.name);
-      this.setWithNoConflicts(oldRecord, 'pageTitle', pageTitle);
-      this.setWithNoConflicts(oldRecord, 'index', index);
+      this.setWithNoConflicts(oldRecord, oldRecord, 'commonName', cardName);
+      this.addPage(oldRecord, pageTitle, fileName, index);
     } else {
       this.data[itemName] = {
         name: itemName,
-        commonName: item.name,
-        pageTitle: pageTitle,
-        fileName,
-        index: index
+        files: [],
+        commonName: cardName,
+        pages: {
+          [pageTitle]: {
+            pageTitle,
+            fileName,
+            index
+          }
+        }
       }
     }
   }
 
-  private setWithNoConflicts<K extends keyof CardRecord>(oldRecord: CardRecord, property: K, value: CardRecord[K]) {
-    if (!oldRecord[property]) {
-      oldRecord[property] = value;
-    } else if (oldRecord[property] !== value)
-      this.addException(oldRecord, `conflicting ${property}`, value);
+  private setWithNoConflicts<T, K extends string & keyof T>(record: CardRecord, target: T, property: K, value: T[K]) {
+    if (!target[property]) {
+      target[property] = value;
+    } else if (target[property] !== value)
+      this.addException(record, `conflicting ${property}`, String(value));
   }
 
   private hasMultiId(card: PlatformVarying<ItemCard>): boolean {
@@ -111,8 +144,26 @@ class CardIndexCollector {
     (record.exceptions[key] as string[]).push(value);
   }
 
-
   finish() {
-    this.data = sortKeys(this.data);
+    let names = Object.keys(this.data).sort();
+    for (let name of names) {
+      let oldRecord = this.data[name];
+      let newRecord: CardRecord = {
+        name,
+        files: this.hashToList(oldRecord.pages)
+      };
+      if (oldRecord.commonName) newRecord.commonName = oldRecord.commonName;
+      if (oldRecord.exceptions) newRecord.exceptions = oldRecord.exceptions;
+      /*
+      if (newRecord.files.length > 1)
+        (newRecord as any).fileCount = newRecord.files.length;
+       */
+      this.finalData[name] = newRecord;
+    }
+  }
+
+  private hashToList(hash: { [pageTitle: string]: CardLocation }): CardLocation[] {
+    let titles = Object.keys(hash).sort();
+    return titles.map(title => hash[title]);
   }
 }
