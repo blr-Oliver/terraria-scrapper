@@ -1,16 +1,15 @@
 import * as fs from 'fs';
-import {ShortInfoCollection} from '../analyze/ShortInfoCollector';
+import {ItemShortInfo} from '../analyze/ShortInfoBuilder';
 import {EntryInfo} from '../execution';
 import {ensureExists} from './common';
 import {fetchHtmlRaw, normalizeFileName} from './fetch';
 import {parallelLimit} from './FloodGate';
 
 export async function fetchCards(entry: EntryInfo): Promise<void> {
-  const collection: ShortInfoCollection = JSON.parse(await fs.promises.readFile(`${entry.out}/json/short-info.json`, {encoding: 'utf8'}));
+  const items: { [name: string]: ItemShortInfo } = JSON.parse(await fs.promises.readFile(`${entry.out}/json/short-info.json`, {encoding: 'utf8'}));
   await ensureExists(`${entry.out}/html/cards`);
   const queue: Promise<void>[] = [];
   const fetch = parallelLimit(fetchHtmlRaw, 5, 100);
-  let items = collection.items;
   for (let key in items) {
     let info = items[key];
     if (!entry.excludeCards.some(x => x.toLowerCase() === key)) {

@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import {buildListIndex} from './analyze/build-list-index';
 import {collectCards} from './analyze/collect-cards';
-import {collectPages} from './analyze/collect-pages';
+import {collectShortInfo} from './analyze/collect-short-info';
 import {flattenCategories} from './analyze/flatten-categories';
 import {EntryInfo} from './execution';
 import {ensureExists} from './fetch/common';
@@ -59,7 +59,7 @@ export const OPERATIONS: { [key in OperationNames]?: Operation } = {
   flattenCategories,
   parseLists,
   buildListIndex,
-  collectPages,
+  collectPages: collectShortInfo,
   fetchCards,
   parseCards,
   collectCards

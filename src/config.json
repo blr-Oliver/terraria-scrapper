@@ -23,13 +23,13 @@
       "pause": false
     },
     "buildListIndex": {
-      "enabled": true,
+      "enabled": false,
       "prompt": "Building list index",
       "pause": false
     },
     "collectPages": {
-      "enabled": false,
-      "prompt": "Collecting item names"
+      "enabled": true,
+      "prompt": "Collecting item pages"
     },
     "fetchCards": {
       "enabled": false,

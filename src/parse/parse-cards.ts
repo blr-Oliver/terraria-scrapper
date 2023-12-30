@@ -1,5 +1,5 @@
 import * as fs from 'fs';
-import {ShortInfoCollection} from '../analyze/ShortInfoCollector';
+import {ItemShortInfo} from '../analyze/ShortInfoBuilder';
 import {ItemCard, ScrappedItem, ScrappedItemWithSource} from '../common/types';
 import {EntryInfo} from '../execution';
 import {ensureExists} from '../fetch/common';
@@ -10,11 +10,11 @@ import {extractPlatformsFromImages} from './extract-varying';
 import {parseItemFromCard} from './parse-item';
 
 export async function parseCards(entry: EntryInfo): Promise<void> {
-  const collection: ShortInfoCollection = JSON.parse(await fs.promises.readFile(`${entry.out}/json/short-info.json`, {encoding: 'utf8'}));
+  const items: { [name: string]: ItemShortInfo } = JSON.parse(await fs.promises.readFile(`${entry.out}/json/short-info.json`, {encoding: 'utf8'}));
   await ensureExists(`${entry.out}/json/pages`);
   const queue: Promise<void>[] = [];
-  for (let key in collection.items) {
-    const name = collection.items[key].name;
+  for (let key in items) {
+    const name = items[key].name;
     if (!entry.excludeCards.some(x => x.toLowerCase() === key)) {
       queue.push(
           processCardName(entry, name).catch(ex => console.error(name, ex))
