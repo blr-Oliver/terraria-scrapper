@@ -3,7 +3,7 @@ import {ItemCard, ScrappedItem} from '../common/types';
 import {EntryInfo} from '../execution';
 import {normalizeFileName} from '../fetch/fetch';
 import {PlatformName, PlatformVaryingValue} from '../platform-varying';
-import {ShortInfoCollection} from './ShortInfoCollector';
+import {ItemShortInfo} from './ShortInfoBuilder';
 
 export interface CardLocation {
   name: string;
@@ -22,12 +22,12 @@ export interface CardIndex {
 }
 
 export async function collectCards(entry: EntryInfo): Promise<void> {
-  const collection: ShortInfoCollection = JSON.parse(await fs.promises.readFile(`${entry.out}/json/short-info.json`, {encoding: 'utf8'}));
+  const items: { [name: string]: ItemShortInfo } = JSON.parse(await fs.promises.readFile(`${entry.out}/json/short-info.json`, {encoding: 'utf8'}));
   const collector = new CardIndexCollector();
   const queue: Promise<void>[] = [];
 
-  for (let key in collection.items) {
-    let itemInfo = collection.items[key];
+  for (let key in items) {
+    let itemInfo = items[key];
     let fileName = normalizeFileName(itemInfo.name);
     queue.push(
         fs.promises.readFile(`${entry.out}/json/pages/${fileName}.json`, {encoding: 'utf8'})
