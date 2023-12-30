@@ -27,26 +27,29 @@
       "prompt": "Building list index",
       "pause": false
     },
-    "collectPages": {
-      "enabled": true,
-      "prompt": "Collecting item pages"
+    "collectShortInfo": {
+      "enabled": false,
+      "prompt": "Collecting short info"
     },
     "fetchCards": {
       "enabled": false,
-      "prompt": "Fetching item cards"
+      "prompt": "Fetching item cards",
+      "pause": false
     },
     "parseCards": {
       "enabled": false,
       "prompt": "Parsing cards",
       "pause": false
     },
-    "collectCards": {
+    "buildCardIndex": {
       "enabled": false,
       "prompt": "Building card index",
       "pause": false
     },
-    "combineItemData": {
-      "prompt": "Combining item data from all sources"
+    "compileCards": {
+      "enabled": true,
+      "prompt": "Compiling item cards from all sources",
+      "pause": true
     },
     "splitPlatforms": {
       "prompt": "Splitting values per platform"

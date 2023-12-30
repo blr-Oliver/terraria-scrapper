@@ -29,7 +29,7 @@ async function processCardName(entry: EntryInfo, name: string): Promise<void> {
   return fs.promises.writeFile(`${entry.out}/json/pages/${filename}.json`, JSON.stringify(card, null, 2), {encoding: 'utf8'});
 }
 
-function parseSinglePage(document: Document, filename: string, htmlRoot: string): ScrappedItem[] {
+function parseSinglePage(document: Document, filename: string, htmlRoot: string): ScrappedItemWithSource[] {
   const contentRoot = document.querySelector('.mw-parser-output')!;
   let messageBox = contentRoot.querySelector('.message-box.msgbox-color-blue');
   let platforms: PlatformName[] = messageBox ? extractPlatformsFromImages(messageBox) : ALL_PLATFORMS as PlatformName[];

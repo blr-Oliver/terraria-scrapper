@@ -23,9 +23,9 @@ interface IntermediateCardRecord extends CardRecord {
   pages: { [pageTitle: string]: CardLocation };
 }
 
-export async function collectCards(entry: EntryInfo): Promise<void> {
+export async function buildCardIndex(entry: EntryInfo): Promise<void> {
   const items: { [name: string]: ItemShortInfo } = JSON.parse(await fs.promises.readFile(`${entry.out}/json/short-info.json`, {encoding: 'utf8'}));
-  const collector = new CardIndexCollector();
+  const collector = new CardIndexBuilder();
   const queue: Promise<void>[] = [];
 
   for (let key in items) {
@@ -45,7 +45,7 @@ export async function collectCards(entry: EntryInfo): Promise<void> {
 }
 
 
-class CardIndexCollector {
+class CardIndexBuilder {
 
   data: { [itemName: string]: IntermediateCardRecord } = {};
   finalData: { [itemName: string]: CardRecord } = {};
