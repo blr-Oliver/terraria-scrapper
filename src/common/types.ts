@@ -88,7 +88,6 @@ export interface ProjectileInfo {
 
 export interface ScrappedItem {
   name: string;
-  commonName?: string;
   pageTitle?: string;
   platforms: PlatformList;
   item: PlatformVarying<ItemCard>;
