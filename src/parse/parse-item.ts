@@ -263,7 +263,7 @@ function processProperty(propertyName: string, td: Element, context: ScrappedIte
       item.damage = extractVaryingInteger(td, platforms);
       let typeMarker = td.querySelector('.small-bold:last-child');
       if (typeMarker)
-        item.damageType = makeVarying(typeMarker.textContent!.trim().slice(1, -1).trim().toLowerCase(), platforms);
+        item.damageType = makeVarying(typeMarker.textContent!.trim().slice(1, -1).trim(), platforms);
       break;
     case 'knockback':
       item.knockback = extractVaryingDecimal(td, platforms);
