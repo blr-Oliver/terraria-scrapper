@@ -91,7 +91,7 @@ export interface ScrappedItem {
   pageTitle?: string;
   platforms: PlatformList;
   item: PlatformVarying<ItemCard>;
-  exceptions: any[];
+  exceptions: any;
 }
 
 export interface ScrappedItemWithSource extends ScrappedItem {
