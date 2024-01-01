@@ -241,8 +241,8 @@ function processToolPower(list: Element, context: ScrappedItem) {
       });
       continue;
     }
-    let platformMarker = li.querySelector('.eico');
-    context.item[type!] = extractVaryingPercent(platformMarker ? platformMarker.parentElement! : li, context.platforms);
+    let contentNode = li.querySelector('img ~ span')!;
+    context.item[type!] = extractVaryingPercent(contentNode, context.platforms);
   }
 }
 
