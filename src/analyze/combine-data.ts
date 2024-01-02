@@ -9,6 +9,10 @@ import {combineCards} from './combine';
 import {ItemCategoryInfo} from './flatten-categories';
 import {ListIndexRecord} from './ListIndexBuilder';
 
+export interface CombinedItem extends ScrappedItemWithSource {
+  categories?: string[];
+}
+
 export async function compileCards(entry: EntryInfo): Promise<void> {
   const categoryData: { [name: string]: ItemCategoryInfo } = JSON.parse(await fs.promises.readFile(`${entry.out}/json/category-info.json`, {encoding: 'utf8'}));
   const listIndex: { [name: string]: ListIndexRecord } = JSON.parse(await fs.promises.readFile(`${entry.out}/json/listIndex.json`, {encoding: 'utf8'}));
@@ -21,30 +25,8 @@ export async function compileCards(entry: EntryInfo): Promise<void> {
       .reduce((hash, name) => (hash[name] = true, hash), {} as { [name: string]: true })
   ).sort();
 
-  await ensureExists(`${entry.out}/json/cards`);
+  await ensureExists(`${entry.out}/json/combined`);
   await Promise.allSettled(allNames.map(name => cardCompiler.compileItem(name)));
-}
-
-async function loadListSources(entry: EntryInfo, listRecord: ListIndexRecord): Promise<ScrappedItemWithSource[]> {
-  return Promise.all(listRecord.sources.map(source => loadItemFromList(entry, source)));
-}
-
-async function loadItemFromList(entry: EntryInfo, source: ListSource): Promise<ScrappedItemWithSource> {
-  let listPageContents: ParsedSection[] = JSON.parse(await fs.promises.readFile(`${entry.out}/json/lists/${source.filename}.json`, {encoding: 'utf8'}));
-  return listPageContents[source.sectionIndex].items[source.itemIndex];
-}
-
-async function loadCardSources(entry: EntryInfo, cardRecord: CardRecord): Promise<ScrappedItemWithSource[]> {
-  let result: ScrappedItemWithSource[] = await Promise.all(cardRecord.files.map(location => loadItemFromPage(entry, location)));
-  result.forEach((item, i) => {
-    item.pageTitle = cardRecord.files[i].pageTitle;
-  })
-  return result;
-}
-
-async function loadItemFromPage(entry: EntryInfo, source: CardLocation): Promise<ScrappedItemWithSource> {
-  let cardPageContents: ScrappedItemWithSource[] = JSON.parse(await fs.promises.readFile(`${entry.out}/json/pages/${source.fileName}.json`, {encoding: 'utf8'}));
-  return cardPageContents[source.index];
 }
 
 export class CardCompiler {
@@ -58,17 +40,17 @@ export class CardCompiler {
 
   async compileItem(name: string) {
     let item = await this.buildCombinedItem(name);
-    return fs.promises.writeFile(`${this.entry.out}/json/cards/${name}.json`, JSON.stringify(item, null, 2), {encoding: 'utf8'});
+    return fs.promises.writeFile(`${this.entry.out}/json/combined/${name}.json`, JSON.stringify(item, null, 2), {encoding: 'utf8'});
   }
 
-  async buildCombinedItem(name: string): Promise<ScrappedItemWithSource> {
+  async buildCombinedItem(name: string): Promise<CombinedItem> {
     let sources: ScrappedItemWithSource[] = [];
     let listRecord = this.listIndex[name];
     if (listRecord)
-      sources.push(...await loadListSources(this.entry, listRecord));
+      sources.push(...await this.loadListSources(listRecord));
     let multiCardName = this.cardIndex.multiCardRefs[name];
     if (multiCardName) {
-      let multiCardData = await loadCardSources(this.entry, this.cardIndex.cards[multiCardName]);
+      let multiCardData = await this.loadCardSources(this.cardIndex.cards[multiCardName]);
       // TODO instead of completely deleting multi-data detect which value corresponds to the current item
       this.cleanOverlappingData(multiCardData, sources);
       multiCardData.forEach(item => item.ignorablePlatforms = true);
@@ -79,17 +61,21 @@ export class CardCompiler {
         if (cardRecord.groupName) {
           let groupRecord = this.cardIndex.cards[cardRecord.groupName];
           if (groupRecord) {
-            let groupSources = await loadCardSources(this.entry, groupRecord);
+            let groupSources = await this.loadCardSources(groupRecord);
             this.cleanOverlappingData(groupSources, sources);
             groupSources.forEach(item => item.ignorablePlatforms = true);
             sources.push(...groupSources);
           }
         }
         this.cleanOverlappingData([], sources, true);
-        sources.push(...await loadCardSources(this.entry, cardRecord));
+        sources.push(...await this.loadCardSources(cardRecord));
       }
     }
-    return this.compileFromSources(name, sources);
+    let result = this.compileFromSources(name, sources) as CombinedItem;
+    let categoryInfo = this.categoryData[name];
+    if (categoryInfo)
+      result.categories = categoryInfo.categories;
+    return result;
   }
 
   private cleanOverlappingData(commonData: ScrappedItemWithSource[], sources: ScrappedItemWithSource[], removePage = false) {
@@ -130,6 +116,28 @@ export class CardCompiler {
     if (Object.keys(result.exceptions).length === 0)
       delete result.exceptions;
     return result;
+  }
+
+  private async loadListSources(listRecord: ListIndexRecord): Promise<ScrappedItemWithSource[]> {
+    return Promise.all(listRecord.sources.map(source => this.loadItemFromList(source)));
+  }
+
+  private async loadItemFromList(source: ListSource): Promise<ScrappedItemWithSource> {
+    let listPageContents: ParsedSection[] = JSON.parse(await fs.promises.readFile(`${this.entry.out}/json/lists/${source.filename}.json`, {encoding: 'utf8'}));
+    return listPageContents[source.sectionIndex].items[source.itemIndex];
+  }
+
+  private async loadCardSources(cardRecord: CardRecord): Promise<ScrappedItemWithSource[]> {
+    let result: ScrappedItemWithSource[] = await Promise.all(cardRecord.files.map(location => this.loadItemFromPage(location)));
+    result.forEach((item, i) => {
+      item.pageTitle = cardRecord.files[i].pageTitle;
+    })
+    return result;
+  }
+
+  private async loadItemFromPage(source: CardLocation): Promise<ScrappedItemWithSource> {
+    let cardPageContents: ScrappedItemWithSource[] = JSON.parse(await fs.promises.readFile(`${this.entry.out}/json/pages/${source.fileName}.json`, {encoding: 'utf8'}));
+    return cardPageContents[source.index];
   }
 
 }
