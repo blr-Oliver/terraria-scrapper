@@ -2,6 +2,7 @@ import * as fs from 'fs';
 import {ItemCard, ListSource, ScrappedItemWithSource} from '../common/types';
 import {EntryInfo} from '../execution';
 import {ensureExists} from '../fetch/common';
+import {normalizeFileName} from '../fetch/fetch';
 import {ParsedSection} from '../parse/common';
 import {PlatformVarying} from '../platform-varying';
 import {CardIndex, CardLocation, CardRecord} from './collect-cards';
@@ -40,7 +41,7 @@ export class CardCompiler {
 
   async compileItem(name: string) {
     let item = await this.buildCombinedItem(name);
-    return fs.promises.writeFile(`${this.entry.out}/json/combined/${name}.json`, JSON.stringify(item, null, 2), {encoding: 'utf8'});
+    return fs.promises.writeFile(`${this.entry.out}/json/combined/${normalizeFileName(name)}.json`, JSON.stringify(item, null, 2), {encoding: 'utf8'});
   }
 
   async buildCombinedItem(name: string): Promise<CombinedItem> {
