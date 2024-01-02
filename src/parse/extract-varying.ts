@@ -84,7 +84,7 @@ export function extractVaryingString(src: Element, platforms: PlatformName[]): P
 
 export function extractVaryingNumber(src: Element, valueFinalizer: (value: string) => number, platforms: PlatformName[]): PlatformVaryingValue<number> {
   return extractAsStringWithFinalizer(src, s => {
-    let value = valueFinalizer(stripLeadingOrTrailingSlash(s).trim());
+    let value = valueFinalizer(stripLeadingOrTrailingSlash(s.replaceAll(',', '')).trim());
     if (!isNaN(value)) return value;
   }, platforms);
 }
