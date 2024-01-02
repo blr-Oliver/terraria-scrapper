@@ -49,7 +49,7 @@
     "compileCards": {
       "enabled": true,
       "prompt": "Compiling item cards from all sources",
-      "pause": true
+      "pause": false
     },
     "splitPlatforms": {
       "prompt": "Splitting values per platform"

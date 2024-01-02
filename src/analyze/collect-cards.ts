@@ -215,6 +215,7 @@ class CardIndexBuilder implements CardIndex {
         this.groups[groupName] = children.sort();
         for (let childName of children) {
           let child = this.cards[childName];
+          child.groupName = groupName;
           this.removeExpectedConflicts(child, children);
         }
         const groupCard = this.cards[groupName];

@@ -1,19 +1,24 @@
 import {ItemCard} from '../common/types';
 import {PlatformList, PlatformVarying} from '../platform-varying';
 
-export function combineCards(dest: PlatformVarying<ItemCard>, other: PlatformVarying<ItemCard>, platforms: PlatformList, exceptions: any) {
+const MERGING_PROPERTIES = {
+  image: true,
+  tags: true
+}
+export function combineCards(dest: PlatformVarying<ItemCard>, other: PlatformVarying<ItemCard>, exceptions: any) {
   let srcKeys = Object.keys(other) as (keyof ItemCard)[];
   for (let property of srcKeys) {
     if (property in dest) {
       let destMap = dest[property]!;
       let srcMap = other[property]!;
+      let platforms = Object.keys(srcMap) as PlatformList;
       for (let platform of platforms) {
         if (platform in srcMap) {
           if (platform in destMap) {
             let srcValue = srcMap[platform]!;
             let destValue = destMap[platform]!;
-            if (property === 'image') {
-              destMap[platform] = mergeLists(destValue as string[], srcValue as string[]);
+            if (property in MERGING_PROPERTIES) {
+              destMap[platform] = mergeLists(destValue as any[], srcValue as any[]);
             } else {
               if (!deepEqual(destValue, srcValue)) {
                 addException(exceptions, 'conflict', `'${property}' for platform '${platform}'`);

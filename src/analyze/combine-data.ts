@@ -22,10 +22,7 @@ export async function compileCards(entry: EntryInfo): Promise<void> {
   ).sort();
 
   await ensureExists(`${entry.out}/json/cards`);
-  await cardCompiler.compileNormalCard('Bee Keeper');
-}
-
-async function compileItemCard(name: string, entry: EntryInfo, categoryInfo: ItemCategoryInfo | undefined, listRecord: ListIndexRecord | undefined, cardRecord: CardRecord | undefined): Promise<void> {
+  await Promise.allSettled(allNames.map(name => cardCompiler.compileItem(name)));
 }
 
 async function loadListSources(entry: EntryInfo, listRecord: ListIndexRecord): Promise<ScrappedItemWithSource[]> {
@@ -59,15 +56,54 @@ export class CardCompiler {
   ) {
   }
 
-  async compileNormalCard(name: string): Promise<ScrappedItemWithSource> {
+  async compileItem(name: string) {
+    let item = await this.buildCombinedItem(name);
+    return fs.promises.writeFile(`${this.entry.out}/json/cards/${name}.json`, JSON.stringify(item, null, 2), {encoding: 'utf8'});
+  }
+
+  async buildCombinedItem(name: string): Promise<ScrappedItemWithSource> {
     let sources: ScrappedItemWithSource[] = [];
     let listRecord = this.listIndex[name];
     if (listRecord)
       sources.push(...await loadListSources(this.entry, listRecord));
-    let cardRecord = this.cardIndex.cards[name];
-    if (cardRecord)
-      sources.push(...await loadCardSources(this.entry, cardRecord));
+    let multiCardName = this.cardIndex.multiCardRefs[name];
+    if (multiCardName) {
+      let multiCardData = await loadCardSources(this.entry, this.cardIndex.cards[multiCardName]);
+      // TODO instead of completely deleting multi-data detect which value corresponds to the current item
+      this.cleanOverlappingData(multiCardData, sources);
+      multiCardData.forEach(item => item.ignorablePlatforms = true);
+      sources.push(...multiCardData);
+    } else {
+      let cardRecord = this.cardIndex.cards[name];
+      if (cardRecord) {
+        if (cardRecord.groupName) {
+          let groupRecord = this.cardIndex.cards[cardRecord.groupName];
+          if (groupRecord) {
+            let groupSources = await loadCardSources(this.entry, groupRecord);
+            this.cleanOverlappingData(groupSources, sources);
+            groupSources.forEach(item => item.ignorablePlatforms = true);
+            sources.push(...groupSources);
+          }
+        }
+        this.cleanOverlappingData([], sources, true);
+        sources.push(...await loadCardSources(this.entry, cardRecord));
+      }
+    }
     return this.compileFromSources(name, sources);
+  }
+
+  private cleanOverlappingData(commonData: ScrappedItemWithSource[], sources: ScrappedItemWithSource[], removePage = false) {
+    commonData.forEach(item => {
+      delete item.item.id;
+      delete (item.item as any).name;
+      delete (item.item as any).image;
+      removePage ||= !!item.item.page;
+    });
+    if (removePage) {
+      sources.forEach(item => {
+        delete (item.item as any).page;
+      });
+    }
   }
 
   compileFromSources(name: string, sources: ScrappedItemWithSource[]): ScrappedItemWithSource {
@@ -81,12 +117,14 @@ export class CardCompiler {
       exceptions: {}
     };
     for (let source of sources) {
-      let otherPlatforms = source.platforms.sort();
-      if (platforms.length !== otherPlatforms.length || platforms.some((x, i) => x !== otherPlatforms[i])) {
-        result.exceptions['platform mismatch'] = true;
-        platforms = [...new Set([...platforms, ...otherPlatforms]).keys()];
+      if (!source.ignorablePlatforms) {
+        let otherPlatforms = source.platforms.sort();
+        if (platforms.length !== otherPlatforms.length || platforms.some((x, i) => x !== otherPlatforms[i])) {
+          result.exceptions['platform mismatch'] = true;
+          platforms = [...new Set([...platforms, ...otherPlatforms]).keys()];
+        }
       }
-      combineCards(card, source.item, platforms, result.exceptions);
+      combineCards(card, source.item, result.exceptions);
       result.sources.push(...source.sources);
     }
     if (Object.keys(result.exceptions).length === 0)
