@@ -46,7 +46,7 @@
       "prompt": "Building card index",
       "pause": false
     },
-    "compileCards": {
+    "combineSources": {
       "enabled": true,
       "prompt": "Compiling item cards from all sources",
       "pause": false

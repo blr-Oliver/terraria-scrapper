@@ -13,7 +13,7 @@ export interface CombinedItem extends ScrappedItemWithSource {
   categories?: string[];
 }
 
-export async function compileCards(entry: EntryInfo): Promise<void> {
+export async function combineSources(entry: EntryInfo): Promise<void> {
   const categoryData: { [name: string]: ItemCategoryInfo } = JSON.parse(await fs.promises.readFile(`${entry.out}/json/category-info.json`, {encoding: 'utf8'}));
   const listIndex: { [name: string]: ListIndexRecord } = JSON.parse(await fs.promises.readFile(`${entry.out}/json/listIndex.json`, {encoding: 'utf8'}));
   const cardIndex: CardIndex = JSON.parse(await fs.promises.readFile(`${entry.out}/json/cardIndex.json`, {encoding: 'utf8'}));

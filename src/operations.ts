@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import {buildListIndex} from './analyze/build-list-index';
 import {buildCardIndex} from './analyze/collect-cards';
 import {collectShortInfo} from './analyze/collect-short-info';
-import {compileCards} from './analyze/combine-data';
+import {combineSources} from './analyze/combine-sources';
 import {flattenCategories} from './analyze/flatten-categories';
 import {EntryInfo} from './execution';
 import {ensureExists} from './fetch/common';
@@ -25,7 +25,7 @@ export type OperationNames =
     'fetchCards' |
     'parseCards' |
     'buildCardIndex' |
-    'compileCards' |
+    'combineSources' |
     'splitPlatforms' |
     'packPlatforms';
 
@@ -40,7 +40,7 @@ export const OPERATION_ORDER: OperationNames[] = [
   'fetchCards',
   'parseCards',
   'buildCardIndex',
-  'compileCards',
+  'combineSources',
   'splitPlatforms',
   'packPlatforms'
 ]
@@ -64,5 +64,5 @@ export const OPERATIONS: { [key in OperationNames]?: Operation } = {
   fetchCards,
   parseCards,
   buildCardIndex,
-  compileCards
+  combineSources
 }
