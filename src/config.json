@@ -47,12 +47,14 @@
       "pause": false
     },
     "combineSources": {
-      "enabled": true,
+      "enabled": false,
       "prompt": "Compiling item cards from all sources",
       "pause": false
     },
-    "splitPlatforms": {
-      "prompt": "Splitting values per platform"
+    "packCards": {
+      "enabled": true,
+      "prompt": "Packing card variants for platforms",
+      "pause": true
     },
     "packPlatforms": {
       "prompt": "Packing common data between platforms"

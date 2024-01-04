@@ -4,6 +4,7 @@ import {buildCardIndex} from './analyze/collect-cards';
 import {collectShortInfo} from './analyze/collect-short-info';
 import {combineSources} from './analyze/combine-sources';
 import {flattenCategories} from './analyze/flatten-categories';
+import {packCards} from './analyze/pack-cards';
 import {EntryInfo} from './execution';
 import {ensureExists} from './fetch/common';
 import {fetchCards} from './fetch/fetch-cards';
@@ -26,8 +27,8 @@ export type OperationNames =
     'parseCards' |
     'buildCardIndex' |
     'combineSources' |
-    'splitPlatforms' |
-    'packPlatforms';
+    'packCards'
+    ;
 
 export const OPERATION_ORDER: OperationNames[] = [
   'fetchCategories',
@@ -41,8 +42,7 @@ export const OPERATION_ORDER: OperationNames[] = [
   'parseCards',
   'buildCardIndex',
   'combineSources',
-  'splitPlatforms',
-  'packPlatforms'
+  'packCards'
 ]
 
 export type Operation = (entry: EntryInfo) => Promise<void>;
@@ -64,5 +64,6 @@ export const OPERATIONS: { [key in OperationNames]?: Operation } = {
   fetchCards,
   parseCards,
   buildCardIndex,
-  combineSources
+  combineSources,
+  packCards
 }

@@ -21,13 +21,14 @@ export async function combineSources(entry: EntryInfo): Promise<void> {
 
   let cardCompiler = new CardCompiler(entry, categoryData, listIndex, cardIndex);
 
-  const allNames = Object.keys([categoryData, listIndex, cardIndex]
+  const allNames = Object.keys([categoryData, listIndex, cardIndex.cards]
       .flatMap(o => Object.keys(o))
       .reduce((hash, name) => (hash[name] = true, hash), {} as { [name: string]: true })
   ).sort();
 
   await ensureExists(`${entry.out}/json/combined`);
   await Promise.allSettled(allNames.map(name => cardCompiler.compileItem(name)));
+  return fs.promises.writeFile(`${entry.out}/json/all-names.json`, JSON.stringify(allNames, null, 2), {encoding: 'utf8'});
 }
 
 export class CardCompiler {

@@ -193,6 +193,7 @@ function getDominantValue(values: any[]): any {
     counts.set(value, (counts.get(value) || 0) + 1);
   }
   const entries = [...counts.entries()];
+  if (!entries.length) return void 0;
   entries.sort(([value1, n1], [value2, n2]) => n2 - n1);
   if (entries[0][1] <= 1 && entries.length > 1) return void 0;
   return entries[0][0];
