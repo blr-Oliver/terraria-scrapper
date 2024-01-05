@@ -1,19 +1,5 @@
 import {PlatformList, PlatformVarying} from '../platform-varying';
 
-export interface Item {
-  id?: number;
-  name?: string;
-}
-
-export interface MultiSourceItem extends Item {
-  source: ItemSourceInfo[];
-}
-
-export type ItemSourceInfo = {
-  file: string;
-  section: string;
-}
-
 export interface ItemInfo {
   id?: number | number[];
   name: string;

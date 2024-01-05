@@ -1,6 +1,6 @@
 import {ItemCard, ScrappedItemWithSource} from '../../common/types';
 import {PlatformList, PlatformVarying} from '../../platform-varying';
-import {ListRowParsingException, ParsedSection} from '../common';
+import {ParsedSection} from '../common';
 import {CellContext, HeaderContext, ICellParser, ParserProvider, TableContext} from './cell-parsers';
 
 type CellCoordinates = {
@@ -74,7 +74,7 @@ export class ItemTableParser {
         try {
           parser.parse(td, itemCard, cellContext);
         } catch (ex) {
-          let exInfo: ListRowParsingException = {col: column};
+          let exInfo: any = {col: column};
           if (ex instanceof Error)
             exInfo.message = ex.message;
           else
