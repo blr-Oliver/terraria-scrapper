@@ -6,6 +6,7 @@ export type PackedVaryingValue<T, K extends keyof any> = {
   variants: K[];
 }
 
+// TODO pack is actually deep pack, but we don't need it deep, probably need to be simplified
 export function pack<T, K extends keyof any>(src: VaryingValue<T, K>, allVariants?: K[]): PackedVaryingValue<T, K> {
   let variants: K[] = allVariants?.filter(key => key in src) ?? Object.keys(src) as K[];
   let target: PackedVaryingValue<T, K> = {
