@@ -1,9 +1,11 @@
-import {ItemCard} from '../../../common/types';
+import {Item, ItemCard} from '../../../common/types';
 import {makeVarying, PlatformList, PlatformVarying} from '../../../platform-varying';
 import {parseImage} from '../../common-parsers';
 import {extractPlatformsFromClasses, extractVaryingValue, flagsNodeMatcher, Node, selectorMatcher, unwrapSingleChildElement} from '../../extract-varying';
 import {CellContext, HeaderContext, ICellParser, ParserProvider} from '../cell-parsers';
 import {constructPropertyParser} from './CommonParserProvider';
+
+export const NAME_PARSED_FLAG = Symbol('name parsed');
 
 export abstract class NameBlockParserProvider implements ParserProvider {
   protected readonly imageCellParser: ICellParser;
@@ -13,12 +15,12 @@ export abstract class NameBlockParserProvider implements ParserProvider {
   protected constructor(nameNodeValueSelector: string) {
     this.imageCellParser = constructPropertyParser('image', parseImage);
     this.nameCellParser = {
-      parse: (td, item, context) => {
-        this.parseNameCell(td, item, context);
+      parse: (td, card, item, context) => {
+        this.parseNameCell(td, card, item, context);
       },
-      getPlatforms: (td, item, context) => {
-        this.parseNameCell(td, item, context);
-        return Object.keys(item.name!) as PlatformList;
+      getPlatforms: (td, card, item, context) => {
+        this.parseNameCell(td, card, item, context);
+        return item.meta.platforms;
       }
     };
     this.basicNameNodeMatcher = selectorMatcher(nameNodeValueSelector);
@@ -39,7 +41,8 @@ export abstract class NameBlockParserProvider implements ParserProvider {
 
   protected abstract isNameBlock(caption: string, header: HeaderContext): boolean;
 
-  protected parseNameCell(td: HTMLTableCellElement, item: PlatformVarying<ItemCard>, context: CellContext) {
+  protected parseNameCell(td: HTMLTableCellElement, card: PlatformVarying<ItemCard>, item: Item, context: CellContext) {
+    if (NAME_PARSED_FLAG in item) return;
     let src = unwrapSingleChildElement(td);
     let idBlock = src.querySelector('.id');
     let platforms = context.platforms || context.table.platforms;
@@ -49,7 +52,7 @@ export abstract class NameBlockParserProvider implements ParserProvider {
       nameValueNodeMatcher = (node: Node) => this.basicNameNodeMatcher(node) && !idBlock!.contains(node);
     }
 
-    item.name = extractVaryingValue<string, string>(src,
+    const varyingName = extractVaryingValue<string, string>(src,
         nameValueNodeMatcher,
         flagsNodeMatcher,
         node => node.textContent!.trim(),
@@ -59,9 +62,10 @@ export abstract class NameBlockParserProvider implements ParserProvider {
         platforms
     )
 
-    platforms = Object.keys(item.name) as PlatformList;
+    item.meta.platforms = platforms = Object.keys(varyingName) as PlatformList;
+    item.name = varyingName[platforms[0]]!;
 
-    item['page'] = extractVaryingValue<string, string>(src,
+    const varyingPage = extractVaryingValue<string, string>(src,
         nameValueNodeMatcher,
         flagsNodeMatcher,
         node => (node as HTMLElement).getAttribute('href') || '',
@@ -71,10 +75,13 @@ export abstract class NameBlockParserProvider implements ParserProvider {
         platforms
     )
 
+    item.meta.page = varyingPage[platforms[0]]!;
+
     if (idBlock) {
       let text = idBlock.textContent!;
       let id = +text.slice(text.indexOf(':') + 1).trim();
-      item.id = makeVarying(id, platforms);
+      card.id = makeVarying(id, platforms);
     }
+    (item as any)[NAME_PARSED_FLAG] = true;
   }
 }

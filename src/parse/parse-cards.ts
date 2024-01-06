@@ -1,10 +1,10 @@
 import * as fs from 'fs';
 import {ItemShortInfo} from '../analyze/ShortInfoBuilder';
-import {ItemCard, ScrappedItem, ScrappedItemWithSource} from '../common/types';
+import {Item, ItemCard} from '../common/types';
 import {EntryInfo} from '../execution';
 import {ensureExists} from '../fetch/common';
 import {normalizeFileName} from '../fetch/fetch';
-import {ALL_PLATFORMS, makeVarying, PlatformList, PlatformName} from '../platform-varying';
+import {ALL_PLATFORMS, PlatformList, PlatformName} from '../platform-varying';
 import {loadDocument} from './common';
 import {extractPlatformsFromImages} from './extract-varying';
 import {parseItemFromCard} from './parse-item';
@@ -29,7 +29,7 @@ async function processCardName(entry: EntryInfo, name: string): Promise<void> {
   return fs.promises.writeFile(`${entry.out}/json/pages/${filename}.json`, JSON.stringify(card, null, 2), {encoding: 'utf8'});
 }
 
-function parseSinglePage(document: Document, filename: string, htmlRoot: string): ScrappedItemWithSource[] {
+function parseSinglePage(document: Document, fileName: string, htmlRoot: string): Item[] {
   const contentRoot = document.querySelector('.mw-parser-output')!;
   let messageBox = contentRoot.querySelector('.message-box.msgbox-color-blue');
   let platforms: PlatformName[] = messageBox ? extractPlatformsFromImages(messageBox) : ALL_PLATFORMS as PlatformName[];
@@ -37,16 +37,16 @@ function parseSinglePage(document: Document, filename: string, htmlRoot: string)
   const page = extractPage(document, htmlRoot);
   const title = extractPageTitle(document);
   let result = Array.prototype.map.call(cardBlocks, (block: Element, i: number) => {
-    let result = parseItemFromCard(block, platforms) as ScrappedItemWithSource;
-    result.item.page = makeVarying(page, result.platforms);
-    result.item.pageTitle = makeVarying(title, result.platforms);
-    result.sources = [{
+    let result = parseItemFromCard(block, platforms);
+    result.meta.page = page;
+    result.meta.pageTitle = title;
+    result.meta.sources = [{
       type: 'card',
-      filename,
+      fileName,
       index: i
     }];
     return result;
-  }) as ScrappedItemWithSource[];
+  }) as Item[];
   return maybeMerge(result);
 }
 
@@ -63,11 +63,11 @@ function extractPageTitle(document: Document): string {
   return pageTitleBlock.textContent!.trim();
 }
 
-function maybeMerge(items: ScrappedItemWithSource[]): ScrappedItemWithSource[] {
-  let collection: { [name: string]: ScrappedItemWithSource } = {};
+function maybeMerge(items: Item[]): Item[] {
+  let collection: { [name: string]: Item } = {};
   let hasCollision = false;
   for (let item of items) {
-    const platforms = item.platforms;
+    const platforms = item.meta.platforms;
     const name = item.name;
     if (!(name in collection)) {
       collection[name] = item;
@@ -77,26 +77,31 @@ function maybeMerge(items: ScrappedItemWithSource[]): ScrappedItemWithSource[] {
     }
   }
   if (!hasCollision) return items;
-  let result: ScrappedItemWithSource[] = [];
+  let result: Item[] = [];
   for (let name in collection)
     result.push(collection[name]);
   return result;
 }
 
-function mergeInto(dest: ScrappedItemWithSource, src: ScrappedItemWithSource, platforms: PlatformList) {
-  for (let property in src.item) {
+function mergeInto(dest: Item, src: Item, platforms: PlatformList) {
+  for (let property in src.card) {
     let itemCardProperty = property as keyof ItemCard;
-    const srcElement = src.item[itemCardProperty]!;
-    if (property in dest.item) {
-      const destElement = dest.item[itemCardProperty]!;
+    const srcElement = src.card[itemCardProperty]!;
+    if (property in dest.card) {
+      const destElement = dest.card[itemCardProperty]!;
       for (let platform of platforms) {
         destElement[platform] = srcElement[platform];
       }
     } else {
-      (dest.item as any)[itemCardProperty] = srcElement;
+      (dest.card as any)[itemCardProperty] = srcElement;
     }
   }
-  dest.platforms.push(...platforms);
-  dest.exceptions.push(...src.exceptions);
-  dest.sources.push(...src.sources);
+  dest.meta.platforms.push(...platforms);
+  if (src.meta.exceptions) {
+    if (dest.meta.exceptions)
+      Object.assign(dest.meta.exceptions, src.meta.exceptions);
+    else
+      dest.meta.exceptions = src.meta.exceptions;
+  }
+  dest.meta.sources.push(...src.meta.sources);
 }

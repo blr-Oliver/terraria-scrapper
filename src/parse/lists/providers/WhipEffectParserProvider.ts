@@ -6,8 +6,8 @@ export class WhipEffectParserProvider implements ParserProvider {
   private static readonly TAG_PATTERN = /(?:(\d+)\s+summon\s+tag\s+damage)/;
   private static readonly CRIT_PATTERN = /(?:(\d+)%\s+critical\s+chance)/;
   private readonly parser: ICellParser = {
-    parse: (td, item, context) => {
-      this.parseWhipEffectCell(td, item, context);
+    parse: (td, card, item, context) => {
+      this.parseWhipEffectCell(td, card, context);
     }
   };
 

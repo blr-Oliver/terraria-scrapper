@@ -1,11 +1,26 @@
 import {PlatformList, PlatformVarying} from '../platform-varying';
 
+export interface Item {
+  name: string;
+  meta: ItemMetaInfo;
+  card: PlatformVarying<ItemCard>;
+}
+
+export interface ItemMetaInfo {
+  page?: string;
+  pageTitle?: string;
+  platforms: PlatformList;
+  ignorablePlatforms?: boolean;
+  categories?: string[];
+  exceptions?: { [key: string]: any };
+  sources: (ItemSource | CardSource | ListSource)[];
+}
+
+export type ItemCard = ItemInfo & WeaponInfo & ExplosiveInfo & ToolInfo & YoyoInfo & WhipInfo;
+
 export interface ItemInfo {
   id?: number | number[];
-  name: string;
-  page: string;
-  pageTitle: string;
-  image: string[],
+  image?: string[],
   tags?: string[];
   tooltip?: string;
   consumable?: boolean;
@@ -28,6 +43,12 @@ export interface WeaponInfo {
   projectiles?: ProjectileInfo[];
   ammoType?: string;
   summonType?: string;
+}
+
+export interface ProjectileInfo {
+  id: number;
+  name: string;
+  image: string;
 }
 
 export interface ExplosiveInfo {
@@ -64,37 +85,33 @@ export interface WhipInfo {
   tagCrit?: number;
 }
 
-export type ItemCard = ItemInfo & WeaponInfo & ExplosiveInfo & ToolInfo & YoyoInfo & WhipInfo;
-
-export interface ProjectileInfo {
-  id: number;
-  name: string;
-  image: string;
+export interface ItemSource {
+  type: string;
+  fileName: string;
 }
 
-export interface ScrappedItem {
-  name: string;
-  pageTitle?: string;
-  ignorablePlatforms?: boolean;
-  platforms: PlatformList;
-  item: PlatformVarying<ItemCard>;
-  exceptions: any;
-}
-
-export interface ScrappedItemWithSource extends ScrappedItem {
-  sources: (CardSource | ListSource)[];
-}
-
-export interface CardSource {
+export interface CardSource extends ItemSource {
   type: 'card';
-  filename: string;
   index: number;
 }
 
-export interface ListSource {
+export function isCardSource(x: any): x is CardSource {
+  return x && typeof x === 'object'
+      && x.type === 'card'
+      && typeof x.index === 'number';
+}
+
+export interface ListSource extends ItemSource {
   type: 'list';
-  filename: string;
   section?: string;
   sectionIndex: number;
   itemIndex: number;
+}
+
+export function isListSource(x: any): x is ListSource {
+  return x && typeof x === 'object'
+      && x.type === 'list'
+      && typeof x.sectionIndex === 'number'
+      && typeof x.itemIndex === 'number'
+      && (!('section' in x) || typeof x.section === 'string');
 }

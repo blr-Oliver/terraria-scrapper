@@ -1,5 +1,5 @@
-import {ItemCard, ScrappedItemWithSource} from '../../common/types';
-import {PlatformList, PlatformVarying} from '../../platform-varying';
+import {Item} from '../../common/types';
+import {PlatformList} from '../../platform-varying';
 import {ParsedSection} from '../common';
 import {CellContext, HeaderContext, ICellParser, ParserProvider, TableContext} from './cell-parsers';
 
@@ -29,11 +29,26 @@ export class ItemTableParser {
     const rowNum = bodyRows.length;
     const colNum = context.columnCount = bodyRows[0].cells.length;
     const parsers = this.getParsers(context, this.getHeaderCells(headerRows, colNum));
-    const items: ScrappedItemWithSource[] = Array(rowNum);
+    const items: Item[] = Array(rowNum);
     const platformSources = parsers.filter(parser => parser.parser.getPlatforms);
     for (let row = 0; row < rowNum; ++row) {
       const itemRow = bodyRows[row];
-      const itemCard = {} as PlatformVarying<ItemCard>;
+      const item: Item = items[row] = {
+        name: '',
+        meta: {
+          platforms: [],
+          exceptions: [],
+          sources: [{
+            type: 'list',
+            fileName: context.file,
+            itemIndex: row,
+            section: context.section,
+            sectionIndex: context.sectionIndex
+          }]
+        },
+        card: {}
+      };
+      const itemCard = item.card;
 
       let platforms: PlatformList = context.platforms;
       platformSources.forEach(binding => {
@@ -44,22 +59,8 @@ export class ItemTableParser {
           td, column: row, row: row,
           platforms
         };
-        platforms = binding.parser.getPlatforms!(td, itemCard, cellContext);
-      })
-
-      const item: ScrappedItemWithSource = items[row] = {
-        name: '',
-        item: itemCard,
-        platforms,
-        exceptions: [],
-        sources: [{
-          type: 'list',
-          filename: context.file,
-          itemIndex: row,
-          section: context.section,
-          sectionIndex: context.sectionIndex
-        }]
-      };
+        item.meta.platforms = context.platforms = platforms = binding.parser.getPlatforms!(td, itemCard, item, cellContext);
+      });
 
       for (let column = 0; column < colNum; ++column) {
         const td = itemRow.cells[column];
@@ -72,7 +73,7 @@ export class ItemTableParser {
         };
         const parser = parsers[column].parser;
         try {
-          parser.parse(td, itemCard, cellContext);
+          parser.parse(td, itemCard, item, cellContext);
         } catch (ex) {
           let exInfo: any = {col: column};
           if (ex instanceof Error)
@@ -84,13 +85,11 @@ export class ItemTableParser {
           cellContext.exceptions!.push(exInfo);
         }
       }
-      if ('name' in item.item)
-        item.name = item.item.name[item.platforms[0]]!;
     }
     return {
       title: context.section,
       index: context.sectionIndex,
-      items: items.filter(item => Object.keys(item.item).length > 1)
+      items: items.filter(item => Object.keys(item.card).length > 1)
     }
   }
 

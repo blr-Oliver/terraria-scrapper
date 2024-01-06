@@ -18,9 +18,8 @@ export class CommonParserProvider implements ParserProvider {
 export function constructPropertyParser<K extends keyof ItemCard>(property: K, parser: ValueParser<ItemCard[K]>): ICellPropertyParser {
   return {
     property,
-    parse(td, item, context) {
-      // @ts-ignore
-      item[property] = parser(td, context.platforms);
+    parse(td, card, item, context) {
+      (card as any)[property] = parser(td, context.platforms);
     }
   };
 }

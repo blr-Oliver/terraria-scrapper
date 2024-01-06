@@ -1,11 +1,11 @@
 import * as fs from 'fs';
 import {JSDOM} from 'jsdom';
-import {ScrappedItemWithSource} from '../common/types';
+import {Item} from '../common/types';
 
 export type ParsedSection = {
   title: string,
   index: number,
-  items: ScrappedItemWithSource[];
+  items: Item[];
   exceptions?: any[];
 }
 

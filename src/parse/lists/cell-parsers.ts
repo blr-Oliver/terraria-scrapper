@@ -1,4 +1,4 @@
-import {ItemCard} from '../../common/types';
+import {Item, ItemCard} from '../../common/types';
 import {PlatformList, PlatformVarying} from '../../platform-varying';
 
 export type TableContext = {
@@ -33,8 +33,8 @@ export type CellContext = {
 }
 
 export interface ICellParser {
-  parse: (td: HTMLTableCellElement, item: PlatformVarying<ItemCard>, context: CellContext) => void;
-  getPlatforms?: (td: HTMLTableCellElement, item: PlatformVarying<ItemCard>, context: CellContext) => PlatformList;
+  parse: (td: HTMLTableCellElement, card: PlatformVarying<ItemCard>, item: Item, context: CellContext) => void;
+  getPlatforms?: (td: HTMLTableCellElement, card: PlatformVarying<ItemCard>, item: Item, context: CellContext) => PlatformList;
 }
 
 export interface ICellPropertyParser extends ICellParser {

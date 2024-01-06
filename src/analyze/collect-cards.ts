@@ -1,5 +1,5 @@
 import * as fs from 'fs';
-import {ItemCard, ScrappedItem} from '../common/types';
+import {Item, ItemCard} from '../common/types';
 import {sortKeys} from '../common/utils';
 import {EntryInfo} from '../execution';
 import {normalizeFileName} from '../fetch/fetch';
@@ -46,7 +46,7 @@ export async function buildCardIndex(entry: EntryInfo): Promise<void> {
     let fileName = normalizeFileName(itemInfo.name);
     queue.push(
         fs.promises.readFile(`${entry.out}/json/pages/${fileName}.json`, {encoding: 'utf8'})
-            .then(text => JSON.parse(text) as ScrappedItem[])
+            .then(text => JSON.parse(text) as Item[])
             .then(page => collector.collect(itemInfo.name, fileName, page))
     );
   }
@@ -65,16 +65,16 @@ class CardIndexBuilder implements CardIndex {
   multiCardRefs: { [itemName: string]: string } = {};
   groups: { [groupName: string]: string[] } = {};
 
-  collect(itemName: string, fileName: string, page: ScrappedItem[]) {
+  collect(itemName: string, fileName: string, page: Item[]) {
     for (let i = 0; i < page.length; i++) {
       let item = page[i];
       this.collectSingleItem(itemName, fileName, item, i, page.length === 1);
     }
   }
 
-  private collectSingleItem(itemName: string, fileName: string, item: ScrappedItem, index: number, checkName: boolean) {
-    const card = item.item;
-    const pageTitle = card.pageTitle[item.platforms[0]]!;
+  private collectSingleItem(itemName: string, fileName: string, item: Item, index: number, checkName: boolean) {
+    const card = item.card;
+    const pageTitle = item.meta.pageTitle!;
     if (checkName && (itemName !== item.name || itemName != pageTitle || item.name !== pageTitle) || this.hasMultiId(card)) {
       this.collectMultiCard(itemName, fileName, pageTitle, item.name, index);
     } else {
@@ -82,15 +82,15 @@ class CardIndexBuilder implements CardIndex {
     }
   }
 
-  private collectNormalCard(fileName: string, pageTitle: string, cardName: string, item: ScrappedItem, index: number) {
+  private collectNormalCard(fileName: string, pageTitle: string, cardName: string, item: Item, index: number) {
     let oldRecord = this.data[cardName];
     if (oldRecord) {
       this.addPage(oldRecord, pageTitle, fileName, index);
-      oldRecord.missingId &&= !item.item.id;
+      oldRecord.missingId &&= !item.card.id;
     } else
       this.data[cardName] = oldRecord = {
         name: cardName,
-        missingId: !item.item.id,
+        missingId: !item.card.id,
         pages: {
           [pageTitle]: {
             pageTitle,

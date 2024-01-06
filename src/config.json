@@ -29,7 +29,8 @@
     },
     "collectShortInfo": {
       "enabled": false,
-      "prompt": "Collecting short info"
+      "prompt": "Collecting short info",
+      "pause": false
     },
     "fetchCards": {
       "enabled": false,
@@ -47,14 +48,14 @@
       "pause": false
     },
     "combineSources": {
-      "enabled": false,
+      "enabled": true,
       "prompt": "Compiling item cards from all sources",
       "pause": false
     },
     "packCards": {
       "enabled": true,
       "prompt": "Packing card variants for platforms",
-      "pause": true
+      "pause": false
     },
     "packPlatforms": {
       "prompt": "Packing common data between platforms"

@@ -1,5 +1,5 @@
 import * as fs from 'fs';
-import {ItemCard, ScrappedItemWithSource} from '../common/types';
+import {Item, ItemCard} from '../common/types';
 import {EntryInfo} from '../execution';
 import {ensureExists} from '../fetch/common';
 import {normalizeFileName} from '../fetch/fetch';
@@ -14,17 +14,17 @@ export async function packCards(entry: EntryInfo): Promise<void> {
 
 async function packCard(entry: EntryInfo, name: string): Promise<void> {
   let fileName = normalizeFileName(name);
-  let item: ScrappedItemWithSource = JSON.parse(await fs.promises.readFile(`${entry.out}/json/combined/${fileName}.json`, {encoding: 'utf8'}))
-  let sourceCard = item.item;
+  let item: Item = JSON.parse(await fs.promises.readFile(`${entry.out}/json/combined/${fileName}.json`, {encoding: 'utf8'}))
+  let sourceCard = item.card;
   let properties = Object.keys(sourceCard) as (keyof ItemCard)[];
   let base = {} as ItemCard;
   let deviations = {} as PlatformVaryingValue<ItemCard>;
   for (let property of properties) {
-    packProperty(property, sourceCard[property]!, base, deviations, item.platforms);
+    packProperty(property, sourceCard[property]!, base, deviations, item.meta.platforms);
   }
   let packedItem = {
     base,
-    platforms: item.platforms
+    platforms: item.meta.platforms
   };
   if (Object.keys(deviations).length)
     (packedItem as any).deviations = deviations;

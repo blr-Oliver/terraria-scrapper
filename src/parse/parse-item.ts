@@ -1,5 +1,5 @@
-import {ItemCard, ProjectileInfo, ScrappedItem} from '../common/types';
-import {makeVarying, PlatformList, PlatformName, PlatformVarying, PlatformVaryingValue, transform} from '../platform-varying';
+import {Item, ItemMetaInfo, ProjectileInfo} from '../common/types';
+import {makeVarying, PlatformList, PlatformName, PlatformVaryingValue, transform} from '../platform-varying';
 import {parseFlag} from './common-parsers';
 import {
   extractPlatformsFromClasses,
@@ -15,30 +15,18 @@ import {
 } from './extract-varying';
 import {PROPERTIES_BY_NAME} from './known-constants';
 
-export interface MetaInfo {
-  platforms: PlatformList;
-  parsingExceptions: CardParsingException[];
-}
-
-export interface CardParsingException {
-  stage: string;
-  value?: any;
-  message?: string;
-}
-
-export function parseItemFromCard(card: Element, platforms: PlatformList): ScrappedItem {
+export function parseItemFromCard(card: Element, platforms: PlatformList): Item {
   const name = extractVaryingString(card.querySelector('.title')!, platforms);
   let namePlatforms = Object.keys(name);
   if (!isSameArray(namePlatforms, platforms))
     platforms = namePlatforms as PlatformList;
 
-  const result: ScrappedItem = {
+  const result: Item = {
     name: name[platforms[0]]!,
-    platforms,
-    item: {
-      name
-    } as PlatformVarying<ItemCard>,
-    exceptions: []
+    meta: {
+      platforms
+    } as ItemMetaInfo,
+    card: {}
   };
 
   card.querySelectorAll('.section')
@@ -54,32 +42,28 @@ function isSameArray(a: string[], b: string[]): boolean {
   return a_.every((x, i) => x === b_[i]);
 }
 
-function processSection(section: Element, context: ScrappedItem) {
+function processSection(section: Element, context: Item) {
   if (section.matches('.images')) processImagesSection(section, context);
   else if (section.matches('.projectile')) processProjectileSection(section, context);
   else if (section.matches('.ids')) processIdsSection(section, context);
   else if (section.matches('.statistics')) processStatisticsSection(section, context);
   else {
-    context.exceptions.push({
-      stage: 'categorize section',
-      message: 'unknown section selector',
-      value: section.className
-    });
+    addException(context, 'categorize section', 'unknown section selector', section.className);
   }
 }
 
-function processImagesSection(section: Element, context: ScrappedItem) {
+function processImagesSection(section: Element, context: Item) {
   let imageList = section.querySelector('ul.infobox-inline, ul.infobox-block')!;
   let images = imageList.querySelectorAll('img[src]');
   let sources = [...images].map(image => image.getAttribute('src')!);
-  context.item.image = makeVarying(sources, context.platforms);
-  context.item.autoSwing = makeVarying(!!section.querySelector('.auto'), context.platforms);
+  context.card.image = makeVarying(sources, context.meta.platforms);
+  context.card.autoSwing = makeVarying(!!section.querySelector('.auto'), context.meta.platforms);
   let stack = section.querySelector('.stack[title]');
   if (stack)
-    context.item.maxStack = makeVarying(+stack.getAttribute('title')!.slice(11), context.platforms); // 'Max stack: '
+    context.card.maxStack = makeVarying(+stack.getAttribute('title')!.slice(11), context.meta.platforms); // 'Max stack: '
 }
 
-function processProjectileSection(section: Element, context: ScrappedItem) {
+function processProjectileSection(section: Element, context: Item) {
   let projectileList = section.querySelector('ul.infobox-inline')!;
   const projectiles: ProjectileInfo[] = [];
   projectileList.querySelectorAll('li').forEach(li => {
@@ -87,7 +71,7 @@ function processProjectileSection(section: Element, context: ScrappedItem) {
     const image = li.querySelector('.image img[src]')!.getAttribute('src')!;
     projectiles.push({id: 0, name, image});
   });
-  context.item.projectiles = makeVarying(projectiles); // TODO merge with existing
+  context.card.projectiles = makeVarying(projectiles); // TODO merge with existing
 }
 
 type IdInfo = {
@@ -136,33 +120,26 @@ function allInInterval([start, end = start]: string[]): number[] {
   return Array.from({length: e - s + 1}, (_, i) => s + i);
 }
 
-function processIdsSection(section: Element, context: ScrappedItem) {
-  let ids = parseIds(section, context.platforms);
-  const {item, exceptions} = context;
+function processIdsSection(section: Element, context: Item) {
+  let ids = parseIds(section, context.meta.platforms);
+  const card = context.card;
   for (let info of ids) {
     switch (info.category.toLowerCase()) {
       case 'item id':
-        item.id = transform(info.values, list => list.length > 1 ? list : list[0]);
+        card.id = transform(info.values, list => list.length > 1 ? list : list[0]);
         break;
       case 'projectile id':
-        const projectilePerPlatform = item.projectiles!;
+        const projectilePerPlatform = card.projectiles!;
         const projectileIds = info.values;
         for (let key in projectileIds) {
           const platform = key as PlatformName;
           const projectiles = projectilePerPlatform[platform];
           if (!projectiles) {
-            exceptions.push({
-              stage: 'projectile ids',
-              message: 'missing platform',
-              value: platform
-            });
+            addException(context, 'projectile ids', 'missing platform', platform);
           } else {
             let ids: number[] = projectileIds[platform]!;
             if (projectiles.length !== ids.length) {
-              exceptions.push({
-                stage: 'projectile ids',
-                message: 'unaligned length'
-              });
+              addException(context, 'projectile ids', 'unaligned length');
             } else {
               for (let i = 0; i < ids.length && i < ids.length; ++i) {
                 projectiles[i].id = ids[i];
@@ -173,16 +150,12 @@ function processIdsSection(section: Element, context: ScrappedItem) {
         break;
         // TODO maybe add buff ids
       default:
-        exceptions.push({
-          stage: 'ids section',
-          message: 'unknown id category',
-          value: info.category
-        });
+        addException(context, 'ids section', 'unknown id category', info.category);
     }
   }
 }
 
-function processStatisticsSection(section: Element, context: ScrappedItem) {
+function processStatisticsSection(section: Element, context: Item) {
   let titleDiv = section.querySelector('.title');
   if (titleDiv) {
     let title = titleDiv!.textContent!.trim().toLowerCase();
@@ -194,21 +167,14 @@ function processStatisticsSection(section: Element, context: ScrappedItem) {
         // TODO add sounds processing
         break;
       default:
-        context.exceptions.push({
-          stage: 'statistics categorization',
-          message: 'unknown title',
-          value: title
-        });
+        addException(context, 'statistics categorization', 'unknown title', title);
     }
   } else {
-    context.exceptions.push({
-      stage: 'statistics categorization',
-      message: 'missing title'
-    });
+    addException(context, 'statistics categorization', 'missing title');
   }
 }
 
-function processGeneralStatistics(section: Element, context: ScrappedItem) {
+function processGeneralStatistics(section: Element, context: Item) {
   let toolPower = section.querySelector('ul.toolpower');
   if (toolPower) {
     processToolPower(toolPower, context);
@@ -219,14 +185,11 @@ function processGeneralStatistics(section: Element, context: ScrappedItem) {
     [...lines].forEach(row => processProperty(row.cells[0].textContent!, row.cells[1], context));
   } else {
     // TODO this is probably tool power stats
-    context.exceptions.push({
-      stage: 'statistics',
-      message: 'table not found'
-    });
+    addException(context, 'statistics', 'table not found');
   }
 }
 
-function processToolPower(list: Element, context: ScrappedItem) {
+function processToolPower(list: Element, context: Item) {
   let items = list.querySelectorAll('li:not(.zero)');
   for (let li of items) {
     let type: 'pickaxePower' | 'hammerPower' | 'axePower';
@@ -234,60 +197,57 @@ function processToolPower(list: Element, context: ScrappedItem) {
     else if (li.matches('.hammer')) type = 'hammerPower';
     else if (li.matches('.axe')) type = 'axePower';
     else {
-      context.exceptions.push({
-        stage: 'parsing tool power',
-        message: 'unknown tool type',
-        value: li.className
-      });
+      addException(context, 'parsing tool power', 'unknown tool type', li.className);
       continue;
     }
     let contentNode = li.querySelector('img ~ span')!;
-    context.item[type!] = extractVaryingPercent(contentNode, context.platforms);
+    context.card[type!] = extractVaryingPercent(contentNode, context.meta.platforms);
   }
 }
 
-function processProperty(propertyName: string, td: Element, context: ScrappedItem) {
+function processProperty(propertyName: string, td: Element, context: Item) {
   propertyName = propertyName.toLowerCase();
   const key = PROPERTIES_BY_NAME[propertyName];
-  const {item, platforms, exceptions} = context;
+  const card = context.card;
+  const platforms = context.meta.platforms;
   switch (key) {
     case 'tags':
       const tagBlocks = td.querySelectorAll('.tags .tag');
       const tags = Array.prototype.map.call(tagBlocks, e => e.textContent!.trim()) as string[];
-      item.tags = makeVarying(tags, platforms);
+      card.tags = makeVarying(tags, platforms);
       break;
     case 'ammoType':
-      item.ammoType = makeVarying(td.textContent!, platforms);
+      card.ammoType = makeVarying(td.textContent!, platforms);
       break;
     case 'damage':
-      item.damage = extractVaryingInteger(td, platforms);
+      card.damage = extractVaryingInteger(td, platforms);
       let typeMarker = td.querySelector('.small-bold:last-child');
       if (typeMarker)
-        item.damageType = makeVarying(typeMarker.textContent!.trim().slice(1, -1).trim(), platforms);
+        card.damageType = makeVarying(typeMarker.textContent!.trim().slice(1, -1).trim(), platforms);
       break;
     case 'knockback':
-      item.knockback = extractVaryingDecimal(td, platforms);
+      card.knockback = extractVaryingDecimal(td, platforms);
       break;
     case 'rangeBonus':
-      item.rangeBonus = extractVaryingInteger(td, platforms);
+      card.rangeBonus = extractVaryingInteger(td, platforms);
       break;
     case 'consumable':
-      item.consumable = parseFlag(td, platforms);
+      card.consumable = parseFlag(td, platforms);
       break;
     case 'critChance':
-      item.critChance = extractVaryingPercent(td, platforms);
+      card.critChance = extractVaryingPercent(td, platforms);
       break;
     case 'manaCost':
-      item.manaCost = extractVaryingInteger(td, platforms);
+      card.manaCost = extractVaryingInteger(td, platforms);
       break;
     case 'useTime':
-      item.useTime = extractVaryingInteger(td, platforms);
+      card.useTime = extractVaryingInteger(td, platforms);
       break;
     case 'toolSpeed':
-      item.toolSpeed = extractVaryingInteger(td, platforms);
+      card.toolSpeed = extractVaryingInteger(td, platforms);
       break;
     case 'velocity':
-      item.velocity = extractVaryingDecimal(td, platforms);
+      card.velocity = extractVaryingDecimal(td, platforms);
       break;
     case 'tooltip':
       let gameTextContainer = td.querySelector('.gameText');
@@ -299,38 +259,44 @@ function processProperty(propertyName: string, td: Element, context: ScrappedIte
           else if (child.nodeType === Node.ELEMENT_NODE && (child as Element).tagName.toLowerCase() === 'br')
             chunks.push('\n');
         }
-        item.tooltip = makeVarying(chunks.join('').trim(), platforms);
+        card.tooltip = makeVarying(chunks.join('').trim(), platforms);
       } else
-        item.tooltip = makeVarying(td.textContent!.trim(), platforms);
+        card.tooltip = makeVarying(td.textContent!.trim(), platforms);
       break;
     case 'maxStack':
-      item.maxStack = extractVaryingInteger(td, platforms);
+      card.maxStack = extractVaryingInteger(td, platforms);
       break;
     case 'rarity':
       let wrapper = td.querySelector('.rarity')!;
       let sortKey = wrapper.querySelector('s.sortkey');
       if (sortKey) {
-        item.rarity = makeVarying(parseInt(sortKey.textContent!.trim()), platforms);
+        card.rarity = makeVarying(parseInt(sortKey.textContent!.trim()), platforms);
       } else {
         let image = wrapper.querySelector('a img[alt]')!;
         let altString = image.getAttribute('alt')!.trim();
         let match = altString.match('/Rarity level:\s?(\d+)/i');
-        item.rarity = makeVarying(+match![1], platforms);
+        card.rarity = makeVarying(+match![1], platforms);
       }
       break;
     case 'buyValue':
-      item.buyValue = extractVaryingCoinValue(td, platforms);
+      card.buyValue = extractVaryingCoinValue(td, platforms);
       break;
     case 'sellValue':
-      item.sellValue = extractVaryingCoinValue(td, platforms);
+      card.sellValue = extractVaryingCoinValue(td, platforms);
       break;
     case 'ignore_':
       break;
     default:
-      exceptions.push({
-        stage: 'property detection',
-        message: 'unknown property',
-        value: propertyName
-      });
+      addException(context, 'property detection', 'unknown property', propertyName);
   }
+}
+
+function addException(context: Item, stage: string, message: string, value?: any) {
+  if (!context.meta.exceptions) context.meta.exceptions = {};
+  let stageExceptions = context.meta.exceptions[stage];
+  if (!stageExceptions) context.meta.exceptions[stage] = stageExceptions = {};
+  let subStageExceptions = stageExceptions[message];
+  if (!subStageExceptions) stageExceptions[message] = subStageExceptions = [];
+  if (typeof value !== 'undefined')
+    subStageExceptions.push(value);
 }

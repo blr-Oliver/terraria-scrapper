@@ -1,4 +1,4 @@
-import {ItemCard} from '../../../common/types';
+import {Item, ItemCard} from '../../../common/types';
 import {PlatformVarying} from '../../../platform-varying';
 import {CellContext, HeaderContext} from '../cell-parsers';
 import {NameBlockParserProvider} from './NameBlockParserProvider';
@@ -18,10 +18,14 @@ export class AmmoNameBlockParserProvider extends NameBlockParserProvider {
     return fileName.indexOf('rockets') !== -1 || fileName.indexOf('bombs') !== -1;
   }
 // @ts-ignore
-  protected parseNameCell(td: HTMLTableCellElement, item: PlatformVarying<ItemCard>, context: CellContext) {
-    let dummy: PlatformVarying<ItemCard> = {} as PlatformVarying<ItemCard>;
-    super.parseNameCell(td, dummy, context);
+  protected parseNameCell(td: HTMLTableCellElement, card: PlatformVarying<ItemCard>, item: Item, context: CellContext) {
+    let dummy = {
+      meta: {},
+      card: {} as PlatformVarying<ItemCard>
+    } as Item;
+    super.parseNameCell(td, dummy.card, dummy, context);
     item.name = dummy.name;
-    item.id = dummy.id;
+    item.meta.platforms = dummy.meta.platforms;
+    card.id = dummy.card.id;
   }
 }
