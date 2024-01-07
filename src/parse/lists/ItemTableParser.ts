@@ -24,11 +24,11 @@ export class ItemTableParser {
   constructor(private parserProvider: ParserProvider) {
   }
 
-  parse(context: TableContext): ParsedSection {
-    const [headerRows, bodyRows] = this.separateHeaderRows(context.table);
+  parse(tableContext: TableContext): ParsedSection {
+    const [headerRows, bodyRows] = this.separateHeaderRows(tableContext.table);
     const rowNum = bodyRows.length;
-    const colNum = context.columnCount = bodyRows[0].cells.length;
-    const parsers = this.getParsers(context, this.getHeaderCells(headerRows, colNum));
+    const colNum = tableContext.columnCount = bodyRows[0].cells.length;
+    const parsers = this.getParsers(tableContext, this.getHeaderCells(headerRows, colNum));
     const items: Item[] = Array(rowNum);
     const platformSources = parsers.filter(parser => parser.parser.getPlatforms);
     for (let row = 0; row < rowNum; ++row) {
@@ -40,32 +40,34 @@ export class ItemTableParser {
           exceptions: [],
           sources: [{
             type: 'list',
-            fileName: context.file,
+            fileName: tableContext.file,
             itemIndex: row,
-            section: context.section,
-            sectionIndex: context.sectionIndex
+            section: tableContext.section,
+            sectionIndex: tableContext.sectionIndex
           }]
         },
         card: {}
       };
       const itemCard = item.card;
 
-      let platforms: PlatformList = context.platforms;
+      let platforms: PlatformList = tableContext.platforms;
       platformSources.forEach(binding => {
         const td = itemRow.cells[binding.header.column];
-        const cellContext = {
-          table: context,
+        const cellContext: CellContext = {
+          table: tableContext,
           header: binding.header,
           td, column: row, row: row,
           platforms
         };
-        item.meta.platforms = context.platforms = platforms = binding.parser.getPlatforms!(td, itemCard, item, cellContext);
+        platforms = binding.parser.getPlatforms!(td, itemCard, item, cellContext);
       });
+
+      item.meta.platforms = platforms;
 
       for (let column = 0; column < colNum; ++column) {
         const td = itemRow.cells[column];
         const cellContext: CellContext = {
-          table: context,
+          table: tableContext,
           header: parsers[column].header,
           td, column: row, row: row,
           platforms,
@@ -87,8 +89,8 @@ export class ItemTableParser {
       }
     }
     return {
-      title: context.section,
-      index: context.sectionIndex,
+      title: tableContext.section,
+      index: tableContext.sectionIndex,
       items: items.filter(item => Object.keys(item.card).length > 1)
     }
   }
