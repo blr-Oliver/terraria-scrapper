@@ -1,6 +1,7 @@
 import {ItemCard, ItemMetaInfo} from '../common/types';
 import {addException, deepEqual} from '../common/utils';
 import {PlatformList, PlatformVarying} from '../platform-varying';
+import {VaryingObject} from '../varying';
 
 const MERGING_PROPERTIES = {
   image: true,
@@ -33,12 +34,72 @@ export function combineCards(dest: PlatformVarying<ItemCard>, other: PlatformVar
         }
       }
     } else {
-      setProperty(property, dest, other);
+      setVaryingProperty(property, dest, other);
     }
   }
 }
 
-function setProperty<K extends keyof ItemCard>(property: K, dest: PlatformVarying<ItemCard>, src: PlatformVarying<ItemCard>) {
+export function combineMeta(dest: ItemMetaInfo, other: ItemMetaInfo) {
+  combineProperty('page', dest, other);
+  combineProperty('pageTitle', dest, other);
+  dest.platforms = mergeLists(dest.platforms, other.platforms);
+  combineProperty('ignorablePlatforms', dest, other);
+  if (other.categories) {
+    if (dest.categories) {
+      if (other.categories.length !== dest.categories.length ||
+          other.categories.every((x, i) => x === dest.categories![i])) {
+        addException(dest, 'merging', 'categories', other.categories);
+      }
+    } else
+      dest.categories = other.categories;
+  }
+  deepMergeProperty('exceptions', dest, other, dest);
+  dest.sources.push(...other.sources);
+}
+
+function deepMergeProperty(property: string, dest: any, other: any, meta: ItemMetaInfo) {
+  if (property in other) {
+    if (property in dest) {
+      const destValue = dest[property];
+      const otherValue = other[property];
+      if (typeof destValue === 'object') {
+        if (typeof otherValue === 'object') {
+          if (Array.isArray(destValue)) {
+            if (Array.isArray(otherValue))
+              dest[property] = mergeLists(destValue, otherValue);
+            else
+              addException(meta, 'merging', property, otherValue);
+          } else {
+            let keys = mergeLists(Object.keys(destValue), Object.keys(otherValue));
+            keys.forEach(k => deepMergeProperty(k, destValue, otherValue, meta));
+          }
+        } else
+          addException(meta, 'merging', property, otherValue);
+      } else {
+        if (destValue !== otherValue)
+          addException(meta, 'merging', property, otherValue);
+      }
+    } else {
+      dest[property] = other[property];
+    }
+  }
+}
+
+function combineProperty<K extends keyof ItemMetaInfo>(prop: K, dest: ItemMetaInfo, other: ItemMetaInfo) {
+  if (!trySetProperty(prop, dest, other))
+    addException(dest, 'merging', prop, other[prop]);
+}
+function trySetProperty<T extends object, K extends keyof T>(prop: K, dest: T, other: T): boolean {
+  if (prop in other) {
+    if (prop in dest) {
+      return dest[prop] === other[prop];
+    } else
+      dest[prop] = other[prop];
+  }
+  return true;
+}
+
+function setVaryingProperty<T extends object, K extends keyof T, P extends keyof any>(property: K, dest: VaryingObject<T, P>, src: VaryingObject<T, P>) {
   dest[property] = src[property];
 }
 

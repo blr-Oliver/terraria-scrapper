@@ -7,7 +7,7 @@ import {normalizeFileName} from '../fetch/fetch';
 import {ParsedSection} from '../parse/common';
 import {PlatformVarying} from '../platform-varying';
 import {CardIndex, CardLocation, CardRecord} from './collect-cards';
-import {combineCards} from './combine';
+import {combineCards, combineMeta} from './combine';
 import {ItemCategoryInfo} from './flatten-categories';
 import {ListIndexRecord} from './ListIndexBuilder';
 
@@ -111,9 +111,7 @@ export class CardCompiler {
         }
       }
       combineCards(card, source.card, result.meta);
-      // TODO properly merge meta properties
-      Object.assign(result.meta.exceptions!, source.meta.exceptions || {});
-      result.meta.sources.push(...source.meta.sources);
+      combineMeta(result.meta, source.meta);
     }
     if (Object.keys(result.meta.exceptions!).length === 0)
       delete result.meta.exceptions;
