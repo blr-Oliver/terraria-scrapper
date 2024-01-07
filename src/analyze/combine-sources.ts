@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import {Item, ItemCard, ListSource} from '../common/types';
+import {addException} from '../common/utils';
 import {EntryInfo} from '../execution';
 import {ensureExists} from '../fetch/common';
 import {normalizeFileName} from '../fetch/fetch';
@@ -105,12 +106,12 @@ export class CardCompiler {
       if (!source.meta.ignorablePlatforms) {
         let otherPlatforms = source.meta.platforms.sort();
         if (platforms.length !== otherPlatforms.length || platforms.some((x, i) => x !== otherPlatforms[i])) {
-          result.meta.exceptions!['platform mismatch'] = true;
+          addException(result.meta, 'platform mismatch');
           platforms = [...new Set([...platforms, ...otherPlatforms]).keys()];
         }
       }
-      combineCards(card, source.card, result.meta.exceptions);
-      // TODO merge meta properties
+      combineCards(card, source.card, result.meta);
+      // TODO properly merge meta properties
       Object.assign(result.meta.exceptions!, source.meta.exceptions || {});
       result.meta.sources.push(...source.meta.sources);
     }

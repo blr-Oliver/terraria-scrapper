@@ -1,5 +1,5 @@
-import {ItemCard} from '../common/types';
-import {deepEqual} from '../common/utils';
+import {ItemCard, ItemMetaInfo} from '../common/types';
+import {addException, deepEqual} from '../common/utils';
 import {PlatformList, PlatformVarying} from '../platform-varying';
 
 const MERGING_PROPERTIES = {
@@ -7,7 +7,7 @@ const MERGING_PROPERTIES = {
   tags: true
 }
 
-export function combineCards(dest: PlatformVarying<ItemCard>, other: PlatformVarying<ItemCard>, exceptions: any) {
+export function combineCards(dest: PlatformVarying<ItemCard>, other: PlatformVarying<ItemCard>, meta: ItemMetaInfo) {
   let srcKeys = Object.keys(other) as (keyof ItemCard)[];
   for (let property of srcKeys) {
     if (property in dest) {
@@ -23,7 +23,7 @@ export function combineCards(dest: PlatformVarying<ItemCard>, other: PlatformVar
               destMap[platform] = mergeLists(destValue as any[], srcValue as any[]);
             } else {
               if (!deepEqual(destValue, srcValue)) {
-                addException(exceptions, 'conflict', `'${property}' for platform '${platform}'`);
+                addException(meta, 'merging', property, platform);
               }
               destMap[platform] = srcMap[platform];
             }
@@ -64,9 +64,4 @@ function mergeLists<T>(a: T[], b: T[]): T[] {
   while (bi < b.length)
     result.push(b[bi++]);
   return result;
-}
-
-function addException(exceptions: any, key: string, value: string) {
-  if (!(key in exceptions)) exceptions[key] = [];
-  exceptions[key].push(value);
 }

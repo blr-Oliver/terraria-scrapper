@@ -1,4 +1,5 @@
 import {Item, ItemMetaInfo, ProjectileInfo} from '../common/types';
+import {addException} from '../common/utils';
 import {makeVarying, PlatformList, PlatformName, PlatformVaryingValue, transform} from '../platform-varying';
 import {parseFlag} from './common-parsers';
 import {
@@ -47,8 +48,10 @@ function processSection(section: Element, context: Item) {
   else if (section.matches('.projectile')) processProjectileSection(section, context);
   else if (section.matches('.ids')) processIdsSection(section, context);
   else if (section.matches('.statistics')) processStatisticsSection(section, context);
-  else {
-    addException(context, 'categorize section', 'unknown section selector', section.className);
+  else if (section.matches('.buff, .debuff')) {
+    // TODO these are known but not yet implemented
+  } else {
+    addException(context.meta, 'categorize section', 'unknown section selector', section.className);
   }
 }
 
@@ -135,11 +138,11 @@ function processIdsSection(section: Element, context: Item) {
           const platform = key as PlatformName;
           const projectiles = projectilePerPlatform[platform];
           if (!projectiles) {
-            addException(context, 'projectile ids', 'missing platform', platform);
+            addException(context.meta, 'projectile ids', 'missing platform', platform);
           } else {
             let ids: number[] = projectileIds[platform]!;
             if (projectiles.length !== ids.length) {
-              addException(context, 'projectile ids', 'unaligned length');
+              addException(context.meta, 'projectile ids', 'unaligned length');
             } else {
               for (let i = 0; i < ids.length && i < ids.length; ++i) {
                 projectiles[i].id = ids[i];
@@ -148,9 +151,12 @@ function processIdsSection(section: Element, context: Item) {
           }
         }
         break;
-        // TODO maybe add buff ids
+      case 'buff id':
+      case 'tile id':
+        // TODO implement it
+        break;
       default:
-        addException(context, 'ids section', 'unknown id category', info.category);
+        addException(context.meta, 'ids section', 'unknown id category', info.category);
     }
   }
 }
@@ -167,10 +173,10 @@ function processStatisticsSection(section: Element, context: Item) {
         // TODO add sounds processing
         break;
       default:
-        addException(context, 'statistics categorization', 'unknown title', title);
+        addException(context.meta, 'statistics categorization', 'unknown title', title);
     }
   } else {
-    addException(context, 'statistics categorization', 'missing title');
+    addException(context.meta, 'statistics categorization', 'missing title');
   }
 }
 
@@ -185,7 +191,7 @@ function processGeneralStatistics(section: Element, context: Item) {
     [...lines].forEach(row => processProperty(row.cells[0].textContent!, row.cells[1], context));
   } else {
     // TODO this is probably tool power stats
-    addException(context, 'statistics', 'table not found');
+    addException(context.meta, 'statistics', 'table not found');
   }
 }
 
@@ -197,7 +203,7 @@ function processToolPower(list: Element, context: Item) {
     else if (li.matches('.hammer')) type = 'hammerPower';
     else if (li.matches('.axe')) type = 'axePower';
     else {
-      addException(context, 'parsing tool power', 'unknown tool type', li.className);
+      addException(context.meta, 'parsing tool power', 'unknown tool type', li.className);
       continue;
     }
     let contentNode = li.querySelector('img ~ span')!;
@@ -249,6 +255,12 @@ function processProperty(propertyName: string, td: Element, context: Item) {
     case 'velocity':
       card.velocity = extractVaryingDecimal(td, platforms);
       break;
+    case 'baseVelocity':
+      card.baseVelocity = extractVaryingDecimal(td, platforms);
+      break;
+    case 'velocityMultiplier':
+      card.velocityMultiplier = extractVaryingDecimal(td, platforms);
+      break;
     case 'tooltip':
       let gameTextContainer = td.querySelector('.gameText');
       if (gameTextContainer) {
@@ -287,16 +299,7 @@ function processProperty(propertyName: string, td: Element, context: Item) {
     case 'ignore_':
       break;
     default:
-      addException(context, 'property detection', 'unknown property', propertyName);
+      addException(context.meta, 'property detection', 'unknown property', propertyName);
   }
 }
 
-function addException(context: Item, stage: string, message: string, value?: any) {
-  if (!context.meta.exceptions) context.meta.exceptions = {};
-  let stageExceptions = context.meta.exceptions[stage];
-  if (!stageExceptions) context.meta.exceptions[stage] = stageExceptions = {};
-  let subStageExceptions = stageExceptions[message];
-  if (!subStageExceptions) stageExceptions[message] = subStageExceptions = [];
-  if (typeof value !== 'undefined')
-    subStageExceptions.push(value);
-}

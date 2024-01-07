@@ -109,6 +109,8 @@ export const PROPERTIES_BY_NAME: StringMapping = {
   'use time': 'useTime',
   'tool speed': 'toolSpeed',
   'velocity': 'velocity',
+  'base velocity': 'baseVelocity',
+  'velocity multiplier': 'velocityMultiplier',
   'rarity': 'rarity',
   'buy': 'buyValue',
   'sell': 'sellValue',

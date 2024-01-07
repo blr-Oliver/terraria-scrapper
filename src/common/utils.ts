@@ -1,3 +1,5 @@
+import {ItemMetaInfo} from './types';
+
 export function sortKeys<T>(data: { [key: string]: T }) {
   let sorted = Object.keys(data).sort();
   let sortedData: { [name: string]: T } = {};
@@ -20,4 +22,16 @@ function replaceForOrdered(this: any, key: string, value: any): any {
   if (Array.isArray(value))
     return value.map(x => toOrderedJSON(x)).sort();
   return sortKeys(value);
+}
+
+export function addException(meta: ItemMetaInfo, stage: string, message?: string, value?: any) {
+  if (!meta.exceptions) meta.exceptions = {};
+  let stageExceptions = meta.exceptions[stage];
+  if (!stageExceptions) meta.exceptions[stage] = stageExceptions = {};
+  if (typeof message !== 'undefined') {
+    let subStageExceptions = stageExceptions[message];
+    if (!subStageExceptions) stageExceptions[message] = subStageExceptions = [];
+    if (typeof value !== 'undefined')
+      subStageExceptions.push(value);
+  }
 }

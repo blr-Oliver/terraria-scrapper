@@ -16,7 +16,7 @@ export interface ItemMetaInfo {
   sources: (ItemSource | CardSource | ListSource)[];
 }
 
-export type ItemCard = ItemInfo & WeaponInfo & ExplosiveInfo & ToolInfo & YoyoInfo & WhipInfo;
+export type ItemCard = ItemInfo & WeaponInfo & ExplosiveInfo & ToolInfo & YoyoInfo & WhipInfo & AmmoInfo;
 
 export interface ItemInfo {
   id?: number | number[];
@@ -49,6 +49,11 @@ export interface ProjectileInfo {
   id: number;
   name: string;
   image: string;
+}
+
+export interface AmmoInfo {
+  baseVelocity?: number;
+  velocityMultiplier?: number;
 }
 
 export interface ExplosiveInfo {

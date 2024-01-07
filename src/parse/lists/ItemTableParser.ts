@@ -1,4 +1,5 @@
 import {Item} from '../../common/types';
+import {addException} from '../../common/utils';
 import {PlatformList} from '../../platform-varying';
 import {ParsedSection} from '../common';
 import {CellContext, HeaderContext, ICellParser, ParserProvider, TableContext} from './cell-parsers';
@@ -37,7 +38,6 @@ export class ItemTableParser {
         name: '',
         meta: {
           platforms: [],
-          exceptions: [],
           sources: [{
             type: 'list',
             fileName: tableContext.file,
@@ -71,20 +71,17 @@ export class ItemTableParser {
           header: parsers[column].header,
           td, column: row, row: row,
           platforms,
-          exceptions: []
         };
         const parser = parsers[column].parser;
         try {
           parser.parse(td, itemCard, item, cellContext);
         } catch (ex) {
-          let exInfo: any = {col: column};
-          if (ex instanceof Error)
-            exInfo.message = ex.message;
-          else
-            exInfo.value = String(ex);
-          if ('property' in parser) // property parsers report dedicated property on them
-            exInfo.property = parser.property as string;
-          cellContext.exceptions!.push(exInfo);
+          let message = (ex instanceof Error) ? ex.message : String(ex);
+          if ('property' in parser) { // property parsers report dedicated property on them
+            addException(item.meta, `parsing column ${column}`, parser.property as string, message);
+          } else {
+            addException(item.meta, `parsing column ${column}`, '<unknown>', message);
+          }
         }
       }
     }

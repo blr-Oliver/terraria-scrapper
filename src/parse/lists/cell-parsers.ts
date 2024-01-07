@@ -29,7 +29,6 @@ export type CellContext = {
   column: number;
   row: number;
   platforms: PlatformList;
-  exceptions?: any[];
 }
 
 export interface ICellParser {
