@@ -3,6 +3,7 @@ import {buildListIndex} from './analyze/build-list-index';
 import {buildCardIndex} from './analyze/collect-cards';
 import {collectShortInfo} from './analyze/collect-short-info';
 import {combineSources} from './analyze/combine-sources';
+import {concatCards} from './analyze/concat-cards';
 import {flattenCategories} from './analyze/flatten-categories';
 import {packCards} from './analyze/pack-cards';
 import {EntryInfo} from './execution';
@@ -27,7 +28,8 @@ export type OperationNames =
     'parseCards' |
     'buildCardIndex' |
     'combineSources' |
-    'packCards'
+    'packCards' |
+    'concatCards'
     ;
 
 export const OPERATION_ORDER: OperationNames[] = [
@@ -42,7 +44,8 @@ export const OPERATION_ORDER: OperationNames[] = [
   'parseCards',
   'buildCardIndex',
   'combineSources',
-  'packCards'
+  'packCards',
+  'concatCards'
 ]
 
 export type Operation = (entry: EntryInfo) => Promise<void>;
@@ -65,5 +68,6 @@ export const OPERATIONS: { [key in OperationNames]?: Operation } = {
   parseCards,
   buildCardIndex,
   combineSources,
-  packCards
+  packCards,
+  concatCards
 }

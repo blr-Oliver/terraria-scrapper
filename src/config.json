@@ -48,17 +48,19 @@
       "pause": false
     },
     "combineSources": {
-      "enabled": true,
+      "enabled": false,
       "prompt": "Compiling item cards from all sources",
-      "pause": false
+      "pause": true
     },
     "packCards": {
-      "enabled": true,
+      "enabled": false,
       "prompt": "Packing card variants for platforms",
       "pause": false
     },
-    "packPlatforms": {
-      "prompt": "Packing common data between platforms"
+    "concatCards": {
+      "enabled": true,
+      "prompt": "Concatenating item data for each platform",
+      "pause": false
     }
   }
 }

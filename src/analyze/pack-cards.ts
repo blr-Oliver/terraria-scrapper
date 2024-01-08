@@ -6,7 +6,7 @@ import {normalizeFileName} from '../fetch/fetch';
 import {pack} from '../packed-varying';
 import {PlatformList, PlatformVaryingValue} from '../platform-varying';
 
-export interface PackedCard {
+export interface PackedItem {
   name: string;
   meta: ItemMetaInfo;
   baseCard: ItemCard;
@@ -22,7 +22,7 @@ export async function packCards(entry: EntryInfo): Promise<void> {
 async function packCard(entry: EntryInfo, name: string): Promise<void> {
   let fileName = normalizeFileName(name);
   let item: Item = JSON.parse(await fs.promises.readFile(`${entry.out}/json/combined/${fileName}.json`, {encoding: 'utf8'}));
-  let result: PackedCard = {
+  let result: PackedItem = {
     name: item.name,
     meta: item.meta,
     baseCard: {}
