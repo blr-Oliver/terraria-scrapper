@@ -1,10 +1,17 @@
 import * as fs from 'fs';
-import {Item, ItemCard} from '../common/types';
+import {Item, ItemCard, ItemMetaInfo} from '../common/types';
 import {EntryInfo} from '../execution';
 import {ensureExists} from '../fetch/common';
 import {normalizeFileName} from '../fetch/fetch';
 import {pack} from '../packed-varying';
 import {PlatformList, PlatformVaryingValue} from '../platform-varying';
+
+export interface PackedCard {
+  name: string;
+  meta: ItemMetaInfo;
+  baseCard: ItemCard;
+  deviations?: PlatformVaryingValue<ItemCard>;
+}
 
 export async function packCards(entry: EntryInfo): Promise<void> {
   const allNames: string[] = JSON.parse(await fs.promises.readFile(`${entry.out}/json/all-names.json`, {encoding: 'utf8'}));
@@ -14,21 +21,22 @@ export async function packCards(entry: EntryInfo): Promise<void> {
 
 async function packCard(entry: EntryInfo, name: string): Promise<void> {
   let fileName = normalizeFileName(name);
-  let item: Item = JSON.parse(await fs.promises.readFile(`${entry.out}/json/combined/${fileName}.json`, {encoding: 'utf8'}))
+  let item: Item = JSON.parse(await fs.promises.readFile(`${entry.out}/json/combined/${fileName}.json`, {encoding: 'utf8'}));
+  let result: PackedCard = {
+    name: item.name,
+    meta: item.meta,
+    baseCard: {}
+  }
   let sourceCard = item.card;
   let properties = Object.keys(sourceCard) as (keyof ItemCard)[];
-  let base = {} as ItemCard;
+  let base = result.baseCard;
   let deviations = {} as PlatformVaryingValue<ItemCard>;
   for (let property of properties) {
     packProperty(property, sourceCard[property]!, base, deviations, item.meta.platforms);
   }
-  let packedItem = {
-    base,
-    platforms: item.meta.platforms
-  };
   if (Object.keys(deviations).length)
-    (packedItem as any).deviations = deviations;
-  return fs.promises.writeFile(`${entry.out}/json/packed/${fileName}.json`, JSON.stringify(packedItem, null, 2), {encoding: 'utf8'});
+    result.deviations = deviations;
+  return fs.promises.writeFile(`${entry.out}/json/packed/${fileName}.json`, JSON.stringify(result, null, 2), {encoding: 'utf8'});
 }
 
 function packProperty<K extends keyof ItemCard>(property: K, source: PlatformVaryingValue<ItemCard[K]>, base: ItemCard, deviations: PlatformVaryingValue<ItemCard>, platforms: PlatformList) {
