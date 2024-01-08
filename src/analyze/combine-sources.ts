@@ -103,7 +103,7 @@ export class CardCompiler {
       card
     };
     for (let source of sources) {
-      if (!source.meta.ignorablePlatforms) {
+      if (source.meta?.platforms && !source.meta.ignorablePlatforms) {
         let otherPlatforms = source.meta.platforms.sort();
         if (platforms.length !== otherPlatforms.length || platforms.some((x, i) => x !== otherPlatforms[i])) {
           addException(result.meta, 'platform mismatch');

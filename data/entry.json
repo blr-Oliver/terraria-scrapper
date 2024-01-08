@@ -36,6 +36,7 @@
     "List_of_summon_weapons",
     "List_of_weapons"
   ],
+  "overrides": "data/overrides.json",
   "excludeCards": [
     "Rocket I",
     "Rocket II",

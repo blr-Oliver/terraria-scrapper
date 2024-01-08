@@ -1,5 +1,5 @@
 {
-  "entry": "src/entry.json",
+  "entry": "data/entry.json",
   "operations": {
     "fetchCategories": {
       "enabled": false,
@@ -50,7 +50,7 @@
     "combineSources": {
       "enabled": false,
       "prompt": "Compiling item cards from all sources",
-      "pause": true
+      "pause": false
     },
     "packCards": {
       "enabled": false,
@@ -58,7 +58,7 @@
       "pause": false
     },
     "concatCards": {
-      "enabled": true,
+      "enabled": false,
       "prompt": "Concatenating item data for each platform",
       "pause": false
     }

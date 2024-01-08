@@ -1,0 +1,83 @@
+{
+  "Gladius": {
+    "meta": {},
+    "card": {
+      "hitsPerSwing": {
+        "console": 3,
+        "mobile": 3,
+        "pc": 3
+      }
+    }
+  },
+  "Ruler": {
+    "meta": {},
+    "card": {
+      "hitsPerSwing": {
+        "console": 4,
+        "mobile": 4,
+        "pc": 4
+      }
+    }
+  },
+  "Bladed Glove": {
+    "meta": {},
+    "card": {
+      "speedBonusMultiplier": {
+        "pc": {
+          "n": 1,
+          "d": 2
+        },
+        "console": {
+          "n": 1,
+          "d": 2
+        },
+        "mobile": {
+          "n": 1,
+          "d": 2
+        },
+        "threeDS": {
+          "n": 1,
+          "d": 2
+        }
+      }
+    }
+  },
+  "Fetid Baghnakhs": {
+    "meta": {},
+    "card": {
+      "speedBonusMultiplier": {
+        "pc": {
+          "n": 1,
+          "d": 4
+        },
+        "console": {
+          "n": 1,
+          "d": 4
+        },
+        "mobile": {
+          "n": 1,
+          "d": 4
+        }
+      }
+    }
+  },
+  "Psycho Knife": {
+    "meta": {},
+    "card": {
+      "speedBonusMultiplier": {
+        "pc": {
+          "n": 1,
+          "d": 3
+        },
+        "console": {
+          "n": 1,
+          "d": 3
+        },
+        "mobile": {
+          "n": 1,
+          "d": 3
+        }
+      }
+    }
+  }
+}

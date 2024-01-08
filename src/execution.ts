@@ -16,6 +16,7 @@ export interface EntryInfo {
   htmlRootUrl: string;
   htmlEntrySuffix: string;
   out: string;
+  overrides: string;
   categories: string;
   lists: string[];
   excludeCards: string[];
@@ -47,7 +48,7 @@ async function keypress(): Promise<void> {
   });
 }
 
-async function loadEntry(path = 'src/entry.json'): Promise<EntryInfo> {
+async function loadEntry(path = 'data/entry.json'): Promise<EntryInfo> {
   let content = await fs.promises.readFile(path, {encoding: 'utf8'});
   return JSON.parse(content);
 }
