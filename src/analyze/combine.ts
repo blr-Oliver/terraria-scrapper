@@ -42,8 +42,8 @@ export function combineCards(dest: PlatformVarying<ItemCard>, other: PlatformVar
 export function combineMeta(dest: ItemMetaInfo, other: ItemMetaInfo) {
   combineProperty('page', dest, other);
   combineProperty('pageTitle', dest, other);
-  dest.platforms = mergeLists(dest.platforms, other.platforms);
-  combineProperty('ignorablePlatforms', dest, other);
+  if (!other.ignorablePlatforms)
+    dest.platforms = mergeLists(dest.platforms, other.platforms);
   if (other.categories) {
     if (dest.categories) {
       if (other.categories.length !== dest.categories.length ||

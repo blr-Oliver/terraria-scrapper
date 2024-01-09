@@ -43,6 +43,13 @@ export interface WeaponInfo {
   projectiles?: ProjectileInfo[];
   ammoType?: string;
   summonType?: string;
+  hitsPerSwing?: number;
+  speedBonusMultiplier?: Ratio;
+}
+
+export type Ratio = {
+  n: number;
+  d: number;
 }
 
 export interface ProjectileInfo {

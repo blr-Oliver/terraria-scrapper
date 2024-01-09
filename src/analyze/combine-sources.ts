@@ -15,8 +15,9 @@ export async function combineSources(entry: EntryInfo): Promise<void> {
   const categoryData: { [name: string]: ItemCategoryInfo } = JSON.parse(await fs.promises.readFile(`${entry.out}/json/category-info.json`, {encoding: 'utf8'}));
   const listIndex: { [name: string]: ListIndexRecord } = JSON.parse(await fs.promises.readFile(`${entry.out}/json/listIndex.json`, {encoding: 'utf8'}));
   const cardIndex: CardIndex = JSON.parse(await fs.promises.readFile(`${entry.out}/json/cardIndex.json`, {encoding: 'utf8'}));
+  const overrides: { [name: string]: Item } = JSON.parse(await fs.promises.readFile(entry.overrides, {encoding: 'utf8'}));
 
-  let cardCompiler = new CardCompiler(entry, categoryData, listIndex, cardIndex);
+  let cardCompiler = new CardCompiler(entry, categoryData, listIndex, cardIndex, overrides);
 
   const allNames = Object.keys([categoryData, listIndex, cardIndex.cards]
       .flatMap(o => Object.keys(o))
@@ -33,7 +34,8 @@ export class CardCompiler {
       private entry: EntryInfo,
       private categoryData: { [name: string]: ItemCategoryInfo },
       private listIndex: { [name: string]: ListIndexRecord },
-      private cardIndex: CardIndex
+      private cardIndex: CardIndex,
+      private overrides: { [name: string]: Item }
   ) {
   }
 
@@ -69,6 +71,12 @@ export class CardCompiler {
         this.cleanOverlappingData([], sources, true);
         sources.push(...await this.loadCardSources(cardRecord));
       }
+    }
+    if (name in this.overrides) {
+      let manualSource = this.overrides[name];
+      manualSource.meta.ignorablePlatforms = true;
+      manualSource.meta.sources = [{type: 'manual', fileName: this.entry.overrides}];
+      sources.push(manualSource);
     }
     let result = this.compileFromSources(name, sources) as Item;
     let categoryInfo = this.categoryData[name];
