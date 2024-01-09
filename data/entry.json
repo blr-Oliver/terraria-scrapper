@@ -42,5 +42,9 @@
     "Rocket II",
     "Rocket III",
     "Rocket IV"
-  ]
+  ],
+  "prefixes": {
+    "list": "Modifiers",
+    "ids": "Prefix_IDs"
+  }
 }

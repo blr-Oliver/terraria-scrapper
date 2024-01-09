@@ -20,6 +20,12 @@ export interface EntryInfo {
   categories: string;
   lists: string[];
   excludeCards: string[];
+  prefixes: EntryPrefixInfo;
+}
+
+export interface EntryPrefixInfo {
+  list: string;
+  ids: string;
 }
 
 export async function executeRoutine<T extends (...args: any) => any>(

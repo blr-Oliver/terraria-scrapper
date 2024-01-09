@@ -9,6 +9,10 @@
       "enabled": false,
       "prompt": "Fetching lists"
     },
+    "fetchPrefixes": {
+      "enabled": true,
+      "prompt": "Fetching prefixes"
+    },
     "parseCategories": {
       "enabled": false,
       "prompt": "Parsing categories"

@@ -11,6 +11,7 @@ import {ensureExists} from './fetch/common';
 import {fetchCards} from './fetch/fetch-cards';
 import {fetchCategories} from './fetch/fetch-categories';
 import {fetchLists} from './fetch/fetch-lists';
+import {fetchPrefixes} from './fetch/fetch-prefixes';
 import {loadDocument} from './parse/common';
 import {parseLists} from './parse/lists/parse-lists';
 import {parseCards} from './parse/parse-cards';
@@ -19,6 +20,7 @@ import {parseCategoriesFromDom} from './parse/parse-categories';
 export type OperationNames =
     'fetchCategories' |
     'fetchLists' |
+    'fetchPrefixes' |
     'parseCategories' |
     'flattenCategories' |
     'parseLists' |
@@ -35,6 +37,7 @@ export type OperationNames =
 export const OPERATION_ORDER: OperationNames[] = [
   'fetchCategories',
   'fetchLists',
+  'fetchPrefixes',
   'parseCategories',
   'flattenCategories',
   'parseLists',
@@ -59,6 +62,7 @@ export async function parseCategories(entry: EntryInfo): Promise<void> {
 export const OPERATIONS: { [key in OperationNames]?: Operation } = {
   fetchCategories,
   fetchLists,
+  fetchPrefixes,
   parseCategories,
   flattenCategories,
   parseLists,
