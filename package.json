@@ -1,10 +1,12 @@
 {
   "name": "terraria-scrapper",
   "version": "0.0.0",
-  "description": "Helper for extracting items information from Terraria official wiki",
+  "description": "Extracts information from Terraria official wiki",
   "main": "dist/index.js",
+  "bin": "./dist/index.js",
   "scripts": {
-    "scrap": "node --inspect=9230 dist/index.js",
+    "debug": "node --inspect=9230 dist/index.js",
+    "scrap": "node dist/index.js",
     "build": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -23,6 +25,6 @@
     "@types/node": "^20.4.2",
     "typescript": "^4.9"
   },
-  "private": true,
-  "license": "UNLICENSED"
+  "private": false,
+  "license": "BSD-4-Clause"
 }

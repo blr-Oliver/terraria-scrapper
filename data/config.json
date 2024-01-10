@@ -32,7 +32,7 @@
       "pause": false
     },
     "parsePrefixes": {
-      "enabled": true,
+      "enabled": false,
       "prompt": "Parsing prefixes",
       "pause": true
     },
