@@ -16,6 +16,7 @@ import {loadDocument} from './parse/common';
 import {parseLists} from './parse/lists/parse-lists';
 import {parseCards} from './parse/parse-cards';
 import {parseCategoriesFromDom} from './parse/parse-categories';
+import {parsePrefixes} from './parse/prefixes/parse-prefixes';
 
 export type OperationNames =
     'fetchCategories' |
@@ -25,6 +26,7 @@ export type OperationNames =
     'flattenCategories' |
     'parseLists' |
     'buildListIndex' |
+    'parsePrefixes' |
     'collectShortInfo' |
     'fetchCards' |
     'parseCards' |
@@ -42,6 +44,7 @@ export const OPERATION_ORDER: OperationNames[] = [
   'flattenCategories',
   'parseLists',
   'buildListIndex',
+  'parsePrefixes',
   'collectShortInfo',
   'fetchCards',
   'parseCards',
@@ -67,6 +70,7 @@ export const OPERATIONS: { [key in OperationNames]?: Operation } = {
   flattenCategories,
   parseLists,
   buildListIndex,
+  parsePrefixes,
   collectShortInfo,
   fetchCards,
   parseCards,

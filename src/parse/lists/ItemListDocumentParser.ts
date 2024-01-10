@@ -1,5 +1,5 @@
 import {ALL_PLATFORMS, PlatformList} from '../../platform-varying';
-import {ParsedSection} from '../common';
+import {getClosestSectionHeader, ParsedSection} from '../common';
 import {extractPlatformsFromImages} from '../extract-varying';
 import {TableContext} from './cell-parsers';
 import {ItemTableParser} from './ItemTableParser';
@@ -8,8 +8,7 @@ const SELECTORS = {
   TABLE: 'table.terraria.sortable',
   TABLE_LINED: 'table.terraria.lined',
   CONTENT_ROOT: '.mw-parser-output',
-  PLATFORM_BOX: '.message-box.msgbox-color-blue',
-  HEADERS: 'h1, h2, h3, h4'
+  PLATFORM_BOX: '.message-box.msgbox-color-blue'
 }
 
 export class ItemListDocumentParser {
@@ -28,7 +27,7 @@ export class ItemListDocumentParser {
 
   private parseTable(table: HTMLTableElement, index: number, platforms: PlatformList, fileKey: string): ParsedSection {
     let exceptions: any[] = [];
-    let sectionHeader = this.getClosestSectionHeader(table);
+    let sectionHeader = getClosestSectionHeader(table);
     if (!sectionHeader) {
       exceptions.push({message: 'missing title'});
     }
@@ -54,11 +53,5 @@ export class ItemListDocumentParser {
     return messageBox ? extractPlatformsFromImages(messageBox) : ALL_PLATFORMS.slice();
   }
 
-  private getClosestSectionHeader(table: Element): Element | null {
-    let element: Element | null = table;
-    while (element && !element.matches(SELECTORS.HEADERS))
-      element = element.previousElementSibling;
-    return element;
-  }
 }
 

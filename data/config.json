@@ -10,7 +10,7 @@
       "prompt": "Fetching lists"
     },
     "fetchPrefixes": {
-      "enabled": true,
+      "enabled": false,
       "prompt": "Fetching prefixes"
     },
     "parseCategories": {
@@ -30,6 +30,11 @@
       "enabled": false,
       "prompt": "Building list index",
       "pause": false
+    },
+    "parsePrefixes": {
+      "enabled": true,
+      "prompt": "Parsing prefixes",
+      "pause": true
     },
     "collectShortInfo": {
       "enabled": false,

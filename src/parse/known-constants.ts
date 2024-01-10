@@ -123,3 +123,12 @@ export const PROPERTIES_BY_NAME: StringMapping = {
   'research': 'ignore_',
   'placeable': 'ignore_'
 };
+
+export const MODIFIER_PROPERTIES: StringMapping = {
+  'modifier': 'name',
+  'critical strike chance': 'critChance',
+  'mana cost': 'manaCost',
+  'movement speed': 'moveSpeed',
+  'melee speed': 'meleeSpeed',
+  'stat change': 'value'
+}
