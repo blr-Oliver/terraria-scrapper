@@ -1,6 +1,7 @@
 # terraria-scrapper
 
 Extracts information from Terraria official wiki. Information collected: weapons and ammo, prefixes.
+If you want the data itself, please see https://www.npmjs.com/package/terraria-data
 
 ## Usage
 
