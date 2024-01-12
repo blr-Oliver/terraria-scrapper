@@ -8,7 +8,7 @@ export interface Prefix {
   name: string;
   type: PrefixType;
   tier: -2 | -1 | 0 | 1 | 2;
-  value: number;
+  coinValue: number;
 }
 
 export interface WeaponPrefix extends Prefix {

@@ -34,7 +34,7 @@
     "parsePrefixes": {
       "enabled": false,
       "prompt": "Parsing prefixes",
-      "pause": true
+      "pause": false
     },
     "collectShortInfo": {
       "enabled": false,

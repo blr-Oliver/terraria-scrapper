@@ -130,5 +130,6 @@ export const MODIFIER_PROPERTIES: StringMapping = {
   'mana cost': 'manaCost',
   'movement speed': 'moveSpeed',
   'melee speed': 'meleeSpeed',
-  'stat change': 'value'
+  'stat change': 'value',
+  'value': 'coinValue'
 }

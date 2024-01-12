@@ -30,7 +30,7 @@ function populateIds(groupedPrefixes: Prefix[][], prefixIds: PrefixIdInfo[]): Pr
     name: 'Legendary',
     type: 'weapon',
     tier: 2,
-    value: 209.85,
+    coinValue: 209.85,
     group: 'melee',
     damage: 17,
     critChance: 8,
