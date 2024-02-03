@@ -79,8 +79,10 @@ function parseSinglePrefix(cells: ArrayLike<HTMLTableCellElement>, tableHeader: 
     if (property === 'name') {
       result.name = cells[i].textContent!;
     } else {
-      const value = parseFloat(cells[i].textContent!);
-      if (value) {
+      let value = parseFloat(cells[i].textContent!);
+      if (property === 'tier') {
+        (result as any)[property] = value || 0;
+      } else if (value) {
         (result as any)[property] = value;
       }
     }
